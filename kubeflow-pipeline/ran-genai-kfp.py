@@ -40,8 +40,8 @@ def stream_ran_metrics_to_s3_component(
     topic_name = "ran-combined-metrics"
 
     column_names = [
-        "Cell ID", "Datetime", "Band", "Frequency", "Area Type", "Adjacent Cells", 
-        "RSRP", "RSRQ", "SINR", "Throughput (Mbps)", "Latency (ms)", "Max Capacity", "UEs Usage"
+        "Cell ID", "Datetime", "Band", "Frequency", "UEs Usage", "Area Type", "Adjacent Cells", 
+        "RSRP", "RSRQ", "SINR", "Throughput (Mbps)", "Latency (ms)", "Max Capacity"
     ]
 
     print(f"Connecting to Kafka topic '{topic_name}'...")
@@ -294,7 +294,6 @@ def train_traffic_predictor(
     s3_endpoint: str,
     aws_access_key: str,
     aws_secret_key: str,
-    #output_traffic_model: Output[Dataset]
     output_traffic_regressor_model: Output[Dataset],
     output_traffic_classifier_model: Output[Dataset]
 ):
@@ -306,66 +305,77 @@ def train_traffic_predictor(
     import logging
     from datetime import datetime
     import numpy as np
+    import csv
     from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
     from sklearn.model_selection import train_test_split
 
+    # Logging setup
     logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(levelname)s] - %(message)s')
     log = logging.getLogger()
 
     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log.info("Traffic predictor training started.")
 
-
+    # Setup AWS
     os.environ.update({
         'AWS_ACCESS_KEY_ID': aws_access_key,
         'AWS_SECRET_ACCESS_KEY': aws_secret_key,
     })
-
     s3 = boto3.client('s3', endpoint_url=s3_endpoint)
+    log.info("AWS credentials and environment variables configured.")
+
+    # Read latest file
     files = sorted([o['Key'] for o in s3.list_objects_v2(Bucket=s3_bucket, Prefix=s3_key_prefix).get('Contents', []) if "ran-combined-metrics" in o['Key']])
     if not files:
-        raise FileNotFoundError("No RAN metrics files found in S3 bucket.")
+        raise FileNotFoundError("No RAN metrics files found.")
     latest_file = files[-1]
-    log.info(f"Reading latest RAN metrics file: {latest_file}")
+    log.info(f"Latest RAN metrics file selected: {latest_file}")
 
-    column_names = [
-        "Cell ID", "Datetime", "Band", "Frequency", "Area Type", "Adjacent Cells", 
-        "RSRP", "RSRQ", "SINR", "Throughput (Mbps)", "Latency (ms)", "Max Capacity", "UEs Usage"
-    ]
+    # For Debug purpose reading the raw csv data from S3
+    csv_bytes = s3.get_object(Bucket=s3_bucket, Key=latest_file)['Body'].read()
+    # Debug print (optional) — shows first 5 lines of raw CSV
+    print(csv_bytes.decode('utf-8').splitlines()[:5])
 
-    raw_df = pd.read_csv(
-        io.BytesIO(s3.get_object(Bucket=s3_bucket, Key=latest_file)['Body'].read())
+    # Read and clean headers
+    df = pd.read_csv(
+        io.BytesIO(s3.get_object(Bucket=s3_bucket, Key=latest_file)['Body'].read()), 
+        quotechar='"',
+        delimiter=',',          # Explicitly set delimiter
+        skipinitialspace=True,
+        engine='python'  # More flexible parser 
     )
 
-    # Check if first row is a duplicate of column names (header row repeated)
-    if list(raw_df.iloc[0]) == list(raw_df.columns):
-        raw_df = raw_df.iloc[1:]
+    log.info(f"Initial data shape: {df.shape}")
+    if list(df.iloc[0]) == list(df.columns):
+        df = df.iloc[1:]
+    df.columns = [
+        "Cell ID", "Datetime", "Band", "Frequency", "UEs Usage", "Area Type", "Adjacent Cells", 
+        "RSRP", "RSRQ", "SINR", "Throughput (Mbps)", "Latency (ms)", "Max Capacity"
+    ]
+    log.info(f"Cleaned data shape: {df.shape}")
+    log.info(f"Raw data shape: {df.shape}")
+    log.info(f"First 3 rows of raw data:\n{df.head(3).to_string(index=False)}")
 
-    # Rename columns to expected names
-    raw_df.columns = column_names
-    df = raw_df
+    df.columns = df.columns.str.strip().str.replace('"', '')
+    # Clean 'Adjacent Cells' column
+    if 'Adjacent Cells' in df.columns:
+        df['Adjacent Cells'] = df['Adjacent Cells'].astype(str).str.strip('"').str.strip()
+    # (Optional: Print sample row for debug)
+    print(df.head())
 
-    # Ensure Cell ID is numeric and remove header-like rows
+    # Drop invalid Cell IDs
     df = df[pd.to_numeric(df['Cell ID'], errors='coerce').notnull()]
     df['Cell ID'] = df['Cell ID'].astype(int)
-    #df['Max Capacity'] = df['Max Capacity'].round().astype(int)
     df['Max Capacity'] = pd.to_numeric(df['Max Capacity'], errors='coerce').round().astype('Int64')
-
-    log.info("Rows with string Cell ID:\n" + str(df[df['Cell ID'] == 'Cell ID']))
-
-    log.info(f"Original DataFrame shape: {df.shape}")
-    log.info("Initial data sample:\n" + str(df.head()))
-
-    #df.drop_duplicates(subset=["Cell ID", "Datetime"], inplace=True)
-    log.info(f"Shape after dropping duplicate Cell ID entries: {df.shape}")
-
-    # Parse and clean
-    log.info("Converting 'Datetime' to datetime format")
+    df['UEs Usage'] = pd.to_numeric(df['UEs Usage'], errors='coerce').fillna(0)
     df['Datetime'] = pd.to_datetime(df['Datetime'], errors='coerce')
-    log.info(f"Datetime conversion - non-null count: {df['Datetime'].notnull().sum()} / {len(df)}")
-    df = df.dropna(subset=['Datetime'])
+    df.dropna(subset=['Datetime'], inplace=True)
+    log.info(f"Data after basic cleaning: {df.shape}")
+    log.info(f"Sample cleaned data:\n{df[['Cell ID', 'Datetime', 'Frequency', 'UEs Usage']].head(3).to_string(index=False)}")
 
-    log.info("Handling 'Frequency' column")
-    def handle_frequency(freq):
+    '''
+    # Frequency processing
+    def parse_frequency(freq):
         if isinstance(freq, str) and '-' in freq:
             try:
                 start, end = map(int, freq.split('-'))
@@ -376,74 +386,119 @@ def train_traffic_predictor(
             return float(freq)
         except:
             return 0
-
-    log.info(f"Frequency sample after processing:\n{df['Frequency'].head()}")
-    df['Frequency'] = df['Frequency'].apply(handle_frequency).fillna(0)
-   
-    log.info("Parsing numeric columns")
-    df['Adjacent Cells'] = pd.to_numeric(df['Adjacent Cells'], errors='coerce').fillna(0)
-    df['UEs Usage'] = pd.to_numeric(df['UEs Usage'], errors='coerce').fillna(0)
-
-    log.info("Filling Band and Area Type")
+    df['Frequency'] = df['Frequency'].apply(parse_frequency).fillna(0)
+    log.info("Frequency column processed.")
+    '''
+    
+    # Fill missing values
     df['Band'] = df['Band'].fillna("Unknown Band").astype(str)
     df['Area Type'] = df['Area Type'].fillna("Unknown Area").astype(str)
 
-    # Add datetime derived features
-    log.info("Deriving datetime-based features")
-    df['DayOfWeek'] = df['Datetime'].dt.day_name()
+    '''
+    # Derived features
     df['Hour'] = df['Datetime'].dt.hour
+    df['DayOfWeek'] = df['Datetime'].dt.day_name()
     df['Weekend'] = df['DayOfWeek'].isin(['Saturday', 'Sunday']).astype(int)
-    log.info(f"DayOfWeek and Hour sample:\n{df[['DayOfWeek', 'Hour', 'Weekend']].head()}")
+    df['Date'] = df['Datetime'].dt.strftime('%m-%d-%Y')  # MM-DD-YYYY
+    '''
 
-    log.info(f"Row count before grouping: {df.shape[0]}")
+    # Derive extra temporal features first
+    df['Datetime'] = pd.to_datetime(df['Datetime'])
+    df['Hour'] = df['Datetime'].dt.hour
+    df['Day'] = df['Datetime'].dt.day
+    df['Month'] = df['Datetime'].dt.month
+    df['Weekday'] = df['Datetime'].dt.weekday
+    df['DayOfWeek'] = df['Datetime'].dt.day_name()
+    df['Weekend'] = df['Weekday'].isin([5, 6])  # Saturday/Sunday
+    df['Date'] = df['Datetime'].dt.date  # Needed for grouping
+    # Create full Timestamp for grouping
+    #df['Timestamp'] = pd.to_datetime(df['Date'].astype(str)) + pd.to_timedelta(df['Hour'], unit='h')
+    log.info(f"Sample after feature derivation:\n{df[['Cell ID', 'Datetime', 'Date', 'Hour', 'Day', 'Month', 'Weekday',  'DayOfWeek', 'Weekend']].head(3).to_string(index=False)}")
 
-
-    # Group and aggregate
-    log.info("Grouping by 'Cell ID' and 'Datetime'")
-    grouped = df.groupby(['Cell ID', 'Datetime']).agg({
+    # Group by Cell ID + Frequency + Hour + Date
+    log.info("Grouping by ['Cell ID', 'Datetime', 'Frequency']")
+    grouped = df.groupby(['Cell ID', 'Datetime', 'Frequency']).agg({
         'UEs Usage': 'sum',
-        'Frequency': lambda x: ','.join(map(str, x.unique())),
         'DayOfWeek': 'first',
-        'Hour': 'first',
         'Weekend': 'first'
     }).reset_index()
-    log.info(f"Grouped sample:\n{grouped.head()}")
+    '''
+    log.info("Grouping by ['Cell ID', 'Frequency', 'Hour', 'Date']")
+    grouped = df.groupby(['Cell ID', 'Frequency', 'Hour', 'Date']).agg({
+        'UEs Usage': 'sum',
+        'DayOfWeek': 'first',
+        'Weekend': 'first'
+    }).reset_index()
+    '''
+    log.info(f"Grouped data shape: {grouped.shape}")
+    log.info(f"Sample grouped data:\n{grouped.head(3).to_string(index=False)}")
 
-    log.info(f"Row count after grouping: {grouped.shape[0]}")
+    '''
+    # Merge back other time features (Day, Month, Weekday)
+    grouped['Day'] = pd.to_datetime(grouped['Date']).dt.day
+    grouped['Month'] = pd.to_datetime(grouped['Date']).dt.month
+    grouped['Weekday'] = pd.to_datetime(grouped['Date']).dt.weekday
+    grouped['Date'] = grouped['Datetime'].dt.strftime('%m-%d-%Y')
+    grouped['Hour'] = grouped['Datetime'].dt.hour
+    '''
 
-
-    # Define traffic class
-    log.info("Classifying traffic based on usage")
-    grouped['Traffic Class'] = np.where(grouped['UEs Usage'] >= 40, 1, 0)
-    log.info(f"Traffic Class distribution:\n{grouped['Traffic Class'].value_counts()}")
-
-    # Prepare features
-    log.info("Preparing one-hot encoded features")
+    grouped['Date'] = grouped['Datetime'].dt.strftime('%m-%d-%Y')
+    grouped['Hour'] = grouped['Datetime'].dt.hour
     grouped['Day'] = grouped['Datetime'].dt.day
     grouped['Month'] = grouped['Datetime'].dt.month
     grouped['Weekday'] = grouped['Datetime'].dt.weekday
-    #features = grouped[['Cell ID', 'DayOfWeek', 'Hour', 'Weekend']]
-    #features = grouped[['Cell ID', 'Datetime', 'DayOfWeek', 'Hour', 'Weekend']]
-    features = grouped[['Cell ID', 'DayOfWeek', 'Hour', 'Weekend', 'Day', 'Month', 'Weekday']]
-    features = pd.get_dummies(features)
-    log.info(f"Feature sample after encoding:\n{features.head()}")
+    grouped['Datetime'] = grouped['Datetime'].astype('int64') // 10**9  # seconds
 
-    target_usage = grouped['UEs Usage']
-    target_class = grouped['Traffic Class']
+    #grouped['Timestamp'] = pd.to_datetime(grouped['Date']).astype(np.int64) // 10**9  # UNIX timestamp
 
-    # Split
+    # Traffic class label
+    grouped['Traffic Class'] = (grouped['UEs Usage'] >= 40).astype(int)
+    
+
+    # One-hot encode DayOfWeek (as boolean flags)
+    grouped = pd.get_dummies(grouped, columns=['DayOfWeek'], prefix='DayOfWeek')
+
+    # Final features
+    feature_cols = ['Cell ID', 'Datetime', 'Frequency', 'Hour', 'Weekend', 'Day', 'Month', 'Weekday', 'UEs Usage'] + \
+                [col for col in grouped.columns if col.startswith('DayOfWeek_')]
+    X = grouped[feature_cols]
+    X = pd.get_dummies(X, columns=['Frequency'], prefix='Freq')
+    y_usage = grouped['UEs Usage']
+    y_class = grouped['Traffic Class']
+
+    log.info(f"Feature columns: {feature_cols}")
+    log.info(f"Training features sample:\n{X.head(3).to_string(index=False)}")
+    log.info(f"Training target (UEs Usage) sample:\n{y_usage.head(3).tolist()}")
+    log.info(f"Training target (Traffic Class) sample:\n{y_class.head(3).tolist()}")
+
+    # Train-test split
     X_train, X_test, y_train_usage, y_test_usage, y_train_class, y_test_class = train_test_split(
-        features, target_usage, target_class, test_size=0.2, random_state=42
+        X, y_usage, y_class, test_size=0.2, random_state=42
     )
 
     # Train models
-    log.info("Training RandomForest Regressor...")
     regressor = RandomForestRegressor(n_estimators=100, random_state=42)
     regressor.fit(X_train, y_train_usage)
 
-    log.info("Training RandomForest Classifier...")
     classifier = RandomForestClassifier(n_estimators=100, random_state=42)
     classifier.fit(X_train, y_train_class)
+
+    log.info("RandomForest models trained successfully.")
+
+    '''
+    # Save models
+    os.makedirs("/tmp", exist_ok=True)
+    reg_path = f"/tmp/traffic_regressor_model.joblib"
+    clf_path = f"/tmp/traffic_classifier_model.joblib"
+    joblib.dump(regressor, reg_path)
+    joblib.dump(classifier, clf_path)
+
+    # Output artifacts
+    output_traffic_regressor_model.path = reg_path
+    output_traffic_classifier_model.path = clf_path
+
+    log.info("Training completed and models saved.")
+    '''
 
     # Save
     os.makedirs("/tmp", exist_ok=True)
@@ -458,6 +513,9 @@ def train_traffic_predictor(
     with open(classifier_model_path, 'rb') as c_file:
         s3.upload_fileobj(c_file, s3_bucket, f'{s3_key_prefix}/models/traffic_classifier_model_{timestamp_str}.joblib')
 
+    log.info(f"Uploaded regressor model: {s3_key_prefix}/models/traffic_regressor_model_{timestamp_str}.joblib")
+    log.info(f"Uploaded classifier model: {s3_key_prefix}/models/traffic_classifier_model_{timestamp_str}.joblib")
+
     # Output regressor to pipeline output
     with open(regressor_model_path, 'rb') as f:
         with open(output_traffic_regressor_model.path, 'wb') as out_f:
@@ -470,127 +528,10 @@ def train_traffic_predictor(
     log.info("Traffic predictor models saved and uploaded successfully.")
 
 
-'''
-# ─────────────────────────────────────────────────────────────── #
-# RandomForest Traffic Prediction Component (Prediction)
-
-#from kfp.v2.dsl import component, Output, Dataset
-
-@component(
-    base_image='python:3.9',
-    packages_to_install=['pandas', 'scikit-learn', 'boto3', 'joblib']
-)
-def predict_traffic_levels_component(
-    s3_bucket: str,
-    s3_key_prefix: str,
-    s3_endpoint: str,
-    aws_access_key: str,
-    aws_secret_key: str,
-    output_traffic_predictions: Output[Dataset]
-):
-    import pandas as pd
-    import joblib
-    import boto3
-    from io import BytesIO
-    import os
-    import logging
-    from sklearn.preprocessing import LabelEncoder
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format='[%(asctime)s] [%(levelname)s] - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    log = logging.getLogger()
-
-
-    os.environ.update({
-        'AWS_ACCESS_KEY_ID': aws_access_key,
-        'AWS_SECRET_ACCESS_KEY': aws_secret_key,
-    })
-
-    # Initialize S3 client
-    s3 = boto3.client('s3', endpoint_url=s3_endpoint)
-
-    # Load models from S3
-    log.info("Loading models from S3...")
-    regressor_model_key = f'{s3_key_prefix}/models/traffic_regressor_model.joblib'
-    classifier_model_key = f'{s3_key_prefix}/models/traffic_classifier_model.joblib'
-
-    regressor_buffer = BytesIO()
-    classifier_buffer = BytesIO()
-
-    s3.download_fileobj(s3_bucket, regressor_model_key, regressor_buffer)
-    s3.download_fileobj(s3_bucket, classifier_model_key, classifier_buffer)
-
-    regressor_buffer.seek(0)
-    classifier_buffer.seek(0)
-
-    regressor = joblib.load(regressor_buffer)
-    classifier = joblib.load(classifier_buffer)
-
-    # Get the latest RAN metrics file
-    log.info("Fetching latest RAN metrics file...")
-    files = sorted([o['Key'] for o in s3.list_objects_v2(Bucket=s3_bucket, Prefix=s3_key_prefix).get('Contents', []) if "ran-combined-metrics" in o['Key']])
-    if not files:
-        raise FileNotFoundError("No RAN metrics files found in S3 bucket.")
-    latest_key = files[-1]
-    log.info(f"Using latest metrics file: {latest_key}")
-
-    response = s3.get_object(Bucket=s3_bucket, Key=latest_key)
-
-    # Explicitly define expected columns and set them after reading the CSV
-    expected_columns = ['CellID', 'Timestamp', 'Band', 'Frequency', 'AreaType', 'AdjacentCells', 
-        'RSRP', 'RSRQ', 'SINR', 'Throughput', 'Latency', 'MaxCapacity', 'UEsUsage']
-    df = pd.read_csv(BytesIO(response['Body'].read()), header=None, names=expected_columns)
-
-    # Log and inspect the columns
-    log.info(f"Assigned columns: {list(df.columns)}")
-
-    # Apply data sanitation and preprocessing
-    df['Band'] = df['Band'].str.strip().replace(' ', '').astype(str)
-    df['Frequency'] = pd.to_numeric(df['Frequency'], errors='coerce').fillna(0)
-    df['AdjacentCells'] = pd.to_numeric(df['AdjacentCells'], errors='coerce').fillna(0)
-    df['UEsUsage'] = pd.to_numeric(df['UEsUsage'], errors='coerce').fillna(0)
-    
-    # Encode categorical variables
-    band_encoder = LabelEncoder()
-    area_encoder = LabelEncoder()
-    df['Band'] = band_encoder.fit_transform(df['Band'])
-    df['AreaType'] = area_encoder.fit_transform(df['AreaType'].astype(str))
-
-    # Filter to valid rows
-    df = df.dropna(subset=['Band', 'Frequency', 'UEsUsage', 'AreaType', 'AdjacentCells'])
-    if df.empty:
-        raise ValueError("No valid rows left after cleaning.")
-
-    features = df[['Band', 'Frequency', 'UEsUsage', 'AreaType', 'AdjacentCells']]
-
-    # Perform predictions
-    log.info("Running predictions...")
-    predicted_traffic = regressor.predict(features)
-    predicted_classes = classifier.predict(features)
-
-    df['PredictedTraffic'] = predicted_traffic
-    df['TrafficLevel'] = predicted_classes  # 0 = Not Busy, 1 = Busy
-
-    # Save predictions to S3
-    traffic_predictions_csv = df.to_csv(index=False)
-    predictions_buffer = BytesIO(traffic_predictions_csv.encode('utf-8'))
-    predictions_key = f'{s3_key_prefix}/predictions/traffic_predictions.csv'
-
-    s3.upload_fileobj(predictions_buffer, s3_bucket, predictions_key)
-    log.info(f"Predictions uploaded to: s3://{s3_bucket}/{predictions_key}")
-
-    # Save predictions to output artifact for Kubeflow
-    with open(output_traffic_predictions.path, 'w') as f:
-        f.write(traffic_predictions_csv)
-    log.info("Predictions written to Kubeflow output artifact.")
-
 
 # ─────────────────────────────────────────────────────────────── #
 # LSTM Prediction Component
-
+'''
 @component(
     base_image="python:3.9",
     packages_to_install=["boto3", "pandas", "numpy", "tensorflow", "scikit-learn"]
