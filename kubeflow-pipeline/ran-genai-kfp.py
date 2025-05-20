@@ -403,7 +403,10 @@ def train_traffic_predictor(
     '''
 
     # Derive extra temporal features first
-    df['Datetime'] = pd.to_datetime(df['Datetime'])
+    #df['Datetime'] = pd.to_datetime(df['Datetime'])
+    # Normalize datetime precision to seconds (or minutes if preferred)
+    df['Datetime'] = pd.to_datetime(df['Datetime']).dt.floor('S')
+
     df['Hour'] = df['Datetime'].dt.hour
     df['Day'] = df['Datetime'].dt.day
     df['Month'] = df['Datetime'].dt.month
@@ -447,7 +450,10 @@ def train_traffic_predictor(
     grouped['Day'] = grouped['Datetime'].dt.day
     grouped['Month'] = grouped['Datetime'].dt.month
     grouped['Weekday'] = grouped['Datetime'].dt.weekday
-    grouped['Datetime'] = grouped['Datetime'].astype('int64') // 10**9  # seconds
+    #grouped['Datetime'] = grouped['Datetime'].astype('int64') // 10**9  # seconds
+    #grouped['Datetime'] = pd.to_datetime(grouped['Datetime'], errors='coerce')
+    #grouped['Datetime_ts'] = grouped['Datetime'].astype('int64') // 10**9
+
 
     #grouped['Timestamp'] = pd.to_datetime(grouped['Date']).astype(np.int64) // 10**9  # UNIX timestamp
 
@@ -458,15 +464,99 @@ def train_traffic_predictor(
     # One-hot encode DayOfWeek (as boolean flags)
     grouped = pd.get_dummies(grouped, columns=['DayOfWeek'], prefix='DayOfWeek')
 
+
+    # --- One-hot encode top-N adjacent cells ---
+    N = 10  # Number of top adjacent cells to encode
+    if 'Adjacent Cells' in df.columns:
+        # Flatten all adjacent cells into a list
+        all_adjacent = df['Adjacent Cells'].dropna().str.split(',').explode().str.strip()
+        top_adjacent = all_adjacent.value_counts().nlargest(N).index.tolist()
+        log.info(f"Top-{N} most frequent adjacent cells: {top_adjacent}")
+
+        # Create binary flags for top-N adjacent cells
+        for adj in top_adjacent:
+            col_name = f'adj_cell_{adj}'
+            df[col_name] = df['Adjacent Cells'].apply(lambda x: int(adj in x.split(',')) if pd.notnull(x) else 0)
+
+    # Ensure both 'Datetime' columns are in datetime64[ns] and aligned to second resolution BEFORE merging
+    df['Datetime'] = pd.to_datetime(df['Datetime']).dt.floor('S')
+    grouped['Datetime'] = pd.to_datetime(grouped['Datetime']).dt.floor('S')
+
+    # Prepare the one-hot encoded adjacent cell flags
+    adj_cols = [f'adj_cell_{adj}' for adj in top_adjacent]
+    adj_encoded_df = df.groupby(['Cell ID', 'Datetime', 'Frequency'])[adj_cols].max().reset_index()
+
+    # --- DEBUG: Check datatypes before merge ---
+    log.info(f"[Before merge] adj_encoded_df['Datetime'] dtype: {adj_encoded_df['Datetime'].dtype}")
+    log.info(f"[Before merge] grouped['Datetime'] dtype: {grouped['Datetime'].dtype}")
+
+    # Ensure consistency in 'Datetime' type for adj_encoded_df as well
+    adj_encoded_df['Datetime'] = pd.to_datetime(adj_encoded_df['Datetime']).dt.floor('S')
+
+    # Now safely merge
+    grouped = grouped.merge(adj_encoded_df, on=['Cell ID', 'Datetime', 'Frequency'], how='left')
+    log.info(f"Shape after merging top-N adjacent cell features: {grouped.shape}")
+
+    # --- FIX: Ensure 'Datetime' is proper before processing ---
+    # Print sample raw 'Datetime' values
+    log.info(f"Raw 'Datetime' values before coercion:\n{grouped['Datetime'].head()}")
+    log.info(f"'Datetime' dtype before coercion: {grouped['Datetime'].dtype}")
+
+    # Only convert if not already datetime64
+    if not pd.api.types.is_datetime64_any_dtype(grouped['Datetime']):
+        grouped['Datetime'] = pd.to_datetime(grouped['Datetime'], errors='coerce')
+
+    # Optional: Drop rows where coercion failed
+    if grouped['Datetime'].isna().any():
+        log.warning("Some 'Datetime' values could not be converted and are NaT. Dropping those rows.")
+        grouped = grouped.dropna(subset=['Datetime'])
+
+    # Floor to seconds precision
+    grouped['Datetime'] = grouped['Datetime'].dt.floor('S')
+
+    # Derive Unix timestamp safely
+    grouped['Datetime_ts'] = grouped['Datetime'].astype('int64') // 10**9
+
+    # Confirm correctness
+    log.info(f"Sample 'Datetime' values:\n{grouped['Datetime'].head().to_string(index=False)}")
+    log.info(f"'Datetime' dtype: {grouped['Datetime'].dtype}")
+    log.info(f"Sample 'Datetime_ts' values:\n{grouped['Datetime_ts'].head().to_string(index=False)}")
+
+
+    # Define the one-hot column names
+    adj_cols = [col for col in grouped.columns if col.startswith("adj_cell_")]
+    log.info(f"Sample of one-hot adjacent cell columns BEFORE fillna:\n{grouped[adj_cols].head().to_string(index=False)}")
+
+    # Fill missing values and convert to integers
+    grouped[adj_cols] = grouped[adj_cols].fillna(0).astype(int)
+    log.info(f"Sample AFTER fillna:\n{grouped[adj_cols].head().to_string(index=False)}")
+
+    # Log and convert final 'Datetime' to timestamp
+    log.info(f"'Datetime' dtype: {grouped['Datetime'].dtype}")
+    log.info(f"Sample 'Datetime' values:\n{grouped['Datetime'].head().to_string(index=False)}")
+
+
     # Final features
-    feature_cols = ['Cell ID', 'Datetime', 'Frequency', 'Hour', 'Weekend', 'Day', 'Month', 'Weekday', 'UEs Usage'] + \
-                [col for col in grouped.columns if col.startswith('DayOfWeek_')]
+    feature_cols = ['Cell ID', 'Datetime_ts', 'Datetime', 'Frequency', 'Hour', 'Weekend', 'Day', 'Month', 'Weekday', 'UEs Usage'] + \
+                [col for col in grouped.columns if col.startswith('DayOfWeek_')] + \
+                [col for col in grouped.columns if col.startswith('adj_cell_')]
     X = grouped[feature_cols]
     X = pd.get_dummies(X, columns=['Frequency'], prefix='Freq')
-    y_usage = grouped['UEs Usage']
-    y_class = grouped['Traffic Class']
+
+    print("Current columns in grouped:", grouped.columns.tolist())
+
+    
+    # Drop only if columns exist to avoid KeyError
+    columns_to_drop = [col for col in ["Datetime"] if col in X.columns]
+    X = X.drop(columns=columns_to_drop)
+    print("After dropping columns:", X.columns.tolist())
+    
+
+    y_class = grouped["Traffic Class"]
+    y_usage = grouped["UEs Usage"]
 
     log.info(f"Feature columns: {feature_cols}")
+    log.info(f"Final training feature set shape: {X.shape}")
     log.info(f"Training features sample:\n{X.head(3).to_string(index=False)}")
     log.info(f"Training target (UEs Usage) sample:\n{y_usage.head(3).tolist()}")
     log.info(f"Training target (Traffic Class) sample:\n{y_class.head(3).tolist()}")
