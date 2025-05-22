@@ -32,6 +32,7 @@ def stream_ran_metrics_to_s3_component(
     from datetime import datetime
     from io import StringIO
     from tabulate import tabulate
+    import html
 
     os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key
     os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_key
@@ -147,11 +148,21 @@ def stream_ran_metrics_to_s3_component(
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     s3_object_key = f"{s3_key_prefix}/{topic_name}_{timestamp}.csv"
 
+    '''
     # Clean Adjacent Cells column
     if 'Adjacent Cells' in df.columns:
         df['Adjacent Cells'] = df['Adjacent Cells'].apply(
             lambda x: ','.join(map(str, x)) if isinstance(x, list) else str(x)
         )
+    '''
+
+    if 'Adjacent Cells' in df.columns:
+        df['Adjacent Cells'] = df['Adjacent Cells'].apply(
+            lambda x: ','.join(
+                map(lambda c: str(c).replace('"', '""'), x)
+            ) if isinstance(x, list) else str(x).replace('"', '""')
+        )
+
 
     csv_buffer = StringIO()
     #df.to_csv(csv_buffer, index=False, header=False)
@@ -308,6 +319,7 @@ def train_traffic_predictor(
     import csv
     from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
     from sklearn.model_selection import train_test_split
+    from sklearn.metrics import classification_report, mean_absolute_error
 
     # Logging setup
     logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(levelname)s] - %(message)s')
@@ -324,6 +336,59 @@ def train_traffic_predictor(
     s3 = boto3.client('s3', endpoint_url=s3_endpoint)
     log.info("AWS credentials and environment variables configured.")
 
+    def load_all_ran_files_from_s3(s3, s3_bucket, s3_key_prefix):
+        """
+        Load and concatenate all RAN CSV metric files from S3 that match the prefix.
+        Assumes all files follow the same structure and headers.
+        """
+        # List and sort files
+        files = sorted([
+            o['Key'] for o in s3.list_objects_v2(Bucket=s3_bucket, Prefix=s3_key_prefix).get('Contents', [])
+            if "ran-combined-metrics" in o['Key']
+        ])
+        
+        if not files:
+            raise FileNotFoundError("No RAN metrics files found.")
+
+        log.info(f"Found {len(files)} RAN files for continuous training.")
+        
+        dfs = []
+
+        for key in files:
+            log.info(f"Reading file: {key}")
+            csv_bytes = s3.get_object(Bucket=s3_bucket, Key=key)['Body'].read()
+            df = pd.read_csv(
+                io.BytesIO(csv_bytes),
+                quotechar='"',
+                delimiter=',',
+                skipinitialspace=True,
+                engine='python'
+            )
+
+            # If first row is repeated header, drop it
+            if list(df.iloc[0]) == list(df.columns):
+                df = df.iloc[1:]
+            
+            # Standardize column names
+            df.columns = [
+                "Cell ID", "Datetime", "Band", "Frequency", "UEs Usage", "Area Type", "Adjacent Cells", 
+                "RSRP", "RSRQ", "SINR", "Throughput (Mbps)", "Latency (ms)", "Max Capacity"
+            ]
+
+            dfs.append(df)
+
+        # Concatenate all cleaned files
+        combined_df = pd.concat(dfs, ignore_index=True)
+        log.info(f"Total combined shape: {combined_df.shape}")
+        log.info(f"Sample combined data:\n{combined_df.head(3).to_string(index=False)}")
+
+        return combined_df
+    
+    # Load all RAN files from S3 for continuous training
+    df = load_all_ran_files_from_s3(s3, s3_bucket, s3_key_prefix)
+
+
+    '''
     # Read latest file
     files = sorted([o['Key'] for o in s3.list_objects_v2(Bucket=s3_bucket, Prefix=s3_key_prefix).get('Contents', []) if "ran-combined-metrics" in o['Key']])
     if not files:
@@ -355,6 +420,7 @@ def train_traffic_predictor(
     log.info(f"Cleaned data shape: {df.shape}")
     log.info(f"Raw data shape: {df.shape}")
     log.info(f"First 3 rows of raw data:\n{df.head(3).to_string(index=False)}")
+    '''
 
     df.columns = df.columns.str.strip().str.replace('"', '')
     # Clean 'Adjacent Cells' column
