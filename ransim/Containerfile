@@ -1,0 +1,21 @@
+# Use Red Hat UBI Python image
+FROM registry.access.redhat.com/ubi9/python-312
+
+# Set the working directory inside the container
+# This is where your application code will reside and run from
+WORKDIR /app
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy the generated cell_config.json into the container
+# Ensure cell_config.json is in the same local directory as this Dockerfile
+COPY cell_config.json .
+
+# Copy your main simulator script and any other necessary Python files
+# If you have a requirements.txt, copy it here too
+COPY ransim.py .
+
+# Command to run your application when the container starts
+CMD ["python", "ransim.py"]
