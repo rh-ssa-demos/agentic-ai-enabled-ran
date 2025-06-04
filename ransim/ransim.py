@@ -10,8 +10,8 @@ import json # <--- ADD THIS LINE: Import the JSON library
 
 # Kafka Configuration (enhanced for batching and large messages)
 conf = {
-    #'bootstrap.servers': 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092',
-    'bootstrap.servers': '192.168.154.101:30139',
+    'bootstrap.servers': 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092',
+    #'bootstrap.servers': '192.168.154.101:30139',
     'client.id': 'ransim',
     'acks': 'all',
     'message.max.bytes': 10485760,
