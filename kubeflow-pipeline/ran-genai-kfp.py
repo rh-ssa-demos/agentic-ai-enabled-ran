@@ -22,17 +22,20 @@ def stream_ran_metrics_to_s3_component(
     aws_access_key: str,
     aws_secret_key: str,
     ran_metrics: Output[Dataset],
-    max_records: int = 500
+    #max_records: int = 500
+    max_records: int = 30
 ):
     import os
     import csv
     import boto3
     import pandas as pd
     from kafka import KafkaConsumer
+    from kafka import TopicPartition
     from datetime import datetime
     from io import StringIO
     from tabulate import tabulate
     import html
+    import time
 
     os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key
     os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_key
@@ -40,24 +43,195 @@ def stream_ran_metrics_to_s3_component(
     s3_client = boto3.client('s3', endpoint_url=s3_endpoint)
     topic_name = "ran-combined-metrics"
 
+    # --- Configuration for specific partition consumption ---
+    target_partition = 0 # The partition where your producer is sending all data
+    consumer_group_id = 'kfp-ran-metrics-s3-consumer-group-p0-only' # Use a new, distinct group_id for this strategy
+
     column_names = [
-        "Cell ID", "Datetime", "Band", "Frequency", "UEs Usage", "Area Type", "Adjacent Cells", 
+        "Cell ID", "Datetime", "Band", "Frequency", "UEs Usage", "Area Type", "Lat", "Lon", "City", "Adjacent Cells", 
         "RSRP", "RSRQ", "SINR", "Throughput (Mbps)", "Latency (ms)", "Max Capacity"
     ]
 
-    print(f"Connecting to Kafka topic '{topic_name}'...")
-    consumer = KafkaConsumer(
-        topic_name,
-        bootstrap_servers=bootstrap_servers,
-        auto_offset_reset='earliest',
-        enable_auto_commit=True,
-        value_deserializer=lambda m: m.decode('utf-8', errors='ignore') if m else None
-    )
-    print(f"Connected to Kafka topic '{topic_name}'")
+    #consumer_group_id = 'kfp-ran-metrics-s3-consumer-group-001'
+    print(f"Connecting to Kafka topic '{topic_name}' with group ID '{consumer_group_id}'...")
+    consumer = None # Initialize consumer to None
 
-    collected_lines = []
-    total_records = 0
+    try:
+        #print(f"Connecting to Kafka topic '{topic_name}'...")
+        consumer = KafkaConsumer(
+            #topic_name,
+            bootstrap_servers=bootstrap_servers,
+            group_id=consumer_group_id, # THIS IS WHAT group.py IS CHECKING FOR
+            auto_offset_reset='earliest',
+            #auto_offset_reset='latest',
+            #enable_auto_commit=True,
+            enable_auto_commit=False,
+            value_deserializer=lambda m: m.decode('utf-8', errors='ignore') if m else None,
+            # Fetch just one Kafka message (as it contains all your 2000+ records)
+            # We need to limit the number of *Kafka messages* to 1 if one Kafka message = 2000 lines
+            max_poll_records=1, # <<< Set this to 1 because each Kafka message is one large CSV block
+            client_id=f"kfp-comp-{os.getpid()}-{int(time.time())}-p{target_partition}"
+        )
 
+        # --- CRITICAL CHANGE: Use subscribe() ---
+        consumer.subscribe([topic_name])
+        print(f"Subscribed to topic '{topic_name}'. Waiting for partition assignment...")
+
+        assigned_partitions = []
+        timeout_start = time.time()
+        timeout_duration = 60 # seconds to wait for assignment
+        while not assigned_partitions and (time.time() - timeout_start < timeout_duration):
+            consumer.poll(timeout_ms=500) 
+            assigned_partitions = consumer.assignment()
+            if not assigned_partitions:
+                print(f"Waiting for partition assignment... ({int(time.time() - timeout_start)}s elapsed)")
+                time.sleep(1) 
+        
+        if not assigned_partitions:
+            raise RuntimeError(f"Consumer failed to get partition assignment within {timeout_duration} seconds. Exiting.")
+
+        print(f"Successfully assigned partitions: {assigned_partitions}")
+
+        tp = TopicPartition(topic_name, target_partition) 
+        assigned_tp_obj = None
+        for p in assigned_partitions:
+            if p.topic == topic_name and p.partition == target_partition:
+                assigned_tp_obj = p
+                break
+
+        if assigned_tp_obj: 
+            committed_offset = consumer.committed(assigned_tp_obj)
+            if committed_offset is not None:
+                consumer.seek(assigned_tp_obj, committed_offset)
+                print(f"Found committed offset {committed_offset} for {assigned_tp_obj}. Seeking to it.")
+            else:
+                consumer.seek_to_beginning(assigned_tp_obj) 
+                print(f"No committed offset found for {assigned_tp_obj}. Seeking to beginning.")
+            
+            current_position = consumer.position(assigned_tp_obj)
+            print(f"Current position for {assigned_tp_obj}: {current_position}")
+        else:
+            print(f"WARNING: Target partition {target_partition} not assigned to this consumer. This run may not process data.")
+            return 
+
+        collected_lines = []
+        total_parsed_records_in_run = 0
+
+        print(f"\n Streaming Kafka Records (targeting up to {max_records} CSV records per run):\n")
+
+        while total_parsed_records_in_run < max_records:
+            messages_from_kafka_poll = consumer.poll(timeout_ms=5000) 
+
+            if not messages_from_kafka_poll:
+                print("No more Kafka messages in this poll after timeout. Breaking processing loop.")
+                break 
+
+            for current_tp_key, msgs_list in messages_from_kafka_poll.items():
+                if current_tp_key.topic == topic_name and current_tp_key.partition == target_partition: 
+                    for message in msgs_list:
+                        if not message.value:
+                            print("Skipping empty Kafka message...")
+                            continue
+
+                        individual_csv_lines = message.value.strip().splitlines()
+
+                        for line in individual_csv_lines:
+                            if not line:
+                                continue
+
+                            if total_parsed_records_in_run >= max_records:
+                                print(f"Reached {max_records} logical CSV records. Stopping processing for this run.")
+                                break 
+
+                            collected_lines.append(line)
+                            total_parsed_records_in_run += 1
+
+                            try:
+                                values_for_print = next(csv.reader([line]))
+                                if len(values_for_print) == len(column_names):
+                                    if total_parsed_records_in_run == 1:
+                                        print("\n" + ", ".join(column_names))
+                                    print(", ".join(str(v) for v in values_for_print))
+                                else:
+                                    print(f"Record {total_parsed_records_in_run}: [Invalid format for print] {line}")
+                            except Exception as e:
+                                print(f"Record {total_parsed_records_in_run}: [Error parsing for print] {e} | Content: {line}")
+                        
+                        # NO COMMIT HERE. We will commit at the end of the run.
+                        
+                        if total_parsed_records_in_run >= max_records:
+                            break
+                    
+                if total_parsed_records_in_run >= max_records:
+                    break
+            
+            if not messages_from_kafka_poll and total_parsed_records_in_run < max_records:
+                print("No more messages found in topic after initial fetch. Exiting polling loop.")
+                break
+
+        print(f"Successfully processed {total_parsed_records_in_run} logical CSV records in this run.")
+
+        if not collected_lines:
+            print("No valid records collected. Exiting without upload.")
+            return
+
+        records = []
+        for line in collected_lines:
+            try:
+                parsed = next(csv.reader([line]))
+                if len(parsed) == len(column_names):
+                    records.append(parsed)
+                else:
+                    print(f"Skipping malformed record: {line}")
+            except Exception as e:
+                print(f"CSV parsing failed: {e} | Content: {line}")
+
+        df = pd.DataFrame(records, columns=column_names)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        s3_object_key = f"{s3_key_prefix}/ran-combined-metrics/{topic_name}_{timestamp}.csv"
+
+        if 'Adjacent Cells' in df.columns:
+            df['Adjacent Cells'] = df['Adjacent Cells'].apply(
+                lambda x: ','.join(
+                    map(lambda c: str(c).replace('"', '""'), x)
+                ) if isinstance(x, list) else str(x).replace('"', '""')
+            )
+
+        csv_buffer = StringIO()
+        df.to_csv(csv_buffer, index=False, quoting=csv.QUOTE_ALL)
+
+        csv_string = csv_buffer.getvalue()
+        print(csv_string) 
+
+        s3_client.put_object(Bucket=s3_bucket, Key=s3_object_key, Body=csv_buffer.getvalue())
+        s3_uri = f"s3://{s3_bucket}/{s3_object_key}"
+        print(f"\nData successfully uploaded to {s3_uri}")
+
+        with open(ran_metrics.path, 'w') as f:
+            df.to_csv(f, index=False, header=True)
+
+    except Exception as outer_e:
+        print(f"An unexpected error occurred during component execution: {outer_e}")
+        raise
+    finally:
+        # --- FINAL COMMIT & CLOSE ---
+        # Perform a final commit for the entire batch after all processing and S3 upload
+        # This is the most reliable place to commit for short-lived components.
+        if consumer and total_parsed_records_in_run > 0: # Only commit if consumer exists and processed data
+            try:
+                consumer.commit() # Commit the latest polled offset for assigned partitions
+                print(f"FINAL COMMIT: Successfully committed offsets for the entire batch.")
+            except Exception as e:
+                print(f"FINAL COMMIT ERROR: Failed to commit offsets: {e}. Data might be reprocessed.")
+                # You might want to log this but not necessarily re-raise if you prefer the component to succeed.
+        
+        if consumer: 
+            consumer.close()
+            print("Consumer closed.")
+
+
+    '''
     print("\n Streaming Kafka Records:\n")
     for message in consumer:
         if not message.value:
@@ -89,98 +263,8 @@ def stream_ran_metrics_to_s3_component(
         if total_records >= max_records:
             break
     consumer.close()
-
-    if not collected_lines:
-        print("No valid records collected. Exiting without upload.")
-        return
-
-    # Combine all lines into a DataFrame
-    #print(f"\n combining all lines into a DataFrame")
-    #csv_data = "\n".join(collected_lines)
-    #df = pd.read_csv(StringIO(csv_data), header=None)
-
-
-    records = []
-    for line in collected_lines:
-        try:
-            parsed = next(csv.reader([line]))
-            if len(parsed) == len(column_names):
-                records.append(parsed)
-            else:
-                print(f"Skipping malformed record: {line}")
-        except Exception as e:
-            print(f"CSV parsing failed: {e} | Content: {line}")
-
-    '''
-    records = []
-    for line in collected_lines:
-        try:
-            values = line.strip().split(',')
-            # Always 13 final fields expected: total columns = 13
-            if len(values) < 13:
-                print(f"Skipping short record: {line}")
-                continue
-
-            # Reverse split: take last 7 fixed fields
-            fixed_tail = values[-7:]
-            # Extract first fixed fields
-            cell_id, timestamp, band, frequency, area_type = values[:5]
-            # Remaining are adjacent cells
-            adjacent_cells = ",".join(values[5:-7])
-
-            final_values = [cell_id, timestamp, band, frequency, area_type, adjacent_cells] + fixed_tail
-
-            if len(final_values) == len(column_names):
-                records.append(final_values)
-            else:
-                print(f"Bad record (wrong final size): {line}")
-        except Exception as e:
-            print(f"Failed parsing line: {e}, content: {line}")
     '''
 
-
-    df = pd.DataFrame(records, columns=column_names)
-
-
-
-    # Upload to S3
-    #print(f"\n Uploading to S3")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    s3_object_key = f"{s3_key_prefix}/{topic_name}_{timestamp}.csv"
-
-    '''
-    # Clean Adjacent Cells column
-    if 'Adjacent Cells' in df.columns:
-        df['Adjacent Cells'] = df['Adjacent Cells'].apply(
-            lambda x: ','.join(map(str, x)) if isinstance(x, list) else str(x)
-        )
-    '''
-
-    if 'Adjacent Cells' in df.columns:
-        df['Adjacent Cells'] = df['Adjacent Cells'].apply(
-            lambda x: ','.join(
-                map(lambda c: str(c).replace('"', '""'), x)
-            ) if isinstance(x, list) else str(x).replace('"', '""')
-        )
-
-
-    csv_buffer = StringIO()
-    #df.to_csv(csv_buffer, index=False, header=False)
-    df.to_csv(csv_buffer, index=False, quoting=csv.QUOTE_ALL)
-
-    # Now get the contents with quotes around every field
-    csv_string = csv_buffer.getvalue()
-    print(csv_string)  # Should show all fields quoted
-
-
-    s3_client.put_object(Bucket=s3_bucket, Key=s3_object_key, Body=csv_buffer.getvalue())
-    #s3_client.put_object(Bucket=s3_bucket, Key=s3_object_key)
-    s3_uri = f"s3://{s3_bucket}/{s3_object_key}"
-    print(f"\n Data successfully uploaded to {s3_uri}")
-
-    # Output to kubeflow artifacts
-    with open(ran_metrics.path, 'w') as f:
-        df.to_csv(f, index=False, header=True)
 
     #return s3_uri
 # ─────────────────────────────────────────────────────────────── #
@@ -276,7 +360,7 @@ def stream_du_metrics_to_s3_component(
     # Upload to S3
     #print(f"\n Uploading to S3")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    s3_object_key = f"{s3_key_prefix}/{topic_name}_{timestamp}.csv"
+    s3_object_key = f"{s3_key_prefix}/du-resource-metrics/{topic_name}_{timestamp}.csv"
     print(f"\n Data uploading to s3")
 
     csv_buffer = StringIO()
@@ -371,7 +455,7 @@ def train_traffic_predictor(
             
             # Standardize column names
             df.columns = [
-                "Cell ID", "Datetime", "Band", "Frequency", "UEs Usage", "Area Type", "Adjacent Cells", 
+                "Cell ID", "Datetime", "Band", "Frequency", "UEs Usage", "Area Type", "Lat", "Lon", "City", "Adjacent Cells", 
                 "RSRP", "RSRQ", "SINR", "Throughput (Mbps)", "Latency (ms)", "Max Capacity"
             ]
 
@@ -603,11 +687,15 @@ def train_traffic_predictor(
 
 
     # Final features
+    '''
     feature_cols = ['Cell ID', 'Datetime_ts', 'Datetime', 'Frequency', 'Hour', 'Weekend', 'Day', 'Month', 'Weekday', 'UEs Usage'] + \
                 [col for col in grouped.columns if col.startswith('DayOfWeek_')] + \
                 [col for col in grouped.columns if col.startswith('adj_cell_')]
+    '''
+    feature_cols = ['Cell ID', 'Datetime_ts', 'Datetime', 'Hour', 'Weekend', 'Day', 'Month', 'Weekday', 'UEs Usage'] + \
+                [col for col in grouped.columns if col.startswith('DayOfWeek_')]
     X = grouped[feature_cols]
-    X = pd.get_dummies(X, columns=['Frequency'], prefix='Freq')
+    #X = pd.get_dummies(X, columns=['Frequency'], prefix='Freq')
 
     print("Current columns in grouped:", grouped.columns.tolist())
 
@@ -658,11 +746,23 @@ def train_traffic_predictor(
 
     # Save
     os.makedirs("/tmp", exist_ok=True)
-    regressor_model_path = "/tmp/traffic_regressor_model_{timestamp_str}.joblib"
-    classifier_model_path = "/tmp/traffic_classifier_model_{timestamp_str}.joblib"
+    regressor_model_path = "/tmp/traffic_regressor_model.joblib"
+    classifier_model_path = "/tmp/traffic_classifier_model.joblib"
+    #regressor_model_path = "/tmp/traffic_regressor_model_{timestamp_str}.joblib"
+    #classifier_model_path = "/tmp/traffic_classifier_model_{timestamp_str}.joblib"    
     joblib.dump(regressor, regressor_model_path)
     joblib.dump(classifier, classifier_model_path)
 
+    log.info("Uploading models to S3...")
+    with open(regressor_model_path, 'rb') as r_file:
+        s3.upload_fileobj(r_file, s3_bucket, f'{s3_key_prefix}/models/traffic_regressor_model.joblib')
+    with open(classifier_model_path, 'rb') as c_file:
+        s3.upload_fileobj(c_file, s3_bucket, f'{s3_key_prefix}/models/traffic_classifier_model.joblib')
+
+    log.info(f"Uploaded regressor model: {s3_key_prefix}/models/traffic_regressor_model.joblib")
+    log.info(f"Uploaded classifier model: {s3_key_prefix}/models/traffic_classifier_model.joblib")
+
+    '''
     log.info("Uploading models to S3...")
     with open(regressor_model_path, 'rb') as r_file:
         s3.upload_fileobj(r_file, s3_bucket, f'{s3_key_prefix}/models/traffic_regressor_model_{timestamp_str}.joblib')
@@ -671,6 +771,7 @@ def train_traffic_predictor(
 
     log.info(f"Uploaded regressor model: {s3_key_prefix}/models/traffic_regressor_model_{timestamp_str}.joblib")
     log.info(f"Uploaded classifier model: {s3_key_prefix}/models/traffic_classifier_model_{timestamp_str}.joblib")
+    '''
 
     # Output regressor to pipeline output
     with open(regressor_model_path, 'rb') as f:
@@ -684,6 +785,443 @@ def train_traffic_predictor(
     log.info("Traffic predictor models saved and uploaded successfully.")
 
 
+#
+# GenAI Anomaly detection component
+# ===================================================
+@component(
+    base_image="python:3.9",
+    packages_to_install=["openai", "langchain", "sqlalchemy", "langchain-community", "sentence-transformers", "faiss-cpu", "pymysql","boto3", "pandas", "requests",
+    "click>=8.0.0,<9",
+    "docstring-parser>=0.7.3,<1",
+    "google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0dev,>=1.31.5",
+    "google-auth>=1.6.1,<3",
+    "google-cloud-storage>=2.2.1,<4",
+    #"kfp-pipeline-spec==0.6.0",
+    #"kfp-server-api>=2.1.0,<2.5.0",
+    "kubernetes>=8.0.0,<31",
+    "protobuf>=4.21.1,<5",
+    "tabulate>=0.8.6,<1"]
+)
+def genai_anomaly_detection(
+    s3_bucket: str,
+    s3_endpoint: str,
+    aws_access_key: str,
+    aws_secret_key: str,
+    model_api_key: str,
+    model_api_url: str,
+    model_api_name: str,
+    db_host: str,
+    db_user: str,
+    db_pwd: str,
+    db_name: str,
+    ran_metrics_path: Input[Dataset]
+    #metrics_output: Output[Dataset]
+):
+    import requests
+    import logging
+    import pandas as pd
+    import boto3
+    import os
+    import re
+    from botocore.config import Config
+    from langchain_community.llms import VLLMOpenAI
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    from langchain_community.vectorstores import FAISS
+    from langchain.chains import RetrievalQA
+    from langchain.tools import Tool
+    from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Text, DateTime
+    from sqlalchemy.sql import select, desc
+    from datetime import datetime
+
+    # Logging setup
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(levelname)s] - %(message)s')
+    log = logging.getLogger()
+
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log.info("GenAI anomaly detection started")
+
+    # Setup AWS
+    os.environ.update({
+        'AWS_ACCESS_KEY_ID': aws_access_key,
+        'AWS_SECRET_ACCESS_KEY': aws_secret_key
+    })
+    s3 = boto3.client('s3', endpoint_url=s3_endpoint)
+    log.info("AWS credentials and environment variables configured.")
+
+    # Read CSV contents as string from ran_metrics_path artifact
+    with open(ran_metrics_path.path, "r") as f:
+        csv_data = f.read()
+   
+    log.info('Connect to database')
+    engine = create_engine('mysql+pymysql://%s:%s@%s/%s' % (db_user, db_pwd, db_host, db_name), echo=True)
+    metadata = MetaData() 
+    events = Table(
+        'events', metadata,
+        Column('id', Integer, primary_key=True, autoincrement=True),
+        Column('creation_date', DateTime, nullable=False),
+        Column('event', Text, nullable=False),
+        Column('data', Text, nullable=True)
+    )           
+
+    # insert event in th DB
+    def insert_event_db(event_text, event_data, raw_csv_data):
+        with engine.begin() as conn:
+            conn.execute(events.insert().values(
+                creation_date=datetime.utcnow(),
+                event=event_text,
+                data=raw_csv_data
+            ))
+
+    '''
+    # Load the CSV artifact dynamically
+    ran_df = pd.read_csv(ran_metrics_path.path)
+
+    # Optional: Downsample or limit rows for token size constraints
+    sampled_df = ran_df.sample(n=20, random_state=42) if len(ran_df) > 20 else ran_df
+    '''
+    
+    def download_index_from_s3(bucket, prefix, local_dir):
+        os.makedirs(local_dir, exist_ok=True)
+        response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
+        for obj in response.get('Contents', []):
+            s3_key = obj['Key']
+            local_path = os.path.join(local_dir, os.path.relpath(s3_key, prefix))
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            s3.download_file(bucket, s3_key, local_path)
+
+    def get_chain():
+        log.info("VLLM inference load model %s" % model_api_name)
+        llm = VLLMOpenAI(
+            openai_api_key=model_api_key,
+            openai_api_base=model_api_url,
+            #model_name="deepseek-r1-distill-qwen-14b",
+            model_name=model_api_name,
+            #model_name="r1-qwen-14b-w4a16",
+            #model_name="meta-llama/Llama-3.1-8B-Instruct",
+            max_tokens=2000,
+            #model_kwargs={"stop": ["."]},
+            temperature=0.7,
+            #http_client=custom_http_client
+        )
+        embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+        log.info("Loading FAISS index from S3")
+        download_index_from_s3(s3_bucket, "faiss_index", "/tmp/faiss_index")
+        vectordb = FAISS.load_local("/tmp/faiss_index", embeddings=embedding, allow_dangerous_deserialization=True)
+
+        retriever = vectordb.as_retriever()
+        qa_chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
+        log.info("Chain created")
+        return qa_chain
+
+    # Convert CSV string to DataFrame
+    from io import StringIO
+    df = pd.read_csv(StringIO(csv_data))
+
+    # Log band distribution before filtering
+    log.info(f"Unique bands before filtering: {df['Band'].unique().tolist()}")
+    log.info(f"Row count before filtering: {df.shape[0]}")
+
+    # Filter by valid bands
+    VALID_BANDS = ['Band 29', 'Band 26', 'Band 71', 'Band 66']
+    df = df[df['Band'].isin(VALID_BANDS)]
+
+    # Log band distribution after filtering
+    log.info(f"Unique bands after filtering: {df['Band'].unique().tolist()}")
+    log.info(f"Row count after filtering: {df.shape[0]}")
+
+    '''
+    # Convert filtered DataFrame back to CSV string
+    csv_data = df.to_csv(index=False)    
+
+    # Optional: truncate to avoid token overflow (adjust as needed)
+    csv_data = csv_data[:3000] if len(csv_data) > 3000 else csv_data   
+
+    # Get the actual Band-Cell mapping in CSV preview
+    band_map_str = df[['Cell ID', 'Band']].drop_duplicates().to_csv(index=False) 
+    '''
+
+    #band_map_str = df[['Cell ID', 'Band']].drop_duplicates().to_csv(index=False)
+    band_map_str = df[['Cell ID', 'Band']].drop_duplicates().head(100).to_csv(index=False)
+
+
+
+    # STEP 1: Chunking with token control
+    #from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+    def chunk_dataframe_by_token_limit(df, max_chars=2500):
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=max_chars, chunk_overlap=0)
+        chunks = []
+
+        grouped = df.groupby(["Cell ID", "Band"])  # Group by both Cell ID and Band
+        for (cell_id, band), group in grouped:
+            csv_text = group.to_csv(index=False)
+            split_chunks = text_splitter.split_text(csv_text)
+            for subchunk in split_chunks:
+                chunks.append({
+                    "cell_id": cell_id,
+                    "band": band,
+                    "text": subchunk
+                })
+        return chunks
+
+    # Apply chunking with token-safe limits
+    chunked_cells = chunk_dataframe_by_token_limit(df)
+    log.info(f"Total token-safe chunks to process: {len(chunked_cells)}")
+
+    # STEP 2: Define prompt template
+    prompt_template = """
+    You are a Radio Access Network (RAN) engineer and telecom operations expert with access to Baicells BaiBNQ gNodeB technical documentation.
+
+    Each row in the dataset includes the following columns:
+
+    - Timestamp: Time of metric capture  
+    - Cell ID: Unique identifier of the cell site  
+    - Band: Frequency band used (e.g., 71, 66, 26, 29)  
+    - SINR (dB): Signal to Interference plus Noise Ratio  
+    - RSRP (dBm): Reference Signal Received Power  
+    - RSRQ (dB): Reference Signal Received Quality  
+    - UEs Usage: Number of connected user equipment (UEs)  
+    - Max Capacity: Maximum UE capacity for the cell  
+
+    Your task is to analyze the provided 5G RAN performance data **strictly using the anomaly thresholds below**.
+
+    ---
+
+    ### RULE CHECKLIST (Apply each to this row only)
+
+    1. **High PRB Utilization**  
+    - Formula: PRB Utilization = (UEs Usage / Max Capacity) × 100  
+    - Threshold: Anomaly if **PRB Utilization > 95.0%**
+    - Example:  
+        - UEs = 51, Max Capacity = 62  
+        - PRB Utilization = (51 / 62) × 100 = 82.26% -> Not an anomaly  
+        - Do not report unless PRB Utilization > 95.0%
+
+    2. **Low RSRP**: Anomaly if RSRP < -110 dBm  
+    3. **Low SINR**: Anomaly if SINR < 0 dB  
+    4. **Throughput drop**: More than 50% drop vs. average of 3 prior rows (same Cell ID + Band). Ignore if no history.  
+    5. **UEs spike/drop**: >50% change vs. 3 prior rows (same Cell ID + Band). Ignore if no history.  
+    6. **Cell outage**: Must meet **ALL** conditions:  
+    - UEs Usage = 0  
+    - Throughput = 0 Mbps  
+    - SINR <= -10  
+    - RSRP <= -120  
+    - RSRQ <= -20  
+
+    ---
+
+    ###  DO NOT
+
+    - Report anomalies unless numeric thresholds are **clearly violated**.
+    - Flag PRB Utilization if **<= 95.0%**.  
+    - Say "low SINR" unless **< 0 dB**.  
+    - Fabricate historical patterns or infer behavior from other Cell IDs.  
+    - Report “suspected” issues or use assumptions — rely only on direct numeric evidence.  
+    - Repeat rule definitions in your answer.
+
+    ---
+
+    ### ANALYSIS INSTRUCTIONS
+
+    - Only analyze the following row with **Cell ID: {cell_id}** and **Band: {band}**
+    - Evaluate each rule in the checklist above **strictly**
+    - For PRB Utilization, show the full calculation and threshold comparison step
+
+    ---
+
+    ### FORMAT REQUIREMENTS
+
+    If **any** anomaly is found, respond exactly like this:
+
+    **** START_EVENT ****  
+    ANOMALY_DETECTED  
+    1. Cell ID X, Band Y  
+    - <Metric and reason that violated the threshold>  
+    - Recommended fix: Refer to Baicells documentation (Section X.X, Page Y)  
+    **** END_EVENT ****
+
+    If the row is **not** anomalous, respond with:
+
+    **NO_ANOMALY**
+
+    ---
+
+    Use ONLY valid Band values from the list below:  
+    {band_map}
+
+    Below is a dataset of RAN metrics including Cell ID and Band. Analyze this row independently:
+
+    DATA:  
+    {chunk}
+    """.strip()
+
+
+    qa_chain = get_chain()
+    log.info("Execute anomaly detection")
+    #response = qa_chain.invoke(prompt)
+
+    # STEP 3: Replace cell loop with token-safe version
+    results = []
+
+    for chunk in chunked_cells:  # chunked_cells was created in Step 1
+        chunk_text = chunk['text']
+        cell_id = chunk['cell_id']
+        band = chunk['band']
+
+        prompt = prompt_template.format(
+            band_map=band_map_str,
+            chunk=chunk_text,
+            cell_id=cell_id,
+            band=band
+        )
+
+        #log.info(f"Running LLM for Cell ID: {cell_id}, Band: {band}")
+        log.info(f"Running LLM for Cell ID: {cell_id}, {band}")
+        response = qa_chain.invoke(prompt)
+        result_text = response['result']
+        #results.append(result_text)
+        results.append({
+            "cell_id": cell_id,
+            "band": band,
+            "response": result_text
+        })
+
+        print(result_text)
+        # NEW: Log high-level status per cell and band
+        if 'ANOMALY_DETECTED' in result_text:
+            #log.info(f"Anomaly detected for Cell ID {cell_id}, Band {band}")
+            log.info(f"Anomaly detected for Cell ID {cell_id}, {band}")
+        else:
+            #log.info(f"No anomaly found for Cell ID {cell_id}, Band {band}")
+            log.info(f"No anomaly found for Cell ID {cell_id}, {band}")
+
+
+    anomaly_blocks = []
+
+
+    def verify_anomaly_block(text_block):
+        """
+        Verify that the values in the anomaly report actually violate thresholds.
+        If they do not, this is likely a hallucination.
+        """
+        sinr = re.search(r"SINR.*?(-?\d+\.?\d*)\s*dB", text_block)
+        rsrp = re.search(r"RSRP.*?(-?\d+\.?\d*)\s*dBm", text_block)
+        rsrq = re.search(r"RSRQ.*?(-?\d+\.?\d*)\s*dB", text_block)
+        prb = re.search(r"PRB.*?(\d+\.?\d*)\s*%", text_block)
+        ue = re.search(r"UE.*?(\d+)", text_block)
+
+        # Parse floats
+        sinr_val = float(sinr.group(1)) if sinr else None
+        rsrp_val = float(rsrp.group(1)) if rsrp else None
+        rsrq_val = float(rsrq.group(1)) if rsrq else None
+        prb_val = float(prb.group(1)) if prb else None
+        ue_val = int(ue.group(1)) if ue else None
+
+        log.debug(f"Parsed values - SINR: {sinr_val}, RSRP: {rsrp_val}, RSRQ: {rsrq_val}, PRB: {prb_val}, UE: {ue_val}")
+
+        # Thresholds
+        if (
+            (sinr_val is not None and sinr_val < -10) or
+            (rsrp_val is not None and rsrp_val < -110) or
+            (rsrq_val is not None and rsrq_val < -15) or
+            (prb_val is not None and prb_val > 95) or
+            (ue_val is not None and ue_val > 20)
+        ):
+            return True  # Valid anomaly
+        return False  # Likely hallucinated
+
+    for idx, item in enumerate(results):
+        cell_id = item.get("cell_id", f"cell_{idx}")
+        band = item.get("band", "unknown")
+        result_text = item.get("response", "")
+        log.info(f"Response for Cell ID {cell_id}, {band}: {result_text}")
+        #log.info(f"Response for Cell ID {cell_id}: {result_text}")
+
+        match = re.search(r"\*\*\*\* START_EVENT \*\*\*\*(.*?)\*\*\*\* END_EVENT \*\*\*\*", result_text, re.DOTALL)
+        if match:
+            anomaly_text = match.group(1).strip()
+
+            if verify_anomaly_block(anomaly_text):
+                anomaly_blocks.append(f"Cell ID {cell_id}, {band}:\n{anomaly_text}")
+                log.info(f"Anomaly validated for Cell ID {cell_id}, {band}")
+            else:
+                log.warning(f"Anomaly block failed validation for Cell ID {cell_id}, {band}:\n{anomaly_text}")
+        else:
+            log.info(f"No structured anomaly found for Cell ID {cell_id}, {band}")
+
+
+    #  If any anomaly blocks were found, log and save to DB
+    if anomaly_blocks:
+        combined_anomalies = "\n\n".join(anomaly_blocks)
+        log.info("Detected anomalies:\n%s", combined_anomalies)
+
+        # Save full DataFrame as CSV string
+        full_csv = df.to_csv(index=False)
+
+        # Insert to DB: (event_text, type, data)
+        insert_event_db(combined_anomalies, "auto_detected_anomaly", full_csv)
+    else:
+        log.info("No anomalies detected in any chunk.")
+
+
+
+    '''
+    for result in results:
+        if 'ANOMALY_DETECTED' in result:  #  Correct detection string
+            # Remove the ANOMALY_DETECTED prefix from the full result
+            cleaned_result = result.replace("ANOMALY_DETECTED", "").strip()
+
+            # Extract only the START_EVENT block
+            match = re.search(r'\*\*\*\* START_EVENT \*\*\*\*(.*?)\*\*\*\* END_EVENT \*\*\*\*', cleaned_result, re.DOTALL)
+
+            if match:
+                anomaly_text = match.group(1).strip()
+                anomaly_blocks.append(anomaly_text)
+            else:
+                log.warning("ANOMALY_DETECTED found, but START/END_EVENT block missing.")
+
+    if anomaly_blocks:
+        combined_anomalies = "\n\n".join(anomaly_blocks)
+        log.info("Detected anomalies:\n%s" % combined_anomalies)
+        insert_event_db(combined_anomalies, "auto_detected_anomaly", df.to_csv(index=False))
+    else:
+        log.info("No anomalies detected in any chunk.")
+    '''
+
+    '''
+    anomaly_blocks = []
+    for result in results:
+        if 'ANOMALY_DETECT' in result:
+            match = re.search(r'\*\*\*\* START_EVENT \*\*\*\*(.*?)\*\*\*\* END_EVENT \*\*\*\*', result, re.DOTALL)
+            if match:
+                anomaly_text = match.group(1).strip().replace('ANOMALY_DETECTED', '')
+                anomaly_blocks.append(anomaly_text)
+
+    if anomaly_blocks:
+        combined_anomalies = "\n\n".join(anomaly_blocks)
+        log.info("Detected anomalies:\n%s" % combined_anomalies)
+        insert_event_db(combined_anomalies, "auto_detected_anomaly", df.to_csv(index=False))
+    else:
+        log.info("No anomalies detected in any chunk.")
+    '''
+
+    '''
+    if 'ANOMALY_DETECT' in response['result']:
+        log.info("Anamoly detected save event to the DB")
+        # Extract text between the START_EVENT and END_EVENT markers
+        match = re.search(r'\*\*\*\* START_EVENT \*\*\*\*(.*?)\*\*\*\* END_EVENT \*\*\*\*', response['result'], re.DOTALL)
+        if match:
+            extracted_event = match.group(1).strip().replace('ANOMALY_DETECTED', '')
+            log.info("Extracted event: %s" % extracted_event)
+            #insert_event_db(extracted_event, "somedata")
+            insert_event_db(extracted_event, "auto_detected_anomaly", csv_data)
+        else:
+            log.error("No event block found.")
+
+    log.info("Anomaly detection completed")
+    '''
 
 # ─────────────────────────────────────────────────────────────── #
 # LSTM Prediction Component
@@ -880,7 +1418,11 @@ def ran_multi_prediction_pipeline_with_genai(
     aws_access_key: str = "mo0x4vOo5DxiiiX2fqnP",
     aws_secret_key: str = "odP78ooBR0pAPaQTp6B2t+03+U0q/JPUPUqU/oZ6",
     mistral_api_key: str = "53f4a38459dabf6c3a8682888f77b714",
-    mistral_api_url: str = "https://mistral-7b-instruct-v0-3-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1"
+    mistral_api_url: str = "https://mistral-7b-instruct-v0-3-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1",
+    db_host: str = "mysql-service",
+    db_pwd: str = "rangenai",
+    db_user: str = "root",
+    db_name: str = "ran_events"
     #ran-combined-metrics_output = Dataset()
 ):
 
@@ -905,7 +1447,7 @@ def ran_multi_prediction_pipeline_with_genai(
         #ran_metrics=Output[Dataset],
         #du_metrics=Output[Dataset](),
         #output_dataset=ran-combined-metrics_output,
-        max_records=500
+        #max_records=500
     )
 
     # 2. Stream DU metrics (for future use)
@@ -922,18 +1464,7 @@ def ran_multi_prediction_pipeline_with_genai(
         #du_metrics=Output[Dataset],
         max_records=500
     )
-
-    '''
-    # 3. Train LSTM model on ran-combined-metrics (for KPI anomaly prediction)
-    train_lstm_model = train_lstm_kpi_model(
-        s3_bucket=s3_bucket,
-        s3_key_prefix=s3_key_prefix,
-        s3_endpoint=s3_endpoint,
-        aws_access_key=aws_access_key,
-        aws_secret_key=aws_secret_key
-    ).after(ran_metrics_output)
-    '''
-
+    
     # 4. Train RandomForest traffic prediction model
     train_traffic_predictor_model = train_traffic_predictor(
         s3_bucket=s3_bucket,
@@ -943,80 +1474,22 @@ def ran_multi_prediction_pipeline_with_genai(
         aws_secret_key=aws_secret_key
     ).after(ran_metrics_output)
 
-    '''
-    # 5. Predict traffic levels using the trained RandomForest model
-    predict_traffic_levels_output = predict_traffic_levels_component(
+    # 5. Perform anomaly detection on the data
+    genai_anomaly_detection_step = genai_anomaly_detection(
         s3_bucket=s3_bucket,
-        s3_key_prefix=s3_key_prefix,
         s3_endpoint=s3_endpoint,
         aws_access_key=aws_access_key,
         aws_secret_key=aws_secret_key,
-        #input_data=train_traffic_predictor_model.outputs['output_model']
-    ).after(train_traffic_predictor_model)
+        model_api_key=mistral_api_key,
+        model_api_url=mistral_api_url,
+        model_api_name="mistral-7b-instruct",
+        db_host=db_host,
+        db_user=db_user,
+        db_pwd=db_pwd,
+        db_name=db_name,
+        ran_metrics_path=ran_metrics_output.outputs["ran_metrics"]
+    ).after(ran_metrics_output)
 
-    # 6. Predict KPI anomalies using the trained LSTM model
-    predict_kpi_anomalies_output = predict_kpi_anomalies_component(
-        s3_bucket=s3_bucket,
-        s3_key_prefix=s3_key_prefix,
-        s3_endpoint=s3_endpoint,
-        aws_access_key=aws_access_key,
-        aws_secret_key=aws_secret_key
-    ).after(train_lstm_model)
-    '''
-
-    '''
-    # 7. Generate GenAI-based insights for traffic predictions and KPI anomalies
-    genai_kpi_traffic_forecast_explainer = genai_kpi_traffic_forecast_explainer_component(
-        #output_kpi_anomaly_predictions=predict_kpi_anomalies_output.outputs['output_kpi_anomaly_predictions'],
-        #output_traffic_predictions=predict_traffic_levels_output.outputs['output_traffic_predictions'],
-        du_metrics=du_metrics_output.outputs['du_metrics'],
-        mistral_api_url=mistral_api_url,
-        mistral_api_key=mistral_api_key
-    ).after(du_metrics_output)
-    '''
-
-    #genai_forecast_explanation = dsl.Output[dsl.Dataset]()
-
-    '''
-    # 7. Generate GenAI-based insights for traffic predictions and KPI anomalies
-    genai_kpi_traffic_forecast_explainer = genai_kpi_traffic_forecast_explainer_component(
-        output_kpi_anomaly_predictions=predict_kpi_anomalies_output.outputs['output_kpi_anomaly_predictions'],
-        output_traffic_predictions=predict_traffic_levels_output.outputs['output_traffic_predictions'],
-        du_metrics=du_metrics_output.outputs['du_metrics'],
-        mistral_api_url=mistral_api_url,
-        mistral_api_key=mistral_api_key
-    ).after(predict_kpi_anomalies_output, predict_traffic_levels_output, du_metrics_output)
-
-    #genai_kpi_traffic_forecast_explainer.outputs["output_explanation"]
-    '''
-
-    ''' 
-    # 7. Generate GenAI-based insights for traffic predictions and KPI anomalies
-    genai_kpi_traffic_forecast_explainer = genai_kpi_traffic_forecast_explainer_component(
-        output_kpi_anomaly_predictions=predict_kpi_anomalies.output,
-        output_traffic_predictions=predict_traffic_levels.output,
-        #du_metrics=du_metrics_output.output,
-        #ran_metrics=ran_metrics,
-        du_metrics=du_metrics_output.outputs["du_metrics"],
-        #genai_forecast_explanation=genai_forecast_explanation,
-        #genai_forecast_explanation=f"{s3_key_prefix}/genai/genai_forecast_explanation.csv",  # Updated to use s3_key_prefix
-        mistral_api_url=mistral_api_url,
-        mistral_api_key=mistral_api_key
-    ).after(predict_kpi_anomalies, predict_traffic_levels, du_metrics_output)
-    '''
-
-    '''
-    # 7. Generate GenAI-based insights for traffic predictions and KPI anomalies
-    genai_kpi_traffic_forecast_explainer = genai_kpi_traffic_forecast_explainer_component(
-        s3_bucket=s3_bucket,
-        s3_key_prefix=s3_key_prefix,
-        s3_endpoint=s3_endpoint,
-        aws_access_key=aws_access_key,
-        aws_secret_key=aws_secret_key,
-        deepseek_api_key=deepseek_api_key,
-        deepseek_api_url=deepseek_api_url
-    ).after(predict_kpi_anomalies)
-    '''
 
 # ─────────────────────────────────────────────────────────────── #
 # ✅ Compile the pipeline to YAML
