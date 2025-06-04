@@ -1,0 +1,111 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  creationTimestamp: "2025-01-29T01:11:44Z"
+  generation: 4
+  name: my-cluster
+  namespace: amq-streams-kafka
+spec:
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+  kafka:
+    config:
+      default.replication.factor: 3
+      inter.broker.protocol.version: "3.8"
+      message.max.bytes: 10485760
+      min.insync.replicas: 2
+      offsets.retention.minutes: 43200
+      offsets.topic.replication.factor: 3
+      replica.fetch.max.bytes: 10485760
+      transaction.state.log.min.isr: 2
+      transaction.state.log.replication.factor: 3
+    listeners:
+    - name: plain
+      port: 9092
+      tls: false
+      type: internal
+    - name: tls
+      port: 9093
+      tls: true
+      type: internal
+    - name: external
+      port: 9094
+      tls: false
+      type: nodeport
+    replicas: 3
+    storage:
+      type: ephemeral
+    version: 3.8.0
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+status:
+  clusterId: IFfgz-GLR4mRXbLQTlhWfA
+  conditions:
+  - lastTransitionTime: "2025-06-03T04:30:21.354021395Z"
+    message: Support for ZooKeeper-based Apache Kafka clusters will be removed in
+      the next Strimzi release (0.46.0). Please migrate to KRaft.
+    reason: ZooKeeperRemoval
+    status: "True"
+    type: Warning
+  - lastTransitionTime: "2025-06-03T04:32:24.730190359Z"
+    status: "True"
+    type: Ready
+  kafkaMetadataState: ZooKeeper
+  kafkaVersion: 3.8.0
+  listeners:
+  - addresses:
+    - host: my-cluster-kafka-bootstrap.amq-streams-kafka.svc
+      port: 9092
+    bootstrapServers: my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092
+    name: plain
+  - addresses:
+    - host: my-cluster-kafka-bootstrap.amq-streams-kafka.svc
+      port: 9093
+    bootstrapServers: my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9093
+    certificates:
+    - |
+      -----BEGIN CERTIFICATE-----
+      MIIFLTCCAxWgAwIBAgIUay0aHvrKQiGU8mL1z499DorE+eMwDQYJKoZIhvcNAQEN
+      BQAwLTETMBEGA1UECgwKaW8uc3RyaW16aTEWMBQGA1UEAwwNY2x1c3Rlci1jYSB2
+      MDAeFw0yNTAxMjkwMTExNDRaFw0yNjAxMjkwMTExNDRaMC0xEzARBgNVBAoMCmlv
+      LnN0cmltemkxFjAUBgNVBAMMDWNsdXN0ZXItY2EgdjAwggIiMA0GCSqGSIb3DQEB
+      AQUAA4ICDwAwggIKAoICAQDX4RhzlLGW/N7KkxxLXxgkiNOSrncgOvyrGJCYDEaH
+      lcPtKLUuNTPsFHSVjvKlomxRf9NkSfT5o75NuljveNv9vljLSa3UFUDfXS1hOGoZ
+      AkLcNtGMjBOLGVJ6RGxY+ynLJFV0fiNr4j3xSQomuSp5ejRAGkK/NTlImzrG28IE
+      awp3pogcE29W9vZxxAUdNo4wlge2juhvSX8ha9IOQ3yUq6iB4HVqeeph5rajCeEn
+      sIxWuY9IdwU2Ea2mChylXAiwcELTrsKOaxpbEpMJVZ4R3SH3/WzxhvrZE2LisoYP
+      54zj4sd5gVSxGrX9DWt7sNNs6TuR9UsxBs1tJecykiiOFPrvN5fK4MRAXNw3jvbg
+      DVBJXp1Jv+lwUhR7/9ItM3nRZChG3UHtt2/g+Aha2NlSc1+f80CKPepZ1VMVcgN5
+      Fvjq4dsQkkLdZfYmqtbNh1wFuBq73FTl5f4S0DRvAN8VwX9NncKHWtmbxA5M/Y01
+      GuXEzgils49xbkzAnXSnLApNm1ldUjm9JMhiH9zeNpxIrIIDfjhB6GqPxMD5enXe
+      6LdgImDMrulR+V/OE1JCv/l39auJOatibZLyNpG88P0DcB1HaTRcJbu+8JQfQ5Jq
+      lGW3Lvzxdt2a2Dkz0HXoPuOUX+C+TPQejG49ph5WRh4tGA+Y8PWPFMqp9v3Jw0+Y
+      cQIDAQABo0UwQzAdBgNVHQ4EFgQU7fxJribWQCHkoe7ZSHDyAdlFp5kwEgYDVR0T
+      AQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAQYwDQYJKoZIhvcNAQENBQADggIB
+      AHcYEqb0tAjj9e1ZeY2FlTgCHXtcUjROUQjIyUqZawgz2tPvr47CDYD9sKYm94p3
+      L53tBXB9yvDBA8Fv65K6hJorH0gjx2xNL3MEWp2Pth62sK1JXbWO69lzroBUjk6/
+      +SjDw1wg8sRinnLKgr9XmFtcvqU4G8+Ea3neq869+VgRD9sjYjjQjQqBneVxpT1g
+      cWfhFG2S2I5+g+JE/auqsSjWHGbcACgLiE9b145ktOcS3AUW0+iaGj0mo/j11h8f
+      2PF4kQ2PwpXWYplQQMH/pauGPHrEA4LSq7rUEKk7kaLoPsBFHM/p/RJE/BBOc2/h
+      tz7WWHqhDIy/aC5Jra46YauqedSRPbcP7Oc+z9upVJz6VgXc7OY3xVHEMMB31Ntz
+      e06B4SVbRO9nTCESHB8xH2xYDdLxhaLOipo1I7MDXy46L2WkAh9lMRp7sDs6Bn3I
+      4uFkYjM8J01NGAlpJ6GqK3yxInqc6bTXHcPi0tKRNuQlulSO9oDRLR/tahyDrZCy
+      cghsJa8BB8l33WL/3ibptg4zQaASVKCXxhKuBnjRYhyJ7XrXOBLkAvttxQ8yJCqI
+      IRB1rSIrnKVTy31xHpeT/UXnHRG+lMK31sgoyZdf4jQqKRSdjZh5EtKW2+/BOuTY
+      nslJQmYbEJ0Af/LXv6bDQhcCBnLRf/AbSpVEPXmvpNL4
+      -----END CERTIFICATE-----
+    name: tls
+  - addresses:
+    - host: 192.168.154.102
+      port: 30139
+    bootstrapServers: 192.168.154.102:30139
+    name: external
+  observedGeneration: 4
+  operatorLastSuccessfulVersion: 0.45.0.redhat-00003
+  registeredNodeIds:
+  - 0
+  - 1
+  - 2
