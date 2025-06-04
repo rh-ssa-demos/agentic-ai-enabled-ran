@@ -1,3 +1,37 @@
+"""
+Author: Dinesh Lakshmanan
+Date: 2025-06-04
+
+Notes:
+This script simulates a Radio Access Network (RAN) to generate realistic telemetry data,
+including RAN Key Performance Indicators (KPIs) and Distributed Unit (DU) resource metrics.
+It's designed to push this data to Apache Kafka topics for real-time processing and analysis.
+
+Key features of this simulator:
+- **Static Network Topology Loading**: The simulator loads a fixed RAN topology
+  from an external 'cell_config.json' file at startup. This ensures that cell IDs,
+  geographical locations (latitude/longitude), frequency bands, area types, cities,
+  and adjacent cell relationships remain consistent across all simulation intervals and runs.
+  The 'cell_config.json' file is generated separately by 'generate_static_cell_config.py'.
+- **Dynamic KPI Generation**: For each simulation interval (e.g., every 1 minute),
+  the simulator generates dynamic performance metrics (UEs usage, RSRP, RSRQ, SINR,
+  Throughput, Latency) based on predefined usage patterns (industrial, commercial, rural, residential)
+  and time of day/week.
+- **DU Resource Metrics**: Alongside RAN KPIs, it simulates DU resource utilization
+  (CPU, Memory, Disk Space, RTT, Temperature, Power Usage).
+- **Anomaly Injection**: A configurable percentage of cells (currently 30%) are randomly
+  selected in each interval to inject various types of anomalies (e.g., high PRB utilization,
+  low RSRP, throughput drops, cell outages) to simulate real-world network issues.
+- **Kafka Integration**: All generated metrics are formatted as CSV strings and produced
+  to specified Kafka topics ('ran-combined-metrics' and 'du-resource-metrics').
+- **Console Output**: Provides a sample of generated data directly in the console
+  for quick verification.
+
+This simulator is designed to run continuously, providing a steady stream of data
+for monitoring, anomaly detection, and AI/ML model training in a simulated RAN environment.
+"""
+
+
 import random
 import pandas as pd
 import time
