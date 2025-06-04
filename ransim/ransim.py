@@ -6,11 +6,12 @@ from datetime import datetime
 from confluent_kafka import Producer
 from rich.console import Console
 from rich.table import Table
+import json # <--- ADD THIS LINE: Import the JSON library
 
 # Kafka Configuration (enhanced for batching and large messages)
 conf = {
-    'bootstrap.servers': 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092',
-    #'bootstrap.servers': '192.168.154.101:30139',
+    #'bootstrap.servers': 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092',
+    'bootstrap.servers': '192.168.154.101:30139',
     'client.id': 'ransim',
     'acks': 'all',
     'message.max.bytes': 10485760,
@@ -21,7 +22,7 @@ producer = Producer(conf)
 topic_ran = "ran-combined-metrics"
 topic_du = "du-resource-metrics"
 
-# Frequency Bands
+# Frequency Bands (Keep this here; it's used to get 'Frequency' value)
 BAND_FREQUENCY_MAP = {
     'Band 29': 700,
     'Band 26': 850,
@@ -29,7 +30,7 @@ BAND_FREQUENCY_MAP = {
     'Band 66': '1700-2100'
 }
 
-# Usage Patterns
+# Usage Patterns (Keep this here; it's used for dynamic KPI calculation)
 USAGE_PATTERNS = {
     'industrial': {'weekdays': {'day': (0.7, 0.9), 'night': (0.1, 0.3)},
                    'weekends': {'day': (0.4, 0.6), 'night': (0.1, 0.3)}},
@@ -49,30 +50,30 @@ def delivery_report(err, msg):
     else:
         print(f"[INFO] Message delivered to {msg.topic()} [{msg.partition()}]")
 
-def generate_cells(num_cells=2000):
-    cells = []
-    ids = list(range(num_cells))
-    for cell_id in ids:
-        adjacent = random.sample([x for x in ids if x != cell_id], k=random.randint(1, 3))
-        cells.append({
-            'cell_id': int(cell_id),
-            'max_capacity': random.randint(50, 100),
-            'lat': round(random.uniform(37.7749, 37.8049), 6),
-            'lon': round(random.uniform(-122.4194, -122.3894), 6),
-            'bands': random.sample(list(BAND_FREQUENCY_MAP.keys()), k=random.randint(1, 3)),
-            'area_type': random.choice(list(USAGE_PATTERNS.keys())),
-            'adjacent_cells': adjacent
-        })
-    return cells
+# <--- REMOVE OR COMMENT OUT THIS FUNCTION: We will load cells from JSON instead
+# def generate_cells(num_cells=2000):
+#     cells = []
+#     ids = list(range(num_cells))
+#     for cell_id in ids:
+#         adjacent = random.sample([x for x in ids if x != cell_id], k=random.randint(1, 3))
+#         cells.append({
+#             'cell_id': int(cell_id),
+#             'max_capacity': random.randint(50, 100),
+#             'lat': round(random.uniform(37.7749, 37.8049), 6),
+#             'lon': round(random.uniform(-122.4194, -122.3894), 6),
+#             'bands': random.sample(list(BAND_FREQUENCY_MAP.keys()), k=random.randint(1, 3)),
+#             'area_type': random.choice(list(USAGE_PATTERNS.keys())),
+#             'adjacent_cells': adjacent
+#         })
+#     return cells
+# <--- END REMOVAL/COMMENT OUT
 
-def inject_anomaly(kpi, usage):
+def inject_anomaly(kpi, usage, current_band_normal_throughput=None, current_band_normal_usage=None):
     anomaly_type = random.choice([
         'high_prb_utilization', 'very_low_rsrp', 'sinr_degradation',
         'throughput_drop', 'ues_spike_drop', 'cell_outage'
     ])
-    # Store the anomaly type for verification
-    # Note: We're adding it to the kpi dict, which will then be used to construct the row.
-    kpi['_anomaly_injected_type'] = anomaly_type # Renamed to avoid confusion with df column name
+    kpi['_anomaly_injected_type'] = anomaly_type
 
     if anomaly_type == 'high_prb_utilization':
         usage = int(kpi['Max Capacity'] * random.uniform(0.95, 1.0))
@@ -81,9 +82,15 @@ def inject_anomaly(kpi, usage):
     elif anomaly_type == 'sinr_degradation':
         kpi['SINR'] = round(random.uniform(-10, -1), 2)
     elif anomaly_type == 'throughput_drop':
-        kpi['Throughput (Mbps)'] = round(random.uniform(0.1, 5), 2)
+        baseline_throughput = current_band_normal_throughput if current_band_normal_throughput is not None else random.uniform(50, 100)
+        kpi['Throughput (Mbps)'] = round(baseline_throughput * random.uniform(0.1, 0.4), 2)
+        if kpi['Throughput (Mbps)'] < 0.1: kpi['Throughput (Mbps)'] = 0.1
     elif anomaly_type == 'ues_spike_drop':
-        usage = random.choice([0, kpi['Max Capacity']])
+        baseline_usage = current_band_normal_usage if current_band_normal_usage is not None else int(kpi['Max Capacity'] * random.uniform(0.3, 0.7))
+        if random.random() < 0.5:
+            usage = int(baseline_usage * random.uniform(0.1, 0.4))
+        else:
+            usage = int(kpi['Max Capacity'] * random.uniform(0.9, 1.0))
     elif anomaly_type == 'cell_outage':
         usage = 0
         kpi.update({'RSRP': 0, 'RSRQ': 0, 'SINR': 0, 'Throughput (Mbps)': 0, 'Latency (ms)': 0})
@@ -99,8 +106,8 @@ def print_sample_output(df, title, color):
 
 def simulate(cells, interval=60):
     num_total_cells = len(cells)
-    num_anomaly_cells = int(num_total_cells * 0.05) # Calculate 5% of total cells
-    if num_anomaly_cells == 0 and num_total_cells > 0: # Ensure at least one if cells exist
+    num_anomaly_cells = int(num_total_cells * 0.30)
+    if num_anomaly_cells == 0 and num_total_cells > 0:
         num_anomaly_cells = 1
 
     while True:
@@ -109,48 +116,27 @@ def simulate(cells, interval=60):
         ran_rows = []
         du_rows = []
 
-        # --- Anomaly Injection Setup for this Interval ---
-        anomaly_cell_ids_this_interval = set() # Renamed for clarity in this scope
-        cell_band_anomaly_map = {} # Maps cell_id to the specific band that will have an anomaly
+        anomaly_cell_ids_this_interval = set()
+        cell_band_anomaly_map = {}
 
         if num_total_cells > 0:
+            # We need to ensure that the selection of anomaly cells is based on the *loaded* cells
+            # and that they have bands, which they will from the config.
             anomaly_cells_selection = random.sample(cells, min(num_anomaly_cells, num_total_cells))
 
             for cell in anomaly_cells_selection:
                 if cell['bands']:
                     cell_band_anomaly_map[cell['cell_id']] = random.choice(cell['bands'])
-                    anomaly_cell_ids_this_interval.add(cell['cell_id']) # Store the IDs of affected cells
-        # --- End Anomaly Injection Setup ---
+                    anomaly_cell_ids_this_interval.add(cell['cell_id'])
 
-        '''
-        # --- Anomaly Injection Logic ---
-        # Step 1: Randomly select 5% of the cells to inject an anomaly into this interval
-        anomaly_cell_ids = set()
-        if num_total_cells > 0:
-            anomaly_cells_selection = random.sample(cells, min(num_anomaly_cells, num_total_cells))
-            anomaly_cell_ids = {cell['cell_id'] for cell in anomaly_cells_selection}
-
-        # Step 2: For each selected anomaly cell, choose one random band within it
-        cell_band_anomaly_map = {} # Maps cell_id to the specific band that will have an anomaly
-        for cell in anomaly_cells_selection:
-            if cell['bands']: # Ensure the cell actually has bands
-                cell_band_anomaly_map[cell['cell_id']] = random.choice(cell['bands'])
-            else:
-                # If a chosen cell has no bands, it won't receive an anomaly in this specific run,
-                # or you could handle this by picking another cell if needed, but for simplicity,
-                # we'll just skip it for this interval.
-                pass
-        # --- End Anomaly Injection Logic ---
-        '''
-
-        for cell in cells:
+        for cell in cells: # This loop already iterates through your 'cells' list
             is_weekend = current_day in ['Saturday', 'Sunday']
             time_period = 'day' if 6 <= current_time.hour < 18 else 'night'
             usage_range = USAGE_PATTERNS[cell['area_type']][
                 'weekends' if is_weekend else 'weekdays'][time_period]
 
-            for band in cell['bands']:
-                usage = int(random.uniform(*usage_range) * cell['max_capacity'])
+            for band in cell['bands']: # 'bands' comes from the loaded cell config
+                usage = int(random.uniform(*usage_range) * cell['max_capacity']) # 'max_capacity' comes from loaded cell config
                 kpi = {
                     'RSRP': round(random.uniform(-120, -80), 2),
                     'RSRQ': round(random.uniform(-20, -3), 2),
@@ -159,36 +145,23 @@ def simulate(cells, interval=60):
                     'Latency (ms)': round(random.uniform(10, 100), 2),
                     'Max Capacity': cell['max_capacity']
                 }
-                #kpi['_anomaly_injected'] = None # Initialize anomaly flag to None
-                # Default anomaly status for this band of this cell
-                #anomaly_type_for_this_row = None
 
-                # Check if this cell and band should receive an anomaly
                 if cell['cell_id'] in anomaly_cell_ids_this_interval and band == cell_band_anomaly_map.get(cell['cell_id']):
                     kpi, usage = inject_anomaly(kpi, usage)
-                    # Importantly, remove the internal flag *after* anomaly injection,
-                    # so it doesn't appear in your final DataFrame.
                     if '_anomaly_injected_type' in kpi:
                         del kpi['_anomaly_injected_type']
 
-                '''
-                # Apply anomaly if this cell is one of the chosen anomaly cells for this interval
-                # AND this specific band is the chosen anomaly band for this cell
-                if cell['cell_id'] in anomaly_cell_ids and band == cell_band_anomaly_map.get(cell['cell_id']):
-                    kpi, usage = inject_anomaly(kpi, usage)
-                    # print(f"DEBUG: Anomaly injected in Cell ID: {cell['cell_id']}, Band: {band}") # Optional debug print
-                '''
-
                 ran_rows.append({
-                    'Cell ID': cell['cell_id'],
+                    'Cell ID': cell['cell_id'], # from loaded config
                     'Datetime': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'Band': band,
-                    'Frequency': BAND_FREQUENCY_MAP.get(band, 'Unknown'),
+                    'Band': band, # from loaded config
+                    'Frequency': BAND_FREQUENCY_MAP.get(band, 'Unknown'), # using BAND_FREQUENCY_MAP
                     'UEs Usage': usage,
-                    'Area Type': cell['area_type'],
-                    'Adjacent Cells': ",".join(map(str, cell['adjacent_cells'])),
-                    #'Anomaly Type': anomaly_type_for_this_row, # Use the captured variable
-                    #'Adjacent Cells': "|".join(map(str, cell['adjacent_cells'])),
+                    'Area Type': cell['area_type'], # from loaded config
+                    'Lat': cell['lat'], # <--- ADD THIS LINE: from loaded config
+                    'Lon': cell['lon'], # <--- ADD THIS LINE: from loaded config
+                    'City': cell['city'], # <--- ADD THIS LINE: from loaded config
+                    'Adjacent Cells': ",".join(map(str, cell['adjacent_cells'])), # from loaded config
                     **kpi
                 })
 
@@ -206,26 +179,15 @@ def simulate(cells, interval=60):
         df_ran = pd.DataFrame(ran_rows)
         df_du = pd.DataFrame(du_rows)
 
-        # If required set header=True to have a header row for the csv
         producer.produce(topic_ran, key="ran", value=df_ran.to_csv(index=False, header=False), callback=delivery_report)
-        #producer.produce(topic_ran, key="ran", value=df_ran.to_csv(index=False, header=False, quoting=csv.QUOTE_ALL), callback=delivery_report)
         producer.produce(topic_du, key="du", value=df_du.to_csv(index=False, header=False), callback=delivery_report)
         producer.flush()
 
         print_sample_output(df_ran, "Sample RAN + KPI Metrics", "cyan")
         print_sample_output(df_du, "Sample DU Resource Metrics", "magenta")
 
-        # --- Verification Logic (for your console, not the Kafka data) ---
-        # To verify anomalies when the column isn't in the DF, you'd need to store
-        # which cells/bands were affected separately during the generation loop.
-        # Here, we'll just report based on the 'cell_band_anomaly_map' directly.
-
-        # Count unique Cell IDs that were *planned* to have an anomaly this interval
         planned_anomaly_cells_count = len(cell_band_anomaly_map)
-
-        # Count total anomalous records (bands) *planned* for this interval
         planned_anomalous_bands_count = sum(1 for band in cell_band_anomaly_map.values())
-
 
         print(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] "
               f"Sent {len(df_ran)} RAN + KPI and {len(df_du)} DU entries.")
@@ -234,14 +196,32 @@ def simulate(cells, interval=60):
         print(f"    Planned Unique Anomalous Cells: {planned_anomaly_cells_count}")
         print(f"    Planned Total Anomaly Records (Band-level): {planned_anomalous_bands_count}")
         print(f"    Planned Anomaly Cell IDs This Interval: {sorted(list(anomaly_cell_ids_this_interval))}")
-        # print(f"    Anomaly Cell-Band Map: {cell_band_anomaly_map}") # Uncomment for detailed map
         print(f"********************\n")
-        # --- End Verification Logic ---
-
 
         print(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] Sent {len(df_ran)} RAN + KPI and {len(df_du)} DU entries")
         time.sleep(interval)
 
 if __name__ == "__main__":
-    cells = generate_cells()
+    # --- START OF MODIFICATION ---
+    # 1. Import the json library (already added at the top)
+    # 2. Define the path to your cell configuration file
+    cell_config_file = 'cell_config.json'
+
+    # 3. Load the cell configuration from the JSON file
+    try:
+        with open(cell_config_file, 'r') as f:
+            config_data = json.load(f)
+            cells = config_data['cells'] # Extract the list of cell objects
+        print(f"Successfully loaded {len(cells)} cells from {cell_config_file}.")
+    except FileNotFoundError:
+        print(f"Error: {cell_config_file} not found. Please ensure it's in the same directory and generated.")
+        print("Run 'python generate_static_cell_config.py' first.")
+        exit() # Exit the script if the config file isn't found
+
+    # 4. Remove the call to generate_cells() as it's no longer needed
+    # cells = generate_cells() # <--- REMOVE OR COMMENT OUT THIS LINE
+
+    # --- END OF MODIFICATION ---
+
+    # 5. The rest of the logic remains undisturbed!
     simulate(cells)
