@@ -1,0 +1,16 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: du-resource-metrics
+  namespace: amq-streams-kafka  # Update if your Kafka is in a different namespace
+  labels:
+    strimzi.io/cluster: my-cluster  # Replace with your Kafka cluster name
+spec:
+  partitions: 3
+  replicas: 1
+  topicName: du-resource-metrics
+  config:
+    retention.ms: "604800000"           # 7 days
+    segment.bytes: "1073741824"         # 1GB per segment
+    max.message.bytes: "10485760"       # 10MB max message size
+    min.insync.replicas: "1"
