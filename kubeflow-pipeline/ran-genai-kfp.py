@@ -69,7 +69,8 @@ def stream_ran_metrics_to_s3_component(
             value_deserializer=lambda m: m.decode('utf-8', errors='ignore') if m else None,
             # Fetch just one Kafka message (as it contains all your 2000+ records)
             # We need to limit the number of *Kafka messages* to 1 if one Kafka message = 2000 lines
-            max_poll_records=1, # <<< Set this to 1 because each Kafka message is one large CSV block
+            #max_poll_records=1, # <<< Set this to 1 because each Kafka message is one large CSV block
+            max_poll_records=30, # <<< Consumer will fetch 30 individual kafka messages 
             client_id=f"kfp-comp-{os.getpid()}-{int(time.time())}-p{target_partition}"
         )
 
@@ -793,20 +794,23 @@ def train_traffic_predictor(
 # ===================================================
 @component(
     base_image="python:3.9",
-    packages_to_install=["openai", "langchain", "sqlalchemy", "langchain-community", "sentence-transformers", "faiss-cpu", "pymysql","boto3", "pandas", "requests",
-    "click>=8.0.0,<9",
-    "docstring-parser>=0.7.3,<1",
-    "google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0dev,>=1.31.5",
-    "google-auth>=1.6.1,<3",
-    "google-cloud-storage>=2.2.1,<4",
-    #"kfp-pipeline-spec==0.6.0",
-    #"kfp-server-api>=2.1.0,<2.5.0",
-    "kubernetes>=8.0.0,<31",
-    "protobuf>=4.21.1,<5",
-    "tabulate>=0.8.6,<1"]
+    packages_to_install=[
+        "openai", "langchain", "sqlalchemy", "langchain-community", "sentence-transformers", "faiss-cpu", "pymysql", "boto3", "pandas", "requests",
+        "click>=8.0.0,<9",
+        "docstring-parser>=0.7.3,<1",
+        "google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0dev,>=1.31.5",
+        "google-auth>=1.6.1,<3",
+        "google-cloud-storage>=2.2.1,<4",
+        "kubernetes>=8.0.0,<31",
+        "protobuf>=4.21.1,<5",
+        "tabulate>=0.8.6,<1",
+        "pyarrow", # Added for potential future Parquet support or general dataframe ops
+        "fastparquet" # Added for potential future Parquet support
+    ]
 )
 def genai_anomaly_detection(
     s3_bucket: str,
+    s3_key_prefix: str, # This is an input for the component
     s3_endpoint: str,
     aws_access_key: str,
     aws_secret_key: str,
@@ -817,8 +821,7 @@ def genai_anomaly_detection(
     db_user: str,
     db_pwd: str,
     db_name: str,
-    ran_metrics_path: Input[Dataset]
-    #metrics_output: Output[Dataset]
+    ran_metrics_path: Input[Dataset] # This is the current batch CSV from S3
 ):
     import requests
     import logging
@@ -835,7 +838,9 @@ def genai_anomaly_detection(
     from langchain.tools import Tool
     from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Text, DateTime
     from sqlalchemy.sql import select, desc
-    from datetime import datetime
+    from datetime import datetime, timedelta
+    from io import StringIO # Import StringIO for CSV handling
+    import csv
 
     # Logging setup
     logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(levelname)s] - %(message)s')
@@ -852,20 +857,20 @@ def genai_anomaly_detection(
     s3 = boto3.client('s3', endpoint_url=s3_endpoint)
     log.info("AWS credentials and environment variables configured.")
 
-    # Read CSV contents as string from ran_metrics_path artifact
+    # Read CSV contents as string from ran_metrics_path artifact (this is the current batch)
     with open(ran_metrics_path.path, "r") as f:
-        csv_data = f.read()
-   
+        current_batch_csv_data = f.read()
+
     log.info('Connect to database')
     engine = create_engine('mysql+pymysql://%s:%s@%s/%s' % (db_user, db_pwd, db_host, db_name), echo=True)
-    metadata = MetaData() 
+    metadata = MetaData()
     events = Table(
         'events', metadata,
         Column('id', Integer, primary_key=True, autoincrement=True),
         Column('creation_date', DateTime, nullable=False),
         Column('event', Text, nullable=False),
         Column('data', Text, nullable=True)
-    )           
+    )
 
     # insert event in th DB
     def insert_event_db(event_text, event_data, raw_csv_data):
@@ -876,14 +881,94 @@ def genai_anomaly_detection(
                 data=raw_csv_data
             ))
 
-    '''
-    # Load the CSV artifact dynamically
-    ran_df = pd.read_csv(ran_metrics_path.path)
+    # --- START OF MOVED AND MODIFIED FUNCTIONS ---
 
-    # Optional: Downsample or limit rows for token size constraints
-    sampled_df = ran_df.sample(n=20, random_state=42) if len(ran_df) > 20 else ran_df
-    '''
-    
+    # NEW: Function to retrieve historical data from S3
+    def get_historical_data(s3_client_obj, bucket_name, key_prefix, cell_id, band, current_record_datetime, num_rows=3):
+        """
+        Retrieves the 'num_rows' most recent historical records for a given Cell ID and Band
+        from S3, excluding data newer than current_record_datetime.
+        """
+        historical_records = []
+        # Construct a flexible prefix for listing objects related to this Cell ID and Band
+        # Assumes s3_key_prefix for the streaming component creates paths like:
+        # {s3_key_prefix}/ran-combined-metrics/ran-combined-metrics_{timestamp}.csv
+        common_search_prefix = f"{key_prefix}/ran-combined-metrics/"
+
+        try:
+            # List all objects under the common prefix
+            response = s3_client_obj.list_objects_v2(Bucket=bucket_name, Prefix=common_search_prefix)
+            if 'Contents' not in response:
+                log.info(f"No objects found under {common_search_prefix} for historical data.")
+                return pd.DataFrame()
+
+            # Filter for CSV files and sort by LastModified (most recent first)
+            # This is simplified; robust time-based filtering might require parsing timestamps from file names
+            sorted_objects = sorted(
+                [obj for obj in response['Contents'] if obj['Key'].endswith('.csv')],
+                key=lambda x: x['LastModified'],
+                reverse=True
+            )
+
+            # Define column names for parsing historical data
+            history_column_names = [
+                "Cell ID", "Datetime", "Band", "Frequency", "UEs Usage", "Area Type", "Lat", "Lon", "City", "Adjacent Cells",
+                "RSRP", "RSRQ", "SINR", "Throughput (Mbps)", "Latency (ms)", "Max Capacity"
+            ]
+
+            # Iterate through historical files to find relevant data
+            found_count = 0
+            for obj in sorted_objects:
+                if found_count >= num_rows:
+                    break # Stop if we have enough historical records
+
+                obj_key = obj['Key']
+                # Skip the current file being processed in the pipeline run if it's found in history list
+                # This requires a unique way to identify the current file. For now, we assume
+                # the current batch CSV won't be listed as historical unless it's very recent.
+                # A better approach for excluding current file might be to check its full key.
+                
+                log.debug(f"Checking historical file: {obj_key}")
+
+                # Read the CSV content
+                csv_obj_response = s3_client_obj.get_object(Bucket=bucket_name, Key=obj_key)
+                body = csv_obj_response['Body'].read().decode('utf-8')
+
+                # Read into a DataFrame, ensuring correct column names are used.
+                # `header=0` means the first row is the header. If your CSVs have a header, this is correct.
+                # If they don't, set `header=None`.
+                temp_df = pd.read_csv(StringIO(body), names=history_column_names, header=0)
+
+                # Filter for the specific Cell ID and Band, and data strictly older than the current record
+                temp_df['Datetime'] = pd.to_datetime(temp_df['Datetime'])
+                
+                filtered_history = temp_df[
+                    (temp_df['Cell ID'] == cell_id) &
+                    (temp_df['Band'] == band) &
+                    (temp_df['Datetime'] < current_record_datetime) # Only include data strictly older
+                ].sort_values(by='Datetime', ascending=False) # Ensure latest historical are first from this file
+
+                # Add to our collected historical records
+                for _, row in filtered_history.iterrows():
+                    if found_count < num_rows:
+                        historical_records.append(row.to_dict())
+                        found_count += 1
+                    else:
+                        break
+
+            # Convert to DataFrame and return the top `num_rows`
+            if historical_records:
+                final_history_df = pd.DataFrame(historical_records, columns=history_column_names)
+                final_history_df['Datetime'] = pd.to_datetime(final_history_df['Datetime'])
+                # Sort from oldest to newest for chronological presentation in the prompt
+                return final_history_df.sort_values(by='Datetime', ascending=True)
+            else:
+                return pd.DataFrame(columns=history_column_names) # Return empty DataFrame if no history
+
+        except Exception as e:
+            log.error(f"Error retrieving historical data for Cell ID {cell_id}, Band {band}: {e}", exc_info=True)
+            return pd.DataFrame(columns=history_column_names)
+
     def download_index_from_s3(bucket, prefix, local_dir):
         os.makedirs(local_dir, exist_ok=True)
         response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
@@ -898,14 +983,9 @@ def genai_anomaly_detection(
         llm = VLLMOpenAI(
             openai_api_key=model_api_key,
             openai_api_base=model_api_url,
-            #model_name="deepseek-r1-distill-qwen-14b",
             model_name=model_api_name,
-            #model_name="r1-qwen-14b-w4a16",
-            #model_name="meta-llama/Llama-3.1-8B-Instruct",
             max_tokens=2000,
-            #model_kwargs={"stop": ["."]},
-            temperature=0.7,
-            #http_client=custom_http_client
+            temperature=0.1, # Keep temperature low for deterministic output
         )
         embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -918,84 +998,107 @@ def genai_anomaly_detection(
         log.info("Chain created")
         return qa_chain
 
-    # Convert CSV string to DataFrame
-    from io import StringIO
-    df = pd.read_csv(StringIO(csv_data))
+    # --- MOVED: verify_anomaly_block function definition ---
+    def verify_anomaly_block(text_block):
+        """
+        Verify that the values in the anomaly report actually violate thresholds defined in the prompt.
+        If they do not, this is likely a hallucination.
+        NOTE: This function checks for individual threshold violations based on *parsed numbers from LLM output*.
+        It does not re-calculate from raw data, nor does it fully verify complex multi-condition rules like "Cell Outage"
+        unless the LLM explicitly reports all conditions and those are parsed.
+        """
+        sinr_match = re.search(r"SINR.*?(-?\d+\.?\d*)\s*dB", text_block)
+        rsrp_match = re.search(r"RSRP.*?(-?\d+\.?\d*)\s*dBm", text_block)
+        prb_match = re.search(r"PRB Utilization.*?(\d+\.?\d*)\s*%", text_block)
+        
+        # Note: You might need to add regex for Throughput and UEs if LLM explicitly states their anomalous values.
+        # However, the core purpose of this function is to prevent LLM from saying "Anomaly" when numbers don't match.
+
+        sinr_val = float(sinr_match.group(1)) if sinr_match else None
+        rsrp_val = float(rsrp_match.group(1)) if rsrp_match else None
+        prb_val = float(prb_match.group(1)) if prb_match else None
+
+        log.debug(f"Parsed values for verification - SINR: {sinr_val}, RSRP: {rsrp_val}, PRB: {prb_val}")
+
+        # Check against prompt's simple thresholds (Rules 1, 2, 3)
+        if sinr_val is not None and sinr_val < 0:
+            log.debug(f"SINR {sinr_val} violates < 0 dB threshold.")
+            return True
+        if rsrp_val is not None and rsrp_val < -110:
+            log.debug(f"RSRP {rsrp_val} violates < -110 dBm threshold.")
+            return True
+        if prb_val is not None and prb_val > 95:
+            log.debug(f"PRB Utilization {prb_val} violates > 95.0% threshold.")
+            return True
+        
+        # If the LLM output explicitly mentions "Cell Outage" and lists all 5 conditions,
+        # you would need additional regex and logical AND checks here.
+        # Example for Cell Outage check if it's reported by LLM:
+        # if "Cell outage" in text_block:
+        #    ue_usage_match = re.search(r"UEs Usage.*?=\s*(\d+)", text_block)
+        #    throughput_match = re.search(r"Throughput.*?=\s*(\d+\.?\d*)\s*Mbps", text_block)
+        #    # ... and so on for SINR, RSRP, RSRQ from the anomaly text
+        #    # Then check all conditions:
+        #    if (ue_usage_match and int(ue_usage_match.group(1)) == 0) and \
+        #       (throughput_match and float(throughput_match.group(1)) == 0) and \
+        #       ... (other checks) ... :
+        #        log.debug("Cell Outage conditions met based on LLM's anomaly text.")
+        #        return True
+
+
+        # If no clear threshold violation based on the *numbers reported in the anomaly text* is found
+        return False
+    # --- END OF MOVED FUNCTIONS ---
+
+
+    # Convert current batch CSV string to DataFrame
+    df_current_batch = pd.read_csv(StringIO(current_batch_csv_data))
 
     # Log band distribution before filtering
-    log.info(f"Unique bands before filtering: {df['Band'].unique().tolist()}")
-    log.info(f"Row count before filtering: {df.shape[0]}")
+    log.info(f"Unique bands before filtering: {df_current_batch['Band'].unique().tolist()}")
+    log.info(f"Row count before filtering: {df_current_batch.shape[0]}")
 
-    # Filter by valid bands
+    # Filter by valid bands (apply to current batch)
     VALID_BANDS = ['Band 29', 'Band 26', 'Band 71', 'Band 66']
-    df = df[df['Band'].isin(VALID_BANDS)]
+    df_current_batch = df_current_batch[df_current_batch['Band'].isin(VALID_BANDS)]
 
     # Log band distribution after filtering
-    log.info(f"Unique bands after filtering: {df['Band'].unique().tolist()}")
-    log.info(f"Row count after filtering: {df.shape[0]}")
+    log.info(f"Unique bands after filtering: {df_current_batch['Band'].unique().tolist()}")
+    log.info(f"Row count after filtering: {df_current_batch.shape[0]}")
 
-    '''
-    # Convert filtered DataFrame back to CSV string
-    csv_data = df.to_csv(index=False)    
+    # Prepare band_map for the prompt
+    band_map_str = df_current_batch[['Cell ID', 'Band']].drop_duplicates().head(100).to_csv(index=False)
 
-    # Optional: truncate to avoid token overflow (adjust as needed)
-    csv_data = csv_data[:3000] if len(csv_data) > 3000 else csv_data   
-
-    # Get the actual Band-Cell mapping in CSV preview
-    band_map_str = df[['Cell ID', 'Band']].drop_duplicates().to_csv(index=False) 
-    '''
-
-    #band_map_str = df[['Cell ID', 'Band']].drop_duplicates().to_csv(index=False)
-    band_map_str = df[['Cell ID', 'Band']].drop_duplicates().head(100).to_csv(index=False)
-
-
-
-    # STEP 1: Chunking with token control
-    #from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-    def chunk_dataframe_by_token_limit(df, max_chars=2500):
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=max_chars, chunk_overlap=0)
-        chunks = []
-
-        grouped = df.groupby(["Cell ID", "Band"])  # Group by both Cell ID and Band
-        for (cell_id, band), group in grouped:
-            csv_text = group.to_csv(index=False)
-            split_chunks = text_splitter.split_text(csv_text)
-            for subchunk in split_chunks:
-                chunks.append({
-                    "cell_id": cell_id,
-                    "band": band,
-                    "text": subchunk
-                })
-        return chunks
-
-    # Apply chunking with token-safe limits
-    chunked_cells = chunk_dataframe_by_token_limit(df)
-    log.info(f"Total token-safe chunks to process: {len(chunked_cells)}")
-
-    # STEP 2: Define prompt template
+    # --- UPDATED PROMPT TEMPLATE ---
     prompt_template = """
     You are a Radio Access Network (RAN) engineer and telecom operations expert with access to Baicells BaiBNQ gNodeB technical documentation.
 
     Each row in the dataset includes the following columns:
 
-    - Timestamp: Time of metric capture  
     - Cell ID: Unique identifier of the cell site  
+    - Datetime: Time of metric capture  
     - Band: Frequency band used (e.g., 71, 66, 26, 29)  
-    - SINR (dB): Signal to Interference plus Noise Ratio  
+    - Frequency: Operating frequency range (e.g., 1700-2100)
+    - UEs Usage: Number of connected user equipment (UEs)  
+    - Area Type: Type of area (e.g., commercial, industrial, rural)
+    - Lat: Latitude
+    - Lon: Longitude
+    - City: City where the cell is located
+    - Adjacent Cells: List of adjacent cell IDs
     - RSRP (dBm): Reference Signal Received Power  
     - RSRQ (dB): Reference Signal Received Quality  
-    - UEs Usage: Number of connected user equipment (UEs)  
+    - SINR (dB): Signal to Interference plus Noise Ratio  
+    - Throughput (Mbps): Data throughput
+    - Latency (ms): Latency
     - Max Capacity: Maximum UE capacity for the cell  
 
     Your task is to analyze the provided 5G RAN performance data **strictly using the anomaly thresholds below**.
 
     ---
 
-    ### RULE CHECKLIST (Apply each to this row only)
+    ### RULE CHECKLIST (Apply each to the CURRENT_ROW only)
 
-    1. **High PRB Utilization**  
-    - Formula: PRB Utilization = (UEs Usage / Max Capacity) × 100  
+    1. **High PRB Utilization** - Formula: PRB Utilization = (UEs Usage / Max Capacity) × 100  
     - Threshold: Anomaly if **PRB Utilization > 95.0%**
     - Example:  
         - UEs = 51, Max Capacity = 62  
@@ -1004,9 +1107,14 @@ def genai_anomaly_detection(
 
     2. **Low RSRP**: Anomaly if RSRP < -110 dBm  
     3. **Low SINR**: Anomaly if SINR < 0 dB  
-    4. **Throughput drop**: More than 50% drop vs. average of 3 prior rows (same Cell ID + Band). Ignore if no history.  
-    5. **UEs spike/drop**: >50% change vs. 3 prior rows (same Cell ID + Band). Ignore if no history.  
-    6. **Cell outage**: Must meet **ALL** conditions:  
+    4. **Throughput drop**: Anomaly if current Throughput is more than 50% drop vs. average of 3 prior rows (same Cell ID + Band). **Only apply this rule if at least 3 rows are available in HISTORICAL_DATA.**
+       - Calculation: `Prior Avg Throughput = (Prior_Throughput_1 + Prior_Throughput_2 + Prior_Throughput_3) / 3`
+       - Anomaly if `CURRENT_ROW.Throughput (Mbps) < 0.5 * Prior Avg Throughput`
+    5. **UEs spike/drop**: Anomaly if current UEs Usage is >50% change vs. average of 3 prior rows (same Cell ID + Band). **Only apply this rule if at least 3 rows are available in HISTORICAL_DATA.**
+       - Calculation: `Prior Avg UEs = (Prior_UEs_1 + Prior_UEs_2 + Prior_UEs_3) / 3`
+       - Anomaly if `(abs(CURRENT_ROW.UEs Usage - Prior Avg UEs) / Prior Avg UEs) > 0.5`
+
+    6. **Cell outage**: Must meet **ALL** conditions for the CURRENT_ROW:  
     - UEs Usage = 0  
     - Throughput = 0 Mbps  
     - SINR <= -10  
@@ -1023,150 +1131,162 @@ def genai_anomaly_detection(
     - Fabricate historical patterns or infer behavior from other Cell IDs.  
     - Report “suspected” issues or use assumptions — rely only on direct numeric evidence.  
     - Repeat rule definitions in your answer.
+    - **Crucially: NEVER include explanations, calculations, or additional text beyond the required output format. ONLY output the exact required format.**
+    - **Do not apply Throughput drop or UEs spike/drop rules if HISTORICAL_DATA is incomplete (less than 3 rows).**
 
     ---
 
     ### ANALYSIS INSTRUCTIONS
 
-    - Only analyze the following row with **Cell ID: {cell_id}** and **Band: {band}**
-    - Evaluate each rule in the checklist above **strictly**
-    - For PRB Utilization, show the full calculation and threshold comparison step
+    - Analyze the **CURRENT_ROW** data.
+    - Evaluate each rule in the checklist above **strictly**.
+    - For PRB Utilization, show the full calculation and threshold comparison step **ONLY IF ANOMALY DETECTED**. Otherwise, **DO NOT** show calculations or explanations.
+    - For Throughput drop and UEs spike/drop, use the provided **HISTORICAL_DATA** for comparison. If **HISTORICAL_DATA** has less than 3 rows, explicitly state that these rules are skipped because of insufficient historical data, but do not make this part of the final anomaly report.
 
     ---
 
-    ### FORMAT REQUIREMENTS
+    ### FORMAT REQUIREMENTS (STRICT - NO ADDITIONAL TEXT, NO DEVIATION)
 
-    If **any** anomaly is found, respond exactly like this:
+    If **any** anomaly is found, respond **EXACTLY** like this (include START_EVENT/END_EVENT tags, no extra spaces or characters outside these lines):
 
-    **** START_EVENT ****  
-    ANOMALY_DETECTED  
-    1. Cell ID X, Band Y  
+    **** START_EVENT **** ANOMALY_DETECTED  
+    1. Cell ID {current_cell_id}, Band {current_band}  
     - <Metric and reason that violated the threshold>  
     - Recommended fix: Refer to Baicells documentation (Section X.X, Page Y)  
     **** END_EVENT ****
 
-    If the row is **not** anomalous, respond with:
+    If the row is **not** anomalous, respond **EXACTLY** with:
 
-    **NO_ANOMALY**
+    NO_ANOMALY
 
     ---
 
-    Use ONLY valid Band values from the list below:  
+    Below are the valid Cell ID and Band combinations for reference:  
     {band_map}
 
-    Below is a dataset of RAN metrics including Cell ID and Band. Analyze this row independently:
+    Below is the current RAN metric row to analyze:
 
-    DATA:  
-    {chunk}
+    CURRENT_ROW:  
+    {current_chunk}
+
+    Below are the 3 prior historical RAN metric rows for comparison (if available and relevant for rules 4 & 5). These rows are for the same Cell ID and Band as CURRENT_ROW. If less than 3 rows are provided, rules 4 & 5 cannot be applied.
+
+    HISTORICAL_DATA:  
+    {history_chunk}
     """.strip()
-
 
     qa_chain = get_chain()
     log.info("Execute anomaly detection")
-    #response = qa_chain.invoke(prompt)
 
-    # STEP 3: Replace cell loop with token-safe version
-    results = []
+    # STEP 3: Iterate through each row of the current batch for LLM analysis
+    results = [] # To store LLM responses
+    anomaly_results_df = pd.DataFrame(columns=[
+        "Cell ID", "Band", "Datetime", "LLM_Response", "Is_Anomaly", "Parsed_Anomaly_Reason"
+    ])
 
-    for chunk in chunked_cells:  # chunked_cells was created in Step 1
-        chunk_text = chunk['text']
-        cell_id = chunk['cell_id']
-        band = chunk['band']
+    # Convert the current batch DataFrame to a list of dictionaries for easier row processing
+    records_to_analyze = df_current_batch.to_dict(orient='records')
 
+    for record_dict in records_to_analyze:
+        current_cell_id = record_dict["Cell ID"]
+        current_band = record_dict["Band"]
+        current_datetime = datetime.strptime(record_dict["Datetime"], "%Y-%m-%d %H:%M:%S")
+
+        # Format the current record as a single-row CSV for the LLM
+        current_chunk_io = StringIO()
+        pd.DataFrame([record_dict]).to_csv(current_chunk_io, index=False, header=True, quoting=csv.QUOTE_ALL)
+        current_chunk_str = current_chunk_io.getvalue()
+
+        # --- Fetch historical data for this specific Cell ID and Band ---
+        # Pass `s3` (your boto3 client) and `s3_key_prefix` to the function
+        history_df = get_historical_data(s3, s3_bucket, s3_key_prefix, current_cell_id, current_band, current_datetime, num_rows=3)
+
+        history_chunk_io = StringIO()
+        if not history_df.empty:
+            history_df.to_csv(history_chunk_io, index=False, header=True, quoting=csv.QUOTE_ALL)
+        else:
+            # Provide explicit message for LLM if no history
+            history_chunk_io.write("No historical data available for this Cell ID and Band.")
+        history_chunk_str = history_chunk_io.getvalue()
+
+        # Format the prompt with current and historical data
         prompt = prompt_template.format(
-            band_map=band_map_str,
-            chunk=chunk_text,
-            cell_id=cell_id,
-            band=band
+            current_cell_id=current_cell_id,
+            current_band=current_band,
+            band_map=band_map_str, # Use the `band_map_str` derived from the current batch
+            current_chunk=current_chunk_str,
+            history_chunk=history_chunk_str
         )
 
-        #log.info(f"Running LLM for Cell ID: {cell_id}, Band: {band}")
-        log.info(f"Running LLM for Cell ID: {cell_id}, {band}")
+        log.info(f"Running LLM for Cell ID: {current_cell_id}, Band: {current_band}")
+        log.debug(f"Full Prompt for {current_cell_id}, {current_band}:\n{prompt}") # Log full prompt for debugging
         response = qa_chain.invoke(prompt)
         result_text = response['result']
-        #results.append(result_text)
-        results.append({
-            "cell_id": cell_id,
-            "band": band,
-            "response": result_text
-        })
 
-        print(result_text)
-        # NEW: Log high-level status per cell and band
-        if 'ANOMALY_DETECTED' in result_text:
-            #log.info(f"Anomaly detected for Cell ID {cell_id}, Band {band}")
-            log.info(f"Anomaly detected for Cell ID {cell_id}, {band}")
-        else:
-            #log.info(f"No anomaly found for Cell ID {cell_id}, Band {band}")
-            log.info(f"No anomaly found for Cell ID {cell_id}, {band}")
+        log.info(f"LLM Raw Response for Cell ID {current_cell_id}, Band {current_band}:\n{result_text}\n")
 
-
-    anomaly_blocks = []
-
-
-    def verify_anomaly_block(text_block):
-        """
-        Verify that the values in the anomaly report actually violate thresholds.
-        If they do not, this is likely a hallucination.
-        """
-        sinr = re.search(r"SINR.*?(-?\d+\.?\d*)\s*dB", text_block)
-        rsrp = re.search(r"RSRP.*?(-?\d+\.?\d*)\s*dBm", text_block)
-        rsrq = re.search(r"RSRQ.*?(-?\d+\.?\d*)\s*dB", text_block)
-        prb = re.search(r"PRB.*?(\d+\.?\d*)\s*%", text_block)
-        ue = re.search(r"UE.*?(\d+)", text_block)
-
-        # Parse floats
-        sinr_val = float(sinr.group(1)) if sinr else None
-        rsrp_val = float(rsrp.group(1)) if rsrp else None
-        rsrq_val = float(rsrq.group(1)) if rsrq else None
-        prb_val = float(prb.group(1)) if prb else None
-        ue_val = int(ue.group(1)) if ue else None
-
-        log.debug(f"Parsed values - SINR: {sinr_val}, RSRP: {rsrp_val}, RSRQ: {rsrq_val}, PRB: {prb_val}, UE: {ue_val}")
-
-        # Thresholds
-        if (
-            (sinr_val is not None and sinr_val < -10) or
-            (rsrp_val is not None and rsrp_val < -110) or
-            (rsrq_val is not None and rsrq_val < -15) or
-            (prb_val is not None and prb_val > 95) or
-            (ue_val is not None and ue_val > 20)
-        ):
-            return True  # Valid anomaly
-        return False  # Likely hallucinated
-
-    for idx, item in enumerate(results):
-        cell_id = item.get("cell_id", f"cell_{idx}")
-        band = item.get("band", "unknown")
-        result_text = item.get("response", "")
-        log.info(f"Response for Cell ID {cell_id}, {band}: {result_text}")
-        #log.info(f"Response for Cell ID {cell_id}: {result_text}")
-
+        # --- Post-LLM Parsing Logic (Improved) ---
+        is_anomaly_detected = False
+        parsed_anomaly_reason = "N/A"
+        
         match = re.search(r"\*\*\*\* START_EVENT \*\*\*\*(.*?)\*\*\*\* END_EVENT \*\*\*\*", result_text, re.DOTALL)
         if match:
-            anomaly_text = match.group(1).strip()
-
-            if verify_anomaly_block(anomaly_text):
-                anomaly_blocks.append(f"Cell ID {cell_id}, {band}:\n{anomaly_text}")
-                log.info(f"Anomaly validated for Cell ID {cell_id}, {band}")
-            else:
-                log.warning(f"Anomaly block failed validation for Cell ID {cell_id}, {band}:\n{anomaly_text}")
+            anomaly_block_content = match.group(1).strip()
+            if "ANOMALY_DETECTED" in anomaly_block_content:
+                # Validate the anomaly based on parsed values if possible
+                if verify_anomaly_block(anomaly_block_content): # Now `verify_anomaly_block` is defined!
+                    is_anomaly_detected = True
+                    parsed_anomaly_reason = anomaly_block_content
+                    log.info(f"Anomaly validated and detected for Cell ID {current_cell_id}, Band {current_band}")
+                else:
+                    log.warning(f"Anomaly block failed validation for Cell ID {current_cell_id}, Band {current_band}: Hallucination suspected.\n{anomaly_block_content}")
+                    # Decide if you still want to mark as anomaly or as false positive
+                    is_anomaly_detected = False # Treat as false positive if validation fails
+                    parsed_anomaly_reason = f"HALLUCINATION_SUSPECTED: {anomaly_block_content}"
+            else: # If START/END tags but no ANOMALY_DETECTED (e.g., NO_ANOMALY wrapped)
+                 log.warning(f"Unexpected content within START/END_EVENT tags (not ANOMALY_DETECTED) for Cell ID {current_cell_id}, Band {current_band}. Output:\n{result_text}")
+                 is_anomaly_detected = False
+                 parsed_anomaly_reason = f"UNEXPECTED_STRUCTURE: {result_text}"
+        elif result_text.strip() == "NO_ANOMALY":
+            is_anomaly_detected = False
+            parsed_anomaly_reason = "NO_ANOMALY"
+            log.info(f"No anomaly detected for Cell ID {current_cell_id}, Band {current_band}")
         else:
-            log.info(f"No structured anomaly found for Cell ID {cell_id}, {band}")
+            log.warning(f"WARNING: Unrecognized LLM output format for Cell ID {current_cell_id}, Band {current_band}. Treating as NO_ANOMALY for safety. Output:\n{result_text}")
+            is_anomaly_detected = False # Default to no anomaly for unknown format
+            parsed_anomaly_reason = f"UNRECOGNIZED_FORMAT: {result_text}"
+
+        # Append result to DataFrame
+        new_row_df = pd.DataFrame([{
+            "Cell ID": current_cell_id,
+            "Band": current_band,
+            "Datetime": record_dict["Datetime"], # Use original string datetime
+            "LLM_Response": result_text,
+            "Is_Anomaly": is_anomaly_detected,
+            "Parsed_Anomaly_Reason": parsed_anomaly_reason
+        }])
+        anomaly_results_df = pd.concat([anomaly_results_df, new_row_df], ignore_index=True)
 
 
-    #  If any anomaly blocks were found, log and save to DB
-    if anomaly_blocks:
-        combined_anomalies = "\n\n".join(anomaly_blocks)
-        log.info("Detected anomalies:\n%s", combined_anomalies)
+    # Final output of the component: Save the anomaly detection results
+    anomaly_output_key = f"anomaly_results/{timestamp_str}_anomalies.csv" # A new path for anomaly results
+    anomaly_output_uri = f"s3://{s3_bucket}/{anomaly_output_key}"
 
-        # Save full DataFrame as CSV string
-        full_csv = df.to_csv(index=False)
+    # Ensure output directory exists for the artifact (if ran_metrics is an Output[Dataset])
+    # This component's output should be an artifact that contains the anomaly results
+    # For now, let's just save to S3
+    anomaly_output_buffer = StringIO()
+    anomaly_results_df.to_csv(anomaly_output_buffer, index=False, quoting=csv.QUOTE_ALL)
+    s3.put_object(Bucket=s3_bucket, Key=anomaly_output_key, Body=anomaly_output_buffer.getvalue())
 
-        # Insert to DB: (event_text, type, data)
-        insert_event_db(combined_anomalies, "auto_detected_anomaly", full_csv)
-    else:
-        log.info("No anomalies detected in any chunk.")
+    log.info(f"\nLLM anomaly analysis results saved to {anomaly_output_uri}")
+
+    # You could also optionally create an Output[Dataset] for these results
+    # with open(metrics_output.path, 'w') as f:
+    #     anomaly_results_df.to_csv(f, index=False, header=True)
+
+
+    log.info("Anomaly detection component finished.")
 
 
 
@@ -1480,6 +1600,7 @@ def ran_multi_prediction_pipeline_with_genai(
     # 5. Perform anomaly detection on the data
     genai_anomaly_detection_step = genai_anomaly_detection(
         s3_bucket=s3_bucket,
+        s3_key_prefix=s3_key_prefix,
         s3_endpoint=s3_endpoint,
         aws_access_key=aws_access_key,
         aws_secret_key=aws_secret_key,

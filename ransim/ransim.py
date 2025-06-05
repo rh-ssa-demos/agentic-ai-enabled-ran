@@ -23,8 +23,8 @@ Key features of this simulator:
 - **Anomaly Injection**: A configurable percentage of cells (currently 30%) are randomly
   selected in each interval to inject various types of anomalies (e.g., high PRB utilization,
   low RSRP, throughput drops, cell outages) to simulate real-world network issues.
-- **Kafka Integration**: All generated metrics are formatted as CSV strings and produced
-  to specified Kafka topics ('ran-combined-metrics' and 'du-resource-metrics').
+- **Kafka Integration**: All generated metrics are formatted as **individual CSV strings** and produced
+  as **separate messages** to specified Kafka topics ('ran-combined-metrics' and 'du-resource-metrics').
 - **Console Output**: Provides a sample of generated data directly in the console
   for quick verification.
 
@@ -42,11 +42,12 @@ from confluent_kafka import Producer
 from rich.console import Console
 from rich.table import Table
 import json # <--- ADD THIS LINE: Import the JSON library
+from io import StringIO # REQUIRED: Import StringIO for CSV serialization
 
 # Kafka Configuration (enhanced for batching and large messages)
 conf = {
-    'bootstrap.servers': 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092',
-    #'bootstrap.servers': '192.168.154.101:30139',
+    #'bootstrap.servers': 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092',
+    'bootstrap.servers': '192.168.154.101:30139',
     'client.id': 'ransim',
     'acks': 'all',
     'message.max.bytes': 10485760,
@@ -141,6 +142,7 @@ def print_sample_output(df, title, color):
 
 def simulate(cells, interval=60):
     num_total_cells = len(cells)
+    # This remains at 30% as per your specified latest code.
     num_anomaly_cells = int(num_total_cells * 0.30)
     if num_anomaly_cells == 0 and num_total_cells > 0:
         num_anomaly_cells = 1
@@ -148,8 +150,11 @@ def simulate(cells, interval=60):
     while True:
         current_time = datetime.now()
         current_day = current_time.strftime('%A')
-        ran_rows = []
-        du_rows = []
+        
+        # ran_rows and du_rows are now used to collect *all* records for display
+        # and individual Kafka production, not for single large Kafka message.
+        ran_display_rows = []
+        du_display_rows = []
 
         anomaly_cell_ids_this_interval = set()
         cell_band_anomaly_map = {}
@@ -164,14 +169,15 @@ def simulate(cells, interval=60):
                     cell_band_anomaly_map[cell['cell_id']] = random.choice(cell['bands'])
                     anomaly_cell_ids_this_interval.add(cell['cell_id'])
 
-        for cell in cells: # This loop already iterates through your 'cells' list
+        # --- MODIFICATION START: Loop through cells and bands to produce individual Kafka messages ---
+        for cell in cells: 
             is_weekend = current_day in ['Saturday', 'Sunday']
             time_period = 'day' if 6 <= current_time.hour < 18 else 'night'
             usage_range = USAGE_PATTERNS[cell['area_type']][
                 'weekends' if is_weekend else 'weekdays'][time_period]
 
-            for band in cell['bands']: # 'bands' comes from the loaded cell config
-                usage = int(random.uniform(*usage_range) * cell['max_capacity']) # 'max_capacity' comes from loaded cell config
+            for band in cell['bands']: 
+                usage = int(random.uniform(*usage_range) * cell['max_capacity']) 
                 kpi = {
                     'RSRP': round(random.uniform(-120, -80), 2),
                     'RSRQ': round(random.uniform(-20, -3), 2),
@@ -182,25 +188,60 @@ def simulate(cells, interval=60):
                 }
 
                 if cell['cell_id'] in anomaly_cell_ids_this_interval and band == cell_band_anomaly_map.get(cell['cell_id']):
-                    kpi, usage = inject_anomaly(kpi, usage)
+                    # Note: current_band_normal_throughput/usage are placeholders for a more complex simulation
+                    normal_throughput = random.uniform(10, 150)
+                    normal_usage = int(random.uniform(*usage_range) * cell['max_capacity'])
+                    kpi, usage = inject_anomaly(kpi, usage, normal_throughput, normal_usage)
                     if '_anomaly_injected_type' in kpi:
-                        del kpi['_anomaly_injected_type']
+                        del kpi['_anomaly_injected_type'] 
 
-                ran_rows.append({
-                    'Cell ID': cell['cell_id'], # from loaded config
+                # Create the full record dictionary for this single cell-band combination
+                ran_record_dict = {
+                    'Cell ID': cell['cell_id'], 
                     'Datetime': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'Band': band, # from loaded config
-                    'Frequency': BAND_FREQUENCY_MAP.get(band, 'Unknown'), # using BAND_FREQUENCY_MAP
+                    'Band': band, 
+                    'Frequency': BAND_FREQUENCY_MAP.get(band, 'Unknown'), 
                     'UEs Usage': usage,
-                    'Area Type': cell['area_type'], # from loaded config
-                    'Lat': cell['lat'], # <--- ADD THIS LINE: from loaded config
-                    'Lon': cell['lon'], # <--- ADD THIS LINE: from loaded config
-                    'City': cell['city'], # <--- ADD THIS LINE: from loaded config
-                    'Adjacent Cells': ",".join(map(str, cell['adjacent_cells'])), # from loaded config
+                    'Area Type': cell['area_type'], 
+                    'Lat': cell['lat'], 
+                    'Lon': cell['lon'], 
+                    'City': cell['city'], 
+                    'Adjacent Cells': ",".join(map(str, cell['adjacent_cells'])), 
                     **kpi
-                })
+                }
+                
+                # --- Convert record dictionary to CSV string ---
+                # This ensures each Kafka message value is a single CSV line.
+                csv_buffer = StringIO()
+                # Use a csv.writer to handle quoting for fields with commas (like 'Adjacent Cells')
+                writer = csv.writer(csv_buffer, quoting=csv.QUOTE_ALL)
+                
+                # Ensure the order of values matches your consumer's expected column_names
+                # You'll need to define a consistent order of values to write
+                # Example:
+                ran_values_ordered = [
+                    ran_record_dict['Cell ID'], ran_record_dict['Datetime'], ran_record_dict['Band'],
+                    ran_record_dict['Frequency'], ran_record_dict['UEs Usage'], ran_record_dict['Area Type'],
+                    ran_record_dict['Lat'], ran_record_dict['Lon'], ran_record_dict['City'],
+                    ran_record_dict['Adjacent Cells'], ran_record_dict['RSRP'], ran_record_dict['RSRQ'],
+                    ran_record_dict['SINR'], ran_record_dict['Throughput (Mbps)'], ran_record_dict['Latency (ms)'],
+                    ran_record_dict['Max Capacity']
+                ]
+                writer.writerow(ran_values_ordered)
+                ran_csv_string = csv_buffer.getvalue().strip() # .strip() to remove trailing newline
 
-                du_rows.append({
+                # Produce the single CSV string as a Kafka message
+                # Use Cell ID as the key to distribute messages across partitions
+                producer.produce(
+                    topic_ran,
+                    #key=str(ran_record_dict['Cell ID']).encode('utf-8'), # Key must be bytes
+                    value=ran_csv_string.encode('utf-8'), # Value is a single CSV line (bytes)
+                    callback=delivery_report
+                )
+                ran_display_rows.append(ran_record_dict) # Add dict to sample list for console output
+
+                # Create DU record
+                du_record_dict = {
                     'Cell ID': cell['cell_id'],
                     'Datetime': current_time.strftime('%Y-%m-%d %H:%M:%S'),
                     'CPU (%)': round(random.uniform(10, 90), 2),
@@ -209,23 +250,45 @@ def simulate(cells, interval=60):
                     'RTT (ms)': round(random.uniform(1, 10), 2),
                     'Temperature (C)': round(random.uniform(30, 90), 2),
                     'Power Usage (W)': round(random.uniform(100, 500), 2)
-                })
+                }
 
-        df_ran = pd.DataFrame(ran_rows)
-        df_du = pd.DataFrame(du_rows)
+                # --- Convert DU record dictionary to CSV string ---
+                du_csv_buffer = StringIO()
+                du_writer = csv.writer(du_csv_buffer, quoting=csv.QUOTE_ALL)
+                du_values_ordered = [
+                    du_record_dict['Cell ID'], du_record_dict['Datetime'], du_record_dict['CPU (%)'],
+                    du_record_dict['Memory (MB)'], du_record_dict['Disk Space (GB)'], du_record_dict['RTT (ms)'],
+                    du_record_dict['Temperature (C)'], du_record_dict['Power Usage (W)']
+                ]
+                du_writer.writerow(du_values_ordered)
+                du_csv_string = du_csv_buffer.getvalue().strip()
 
-        producer.produce(topic_ran, key="ran", value=df_ran.to_csv(index=False, header=False), callback=delivery_report)
-        producer.produce(topic_du, key="du", value=df_du.to_csv(index=False, header=False), callback=delivery_report)
-        producer.flush()
+                # Produce DU record as a single Kafka message
+                producer.produce(
+                    topic_du,
+                    #key=str(du_record_dict['Cell ID']).encode('utf-8'), # Key must be bytes
+                    value=du_csv_string.encode('utf-8'), # Value is a single CSV line (bytes)
+                    callback=delivery_report
+                )
+                du_display_rows.append(du_record_dict) # Add dict to sample list for console output
 
-        print_sample_output(df_ran, "Sample RAN + KPI Metrics", "cyan")
-        print_sample_output(df_du, "Sample DU Resource Metrics", "magenta")
+        producer.flush() # Flush any remaining buffered messages after all records are sent for the interval
+
+        # --- MODIFICATION END ---
+
+        # Create DataFrames from the collected sample rows for console output
+        # These are just for printing; Kafka messages were sent individually above.
+        df_ran_sample = pd.DataFrame(ran_display_rows)
+        df_du_sample = pd.DataFrame(du_display_rows)
+
+        print_sample_output(df_ran_sample, "Sample RAN + KPI Metrics", "cyan")
+        print_sample_output(df_du_sample, "Sample DU Resource Metrics", "magenta")
 
         planned_anomaly_cells_count = len(cell_band_anomaly_map)
         planned_anomalous_bands_count = sum(1 for band in cell_band_anomaly_map.values())
 
         print(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] "
-              f"Sent {len(df_ran)} RAN + KPI and {len(df_du)} DU entries.")
+              f"Sent {len(ran_display_rows)} RAN + KPI and {len(du_display_rows)} DU entries as individual Kafka messages.")
         print(f"*** VERIFICATION (Internal Planning) ***")
         print(f"    Expected Anomalous Cells: {num_anomaly_cells}")
         print(f"    Planned Unique Anomalous Cells: {planned_anomaly_cells_count}")
@@ -233,8 +296,8 @@ def simulate(cells, interval=60):
         print(f"    Planned Anomaly Cell IDs This Interval: {sorted(list(anomaly_cell_ids_this_interval))}")
         print(f"********************\n")
 
-        print(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] Sent {len(df_ran)} RAN + KPI and {len(df_du)} DU entries")
-        time.sleep(interval)
+        print(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] Sent {len(ran_display_rows)} RAN + KPI and {len(du_display_rows)} DU entries")
+        time.sleep(interval) # Wait for the next simulation interval
 
 if __name__ == "__main__":
     # --- START OF MODIFICATION ---
@@ -246,12 +309,12 @@ if __name__ == "__main__":
     try:
         with open(cell_config_file, 'r') as f:
             config_data = json.load(f)
-            cells = config_data['cells'] # Extract the list of cell objects
+            cells = config_data['cells'] 
         print(f"Successfully loaded {len(cells)} cells from {cell_config_file}.")
     except FileNotFoundError:
         print(f"Error: {cell_config_file} not found. Please ensure it's in the same directory and generated.")
         print("Run 'python generate_static_cell_config.py' first.")
-        exit() # Exit the script if the config file isn't found
+        exit() 
 
     # 4. Remove the call to generate_cells() as it's no longer needed
     # cells = generate_cells() # <--- REMOVE OR COMMENT OUT THIS LINE

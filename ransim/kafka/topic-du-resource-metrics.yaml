@@ -6,7 +6,7 @@ metadata:
   labels:
     strimzi.io/cluster: my-cluster  # Replace with your Kafka cluster name
 spec:
-  partitions: 3
+  partitions: 1
   replicas: 1
   topicName: du-resource-metrics
   config:
