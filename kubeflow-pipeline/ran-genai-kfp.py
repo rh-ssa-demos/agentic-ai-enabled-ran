@@ -147,13 +147,16 @@ def stream_ran_metrics_to_s3_component(
                             total_parsed_records_in_run += 1
 
                             try:
+                                # Explicitly set delimiter and quotechar for robustness
+                                csv_reader_obj = csv.reader([line], delimiter=',', quotechar='"')
                                 values_for_print = next(csv.reader([line]))
                                 if len(values_for_print) == len(column_names):
                                     if total_parsed_records_in_run == 1:
                                         print("\n" + ", ".join(column_names))
                                     print(", ".join(str(v) for v in values_for_print))
                                 else:
-                                    print(f"Record {total_parsed_records_in_run}: [Invalid format for print] {line}")
+                                    # THIS IS CRITICAL: Print the actual number of parsed values
+                                    print(f"Record {total_parsed_records_in_run}: [Invalid format for print] Expected {len(column_names)} columns ({column_names}), got {len(values_for_print)}: {values_for_print} | Original Line: {line}")
                             except Exception as e:
                                 print(f"Record {total_parsed_records_in_run}: [Error parsing for print] {e} | Content: {line}")
                         
@@ -182,9 +185,9 @@ def stream_ran_metrics_to_s3_component(
                 if len(parsed) == len(column_names):
                     records.append(parsed)
                 else:
-                    print(f"Skipping malformed record: {line}")
+                    print(f"Skipping malformed record due to column mismatch: Expected {len(column_names)}, got {len(parsed)} - Raw: '{line}' - Parsed: {parsed}")
             except Exception as e:
-                print(f"CSV parsing failed: {e} | Content: {line}")
+                print(f"CSV parsing failed: {e} | Content: '{line}'")
 
         df = pd.DataFrame(records, columns=column_names)
 
