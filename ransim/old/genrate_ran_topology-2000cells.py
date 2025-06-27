@@ -1,7 +1,7 @@
 """
 Author: Dinesh Lakshmanan
 Email: dineshlakshmanan@redhat.com
-Date: June 27, 2025
+Date: 2025-06-04
 
 Notes:
 This script generates a static network topology for a RAN (Radio Access Network) simulator.
@@ -25,10 +25,11 @@ This script should be run once to generate the 'cell_config.json' file. The RAN 
 at its startup to ensure consistent network topology across simulation runs.
 """
 
+
 import random
 import json
+from collections import defaultdict
 import math
-import csv # <--- ADDED: Import the CSV module
 
 # --- Configuration for cell properties ---
 BAND_FREQUENCY_MAP = {
@@ -56,7 +57,10 @@ USAGE_PATTERNS = {
                     'weekends': {'day': (0.4, 0.6), 'night': (0.5, 0.8)}}
 }
 
-# --- GLOBAL CONFIGURATION CONSTANT ---
+# --- Note: MAX_ADJACENT_CELLS is now dynamic per cell (between 1 and 3)
+# It's no longer a single global constant for the strict limit.
+# However, for overall statistics and clarity in print statements, we can define
+# a theoretical maximum to refer to in the output.
 THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL = 3
 # --- End Configuration ---
 
@@ -105,6 +109,7 @@ def generate_static_cell_config(num_cells_param=100, seed=None):
     city_to_cell_ids_map = {city: [] for city in CITIES}
     cell_id_to_city_map = {}
     
+    # New: Assign a desired number of adjacent cells (1, 2, or 3) for each cell
     desired_adj_counts = {} 
 
     ids = list(range(num_cells_param))
@@ -114,6 +119,7 @@ def generate_static_cell_config(num_cells_param=100, seed=None):
         cell_id_to_city_map[cell_id] = assigned_city
         city_to_cell_ids_map[assigned_city].append(cell_id)
         
+        # Assign desired adjacent cell count for this cell
         desired_adj_counts[cell_id] = random.randint(1, THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL)
 
         cell_data = {
@@ -182,54 +188,19 @@ def generate_static_cell_config(num_cells_param=100, seed=None):
 
     return {"cells": final_cells_config}, cell_id_to_city_map
 
-# Function to write data to CSV
-def write_cells_to_csv(cells_data, filename="cell_config.csv"):
-    """
-    Writes cell configuration data to a CSV file.
-    Lists (bands, adjacent_cells) are converted to comma-separated strings.
-    """
-    if not cells_data:
-        print(f"No cell data to write to {filename}.")
-        return
-
-    # Define the order of columns for the CSV
-    fieldnames = [
-        'cell_id', 'max_capacity', 'lat', 'lon', 'bands',
-        'area_type', 'city', 'adjacent_cells'
-    ]
-
-    with open(filename, 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for cell in cells_data:
-            # Create a shallow copy to modify list fields for CSV output
-            row_data = cell.copy()
-            # Convert lists to comma-separated strings for CSV
-            row_data['bands'] = ",".join(row_data['bands'])
-            row_data['adjacent_cells'] = ",".join(map(str, row_data['adjacent_cells']))
-            writer.writerow(row_data)
-    print(f"Successfully generated '{filename}'.")
-
-
 if __name__ == "__main__":
     fixed_seed = 42
-    num_cells = 100 # Corrected to 100 cells for the main run
+    num_cells = 100 # Define num_cells here
 
     print(f"Using random seed: {fixed_seed} for reproducible cell configuration.")
 
     cell_configuration, cell_id_to_city_map = generate_static_cell_config(num_cells_param=num_cells, seed=fixed_seed)
-    
-    # --- JSON Output ---
-    json_file_name = "cell_config.json"
-    with open(json_file_name, 'w') as f:
+
+    file_name = "cell_config.json"
+    with open(file_name, 'w') as f:
         json.dump(cell_configuration, f, indent=2)
-    print(f"Successfully generated '{json_file_name}' with configuration for {len(cell_configuration['cells'])} cells.")
 
-    # --- CSV Output ---
-    csv_file_name = "cell_config.csv"
-    write_cells_to_csv(cell_configuration['cells'], csv_file_name)
-
-
+    print(f"Successfully generated '{file_name}' with configuration for {len(cell_configuration['cells'])} cells.")
     print("This file contains a FIXED network topology with the following rules:")
     print(f"  - **Bidirectional Adjacencies:** If Cell A is adjacent to Cell B, Cell B is adjacent to Cell A.")
     print(f"  - **Variable Neighbors (1-{THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL} max):** Each cell aims for 1 to {THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL} adjacent cells.")
@@ -239,16 +210,7 @@ if __name__ == "__main__":
 
     # --- Verification Sample ---
     print("\n--- Verification Sample ---")
-    # Adjust sample_cell_ids_to_check to be within the num_cells range if num_cells is small
-    sample_cell_ids_to_check = [0] # Start with cell 0
-    if num_cells > 1: sample_cell_ids_to_check.append(1)
-    if num_cells > 10: sample_cell_ids_to_check.append(10)
-    if num_cells > 50: sample_cell_ids_to_check.append(50)
-    if num_cells > 100: sample_cell_ids_to_check.append(100)
-    if num_cells > 500: sample_cell_ids_to_check.append(500)
-    if num_cells > 1000: sample_cell_ids_to_check.append(1000)
-    if num_cells > 1500: sample_cell_ids_to_check.append(1500)
-    if num_cells > 1999: sample_cell_ids_to_check.append(1999) # For 2000 cells
+    sample_cell_ids_to_check = [0, 1, 10, 50, 100, 500, 1000, 1500, 1999]
     
     cells_by_id = {cell['cell_id']: cell for cell in cell_configuration['cells']}
 
@@ -263,6 +225,7 @@ if __name__ == "__main__":
             print(f"  City: {sample_cell['city']}, Lat: {sample_cell['lat']:.6f}, Lon: {sample_cell['lon']:.6f}, Bands: {sample_cell['bands']}")
             print(f"  Adjacent Cells ({len(sample_cell['adjacent_cells'])} total): {sample_cell['adjacent_cells']}")
             
+            # Check for the 0-3 max constraint on the sample cell itself (it can be 0 if no eligible partners)
             if not (0 <= len(sample_cell['adjacent_cells']) <= THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL):
                 print(f"    !!! ERROR: Adjacent cell count ({len(sample_cell['adjacent_cells'])}) exceeds max {THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL} !!!")
                 errors_in_sample += 1
