@@ -1041,7 +1041,7 @@ def genai_anomaly_detection(
 # Define the pipeline
 @dsl.pipeline(
     name="ran_multi_prediction_pipeline_with_genai",
-    description="RAN pipeline with traffic prediction, LSTM training, RandomForest, KPI anomaly detection, and GenAI forecast explainer"
+    description="RAN pipeline with stream RAN metrics to S3, train traffic precition model and GenAI anomaly detection"
 )
 def ran_multi_prediction_pipeline_with_genai(
     bootstrap_servers: str = "my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092",
