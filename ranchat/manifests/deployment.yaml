@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ranchat
+  labels:
+    app: ranchat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ranchat
+  template:
+    metadata:
+      labels:
+        app: ranchat
+    spec:
+      containers:
+      - name: ranchat
+        image: quay.io/ferossi/ranchat:0.1
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: API_URL
+          value: 'https://deepseek-r1-qwen-14b-w4a16-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443'
+        - name: API_MODEL
+          value: 'r1-qwen-14b-w4a16'
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ranchat-secrets
+              key: API_KEY
+        - name: S3_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ranchat-secrets
+              key: S3_KEY
+        - name: S3_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ranchat-secrets
+              key: S3_SECRET_ACCESS_KEY
+        - name: S3_HOST
+          value: '[S3_HOST]'
+        - name: S3_BUCKET
+          value: 'ai-cloud-ran-genai-bucket-5f0934a3-ebae-45cc-a327-e1f60d7ae15a'
+        - name: DB_HOST
+          value: 'mysql-service'
+        - name: DB_USER
+          value: 'root'
+        - name: DB_PWD
+          value: 'rangenai'
+        - name: DB_NAME
+          value: 'ran_events'
+        - name: FORECAST_AGENT_URL
+          value: 'http://forecast-agent:5001/mcp'        
+        ports:
+        - containerPort: 5000

@@ -1,0 +1,16 @@
+openai
+langchain
+langchain-community
+pypdf
+python-docx
+docx2txt
+sentence-transformers
+faiss-cpu
+flask[async]
+sqlalchemy
+pymysql
+cryptography
+boto3
+mcp
+fastmcp
+pandas

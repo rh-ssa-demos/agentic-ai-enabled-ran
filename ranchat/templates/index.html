@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RAN-AI Chat</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<body>
+  <div class="container">
+    <!-- Left: Chat box -->
+    <div class="chat-box">
+      <h2><img src="{{ url_for('static', filename='images/redhat_logo.png') }}" width="50px" style="vertical-align: middle;"/> 💬 RAN-AI Chat</h2>
+      <div class="messages" id="messages"></div>
+      <div id="loader" style="display:none; text-align:center; margin:10px;"> 
+        <img src="https://i.gifer.com/ZZ5H.gif" alt="Loading..." style="width:20px; vertical-align:middle;" />
+        <span>🤔 Thinking...</span>
+      </div>
+      <input type="text" id="query" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <!-- Right: Events Table -->
+    <div class="events-box">
+      <h2>🚨 Latest Events</h2>
+      <table class="chat-table" id="events-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Event</th>
+	    <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Events will be injected here -->
+        </tbody>
+      </table>
+      <div id="full-data" class="full-event" style="margin-bottom: 10px;"></div>
+      <div id="full-event" class="full-event"></div>
+    </div>
+  </div>
+
+  <script>
+function formatBotMessage(msg) {
+  const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+  const codeBlocks = [];
+  msg = msg.replace(codeBlockRegex, (_, lang, code) => {
+    codeBlocks.push(`<pre><code class="language-${lang || 'plaintext'}">${escapeHtml(code)}</code></pre>`);
+    return `[[CODEBLOCK_${codeBlocks.length - 1}]]`; // placeholder
+  });
+
+  msg = escapeHtml(msg).replace(/\n/g, "<br>");
+
+  msg = msg.replace(/`(.*?)`/g, (_, content) => {
+    return `<i>${content}</i>`;
+  });
+
+  msg = msg.replace(/\*\*(.*?)\*\*/g, (_, content) => {
+    return `<b>${content}</b>`;
+  });
+
+
+  // Re-insert code blocks
+  codeBlocks.forEach((block, index) => {
+    msg = msg.replace(`[[CODEBLOCK_${index}]]`, block);
+  });
+
+  return msg;
+}
+   // Escape HTML entities to avoid breaking layout
+   function escapeHtml(text) {
+     const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+     };
+     return text.replace(/[&<>"']/g, m => map[m]);
+   }
+    
+   async function sendMessage() {
+      const queryInput = document.getElementById("query");
+      const messagesDiv = document.getElementById("messages");
+      const loader = document.getElementById("loader");	    
+      const userMsg = queryInput.value;
+
+      if (!userMsg.trim()) return;
+
+      messagesDiv.innerHTML += `<div class='msg user'><br/>🧑‍💻 You: ${userMsg}</div>`;
+      queryInput.value = '';
+      loader.style.display = 'block';  // Show loader
+	  try {
+	    const response = await fetch('/api/query', {
+	      method: 'POST',
+	      headers: { 'Content-Type': 'application/json' },
+	      body: JSON.stringify({ query: userMsg })
+	    });
+
+	    const data = await response.json();
+	    const botMsg = data.response || "Error: " + data.error;
+            // Detect code block using triple backticks
+	    const formattedBotMsg = formatBotMessage(botMsg);
+	    messagesDiv.innerHTML += `<div class='msg bot'>🤖 Bot: ${formattedBotMsg}<br/></div>`;
+	    Prism.highlightAll();
+	  } catch (err) {
+	  messagesDiv.innerHTML += `<div class='msg bot'><br/>❌ Error: ${err.message}<br/></div>`;
+	  } finally {
+	    loader.style.display = 'none';  // Hide loader
+	    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+	  }
+    }
+
+    function loadEvents() {
+      $.getJSON('/api/events', function(data) {
+        const tableBody = $('#events-table tbody');
+        tableBody.empty(); // Clear current rows
+        data.forEach(event => {
+          const snippet = event.event.length > 50 ? event.event.substring(0, 50) + '...' : event.event;
+          const row = $(`
+            <tr data-full="${encodeURIComponent(event.event)}">
+              <td>${event.creation_date}</td>
+              <td>${snippet}</td>
+	      <td>Original data</td>
+            </tr>
+          `);
+          row.click(function() {
+	     const fullText = decodeURIComponent($(this).data('full')).replace(/\n/g, '<br/>');
+	     $('#full-event').html(`<strong>Full Event:</strong><br>${fullText}`).show();
+	     $('#full-data').html(`<strong>Original Data:</strong><br>${event.data}`).show();
+          });
+          tableBody.append(row);
+        });
+      });
+    }
+
+    $(document).ready(function() {
+      loadEvents();
+      setInterval(loadEvents, 10000); // refresh every 10 seconds
+    });
+
+  </script>
+</body>
+</html>
+

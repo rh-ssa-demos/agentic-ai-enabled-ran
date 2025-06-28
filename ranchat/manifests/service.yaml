@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ranchat-service
+  labels:
+    app: ranchat
+spec:
+  selector:
+    app: ranchat
+  ports:
+    - protocol: TCP
+      port: 5000      
+      targetPort: 5000  
+  type: ClusterIP

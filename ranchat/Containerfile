@@ -1,0 +1,12 @@
+FROM registry.access.redhat.com/ubi9/python-312
+
+ENV API_URL=API_URL \
+    API_KEY=API_KEY \
+    API_MODEL=API_MODEL
+
+WORKDIR /app
+
+COPY . .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+CMD ["python", "-u", "ranchat.py"]
