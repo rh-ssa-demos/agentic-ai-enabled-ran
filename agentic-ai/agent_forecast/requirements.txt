@@ -1,0 +1,6 @@
+fastapi
+fastmcp
+pandas
+boto3
+joblib
+scikit-learn

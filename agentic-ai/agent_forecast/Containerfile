@@ -1,0 +1,13 @@
+FROM registry.access.redhat.com/ubi9/python-312
+
+ENV S3_KEY=S3_KEY \
+    S3_SECRET_ACCESS_KEY=S3_SECRET_ACCESS_KEY \
+    S3_BUCKET=S3_BUCKET \
+    S3_HOST=S3_HOST
+
+WORKDIR /app
+
+COPY . .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+CMD ["python", "-u", "server.py"]
