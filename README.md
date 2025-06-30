@@ -31,6 +31,43 @@ Generative AI
 
 ![RAN GenAI Architecture with OpenShift AI](img/ran_genai_architecture.png?raw=true "RAN GenAI Architecture with OpenShift AI")
 
-## Components
+AI-driven, automated RAN operations framework built on Red Hat OpenShift, combining near real-time telemetry, predictive modeling, and GenAI to support autonomous RAN monitoring and remediation.
+
+ **RAN Simulator**
+
+ - A RAN simulator continuously emit operational telemetry data.
+ - This data is sent via Kafka, which acts as the central data bus for ingesting real-time metrics.
+ 
+ **AI/ML Pipeline**
+
+ - Kubeflow Pipeline:
+   * Automates model training workflows.
+   * Handles data preprocessing, training, validation, and deployment.
+ - Model Training & Anomaly Detection:
+   * Uses incoming RAN metrics to train models continuously
+   * Detects anomalies (e.g. degradation, congestion) as they arise.
+ - Model Storage
+   * Trained models are saves as S3 objects for reuse in predictions
+
+ **GenAI Integration**
+ - Hosts predictive models for inference
+ - RAG (Retrieval-Augumented Generation):
+   * Accesses external documentation and knowledge bases.
+   * Enriches LLM responses with factual, context-aware information.
+ - Open Source LLM:
+   * Generate natual language explanations.
+   * Produce prescriptive remendiation steps.
+
+ **MCP Agent/Server**
+ - MCP Agent used for traffic forecast
+ - Loads trained models from the S3 object store.
+ - Performs prediction inference based on the historical data.
+
+ **Web Interface**
+ - Simple UI to chat with LLM.
+ - Display automatically detected events.
+
+### Components
+
 
 
