@@ -4,15 +4,11 @@ AI-Enabled RAN is a sample implementation to enhance the operational efficiency 
 Modern mobile networks generate vast volumes of telemetry data, but interpreting and acting on this data quickly and accurately remains a challenge for network engineers. This project showcase how OpenShift AI can transforms RAN operations by:
 
 - Anticipating problems before they impact users through anomaly detection.
-- Automatic root cause analysis and resolutions steps using LLM enhanced via RAG with specific domain documentation
-- Empowering engineers with natural language explanations and actionable recommendations for optimizing upgrade and maintenance schedules
-- 
-This project brings automation and intelligenge enabling:
-
-- Faster Response Times: Near real-time anomaly detction and contextual remediation suggestions reduce mean time to resolution (MTTR).
-- Explainability: GenAI generates human-like descriptions of network issues, helping less experienced engineers quickly grasp complex problems.
-- Operational Agility: Recommendations include not only diagnosis but also a prescriptive action such as what configuration to change and what command to run.
-
+  * Fast Response Times, contextual remediation suggesttions reduce mean time to resolution (MTTR).
+- Automatic root cause analysis and resolutions steps using LLM enhanced via RAG with specific domain documentation.
+  * Explainability: GenAI generates human-like descriptions of network issues, helping less experienced engineers quickly grasp complex problems.
+  * Empowering engineers with natural language explanations and actionable recommendations for optimizing upgrade and maintenance schedules.
+ 
 ## Key Features
 
 Predictive AI
