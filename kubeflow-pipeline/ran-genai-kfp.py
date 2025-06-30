@@ -1,7 +1,7 @@
 # ====================================================================================================
 # Project: RAN Anomaly Detection and Traffic Prediction using Kubeflow Pipelines and Generative AI
 # Author: Dinesh Lakshmanan
-# Date: June 27, 2025
+# Date: June 30, 2025
 # Description:
 # This Kubeflow Pipeline automates an end-to-end MLOps workflow for Radio Access Network (RAN)
 # performance metrics. It encompasses real-time data ingestion, persistent storage,
@@ -57,6 +57,7 @@
 #     - Dependencies: Runs after `stream_ran_metrics_to_s3_component` to process the latest data batch.
 #
 # ====================================================================================================
+
 
 from kfp import dsl
 from kfp.dsl import component, Input, Output, Dataset
@@ -1051,9 +1052,10 @@ def ran_multi_prediction_pipeline_with_genai(
     aws_access_key: str = "mo0x4vOo5DxiiiX2fqnP",
     aws_secret_key: str = "odP78ooBR0pAPaQTp6B2t+03+U0q/JPUPUqU/oZ6",
     #llm_api_key: str = "53f4a38459dabf6c3a8682888f77b714",
-    llm_api_key: str = "08e38386e70547b185b8894e13524db5",
+    llm_api_key: str = "0db3b3d7009a1a31af4ccc35e4a902ca",
     #llm_api_url: str = "https://mistral-7b-instruct-v0-3-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1",
-    llm_api_url: str = "https://llama-3-1-8b-instruct-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1",
+    #llm_api_url: str = "https://llama-3-1-8b-instruct-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1",
+    llm_api_url: str = "https://llama-4-scout-17b-16e-w4a16-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1",
     db_host: str = "mysql-service",
     db_pwd: str = "rangenai",
     db_user: str = "root",
@@ -1091,7 +1093,8 @@ def ran_multi_prediction_pipeline_with_genai(
         model_api_key=llm_api_key,
         model_api_url=llm_api_url,
         #model_api_name="mistral-7b-instruct",
-        model_api_name="meta-llama/Llama-3.1-8B-Instruct",
+        #model_api_name="meta-llama/Llama-3.1-8B-Instruct",
+        model_api_name="llama-4-scout-17b-16e-w4a16",
         db_host=db_host,
         db_user=db_user,
         db_pwd=db_pwd,
