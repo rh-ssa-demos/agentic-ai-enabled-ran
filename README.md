@@ -64,12 +64,19 @@ AI-driven, automated RAN operations framework built on Red Hat OpenShift, combin
  - Display automatically detected events.
 
 ### Components
+ - **Red Hat OpenShift AI (RHOAI)**
+ - **Red Hat OpenShift Data Foundation (ODF)**
+ - **Streams for Apache Kafka**
+ - **Hosted Model-as-a-Service** 
 
 
-### Demo Highlights
+### Demo Scripts
 
 
-## Running the Demo
+### Demo Video
+
+
+### Running the Demo
 
 
 
