@@ -25,7 +25,7 @@ Generative AI
 
 ## Architecture
 
-![RAN GenAI Architecture with OpenShift AI](img/ran_genai_architecture.png?raw=true "RAN GenAI Architecture with OpenShift AI")
+![RAN GenAI Architecture with OpenShift AI](docs/img/ran_genai_architecture.png?raw=true "RAN GenAI Architecture with OpenShift AI")
 
 AI-driven, automated RAN operations framework built on Red Hat OpenShift, combining near real-time telemetry, predictive modeling, and GenAI to support autonomous RAN monitoring and remediation.
 
