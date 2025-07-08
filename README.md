@@ -66,4 +66,13 @@ AI-driven, automated RAN operations framework built on Red Hat OpenShift, combin
 ### Components
 
 
+### Demo Highlights
+
+
+## Running the Demo
+
+
+
+
+
 
