@@ -80,7 +80,11 @@ WIP
 
 ## Running the Demo
 
-WIP
+To test this application, follow the appropriate instructions based on your environment:
+
+- On RHDP: Refer to the instructions [steps-to-run-on-rhdp](./steps-to-run-on-rhdp.md) .
+
+- On On-Premises or Public Cloud OpenShift Cluster: Follow the steps mentioned in [steps-to-run-on-openshift](./steps-to-run-on-openshift.md) file.
 
 
 
