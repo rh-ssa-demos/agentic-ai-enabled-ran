@@ -63,20 +63,20 @@ AI-driven, automated RAN operations framework built on Red Hat OpenShift, combin
  - Simple UI to chat with LLM.
  - Display automatically detected events.
 
-### Components
+## Components
  - **Red Hat OpenShift AI (RHOAI)**
  - **Red Hat OpenShift Data Foundation (ODF)**
  - **Streams for Apache Kafka**
  - **Hosted Model-as-a-Service** 
 
 
-### Demo Scripts
+## Demo Scripts
 
 
-### Demo Video
+## Demo Video
 
 
-### Running the Demo
+## Running the Demo
 
 
 
