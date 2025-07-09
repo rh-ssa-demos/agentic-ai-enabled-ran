@@ -46,7 +46,7 @@ AI-driven, automated RAN operations framework built on Red Hat OpenShift, combin
    * Trained models are saves as S3 objects for reuse in predictions
 
  **GenAI Integration**
- - Hosts predictive models for inference
+ - Hosts on ODF predictive models for inference
  - RAG (Retrieval-Augumented Generation):
    * Accesses external documentation and knowledge bases.
    * Enriches LLM responses with factual, context-aware information.
@@ -67,7 +67,7 @@ AI-driven, automated RAN operations framework built on Red Hat OpenShift, combin
  - **Red Hat OpenShift AI (RHOAI)**
  - **Red Hat OpenShift Data Foundation (ODF)**
  - **Streams for Apache Kafka**
- - **Hosted Model-as-a-Service** 
+ - **Hosted Model-as-a-Service** or **Local model serving with RHOAI**
 
 
 ## Demo Scripts
@@ -77,6 +77,24 @@ WIP
 ## Demo Video
 
 WIP
+
+## Repository Structure
+
+Below is the repository structure and each components
+.
+├── agentic-ai <-- Contains MCP agents
+│   └── agent_forecast
+│       └── manifests <-- Manifests used to deploy the forecast agent
+├── kubeflow-pipeline <-- KubeFlow pipeline used for metrics machine learning and anomaly detection
+├── ranchat <-- UI Interface
+│   ├── manifests <-- Manifests to deploy ranchat
+│   │   └── mysql <-- Example deployment for MariaDB used for storing anomaly events
+│   ├── static <-- Assets used by the UI
+│   │   ├── css
+│   │   └── images
+│   └── templates <-- HTML templates
+└── ransim <-- RAN topology generator and RAN simulator
+
 
 ## Running the Demo
 

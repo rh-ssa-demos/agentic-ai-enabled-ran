@@ -310,11 +310,17 @@ async def query_model():
         return jsonify({"error": "Missing 'query' in request body"}), 400
 
     # perform classification
-    prompt = """ Classify the following user question into one of the two categories below:
-                 1. Prediction related - Queries about predictions, trends, forecasts, or predictive models
-                 2. Upgrade - Any query that includes the word ClusterGroupUpgrade
-                 3. General - All other queries not related to predictions or upgrade
-                 Answer only PREDICTION or GENERAL or UPGRADE based on the classified category, no other text should be included in the response.
+    prompt = """You are a strict classifier. Classify the following user question into only one of the following categories:
+
+PREDICTION – The question is about predictions, forecasts, or any kind of predictive modeling, including AI or ML forecasts.
+
+UPGRADE – The question contains the term "ClusterGroupUpgrade" (case-insensitive).
+
+GENERAL – The question does not fall into the above two categories.
+
+Respond with exactly one of the following words only: PREDICTION, UPGRADE, or GENERAL.
+
+Do not explain your answer. Do not return anything else.
                 
                  User question: %s""" % (data['query'])
     response = qa_chain.invoke(prompt)
@@ -327,7 +333,14 @@ async def query_model():
         llm_prompt = "This is a prediction request extract the Cell IDs are needed and the correct date requested by the user. User input: %s" % data['query']
         response = qa_chain.invoke(llm_prompt)
 
-        prompt = """Based on the user input can you extract the CELL Id and add the date or day and put it in a JSON structure using this format [{"Cell ID": "100", "Datetime_ts": "2025-08-04T12:00:00"}] then call the forecast agent to get a response about the prediction.
+        prompt = """Extract the Cell ID and the date or day from the user input, and internally convert it into this JSON format:
+[{"Cell ID": "100", "Datetime_ts": "2025-08-04T12:00:00"}]
+Use this JSON to call the forecast agent to get a prediction.
+
+Return the final result as a human-readable sentence, such as:
+"The predicted usage for Cell 100 on Monday, August 4th, 2025 is busy with a 92 percent confidence level."
+
+Do not return the JSON or any structured data to the user. Only return a plain English summary of the prediction result.
                     User input: %s""" % response['result']
         data_resp = await agent.arun(prompt)
         print("Agent Response: %s" % data_resp)
@@ -336,9 +349,13 @@ async def query_model():
 
     elif 'UPGRADE' in response['result']:
         print("Upgrade request")
-        prompt = """I will provide you the user input and your response should include the YAML template below replacing the [cell-site-X] with the correct name of the cell sites.
-                    User input: %s
-                    YAML Template:
+        prompt = """You are given a user input and have access to additional context that contains one or more valid cell site names from the RAN topology (e.g., cell-site-0, cell-site-1).
+Your task is to return the following YAML template, replacing the placeholder cluster names under spec.clusters with the correct cell site names from the context.
+Use only the relevant cell site IDs mentioned or implied in the user input and found in the provided context.
+Preserve the structure of the YAML exactly.
+If no valid cell sites are found, leave the clusters list empty.
+User input: %s
+YAML Template to populate:
 ```yaml
 apiVersion: ran.openshift.io/v1alpha1
 kind: ClusterGroupUpgrade
@@ -350,12 +367,11 @@ spec:
   - du-upgrade-platform-upgrade-prep
   - du-upgrade-platform-upgrade
   clusters:
-  - cell-site-1
-  - cell-site-2
-  - cell-site-3
+  # Insert matching cell site names here
   remediationStrategy:
     maxConcurrency: 1
-  enable: true```""" % data['query']
+  enable: true```
+  Only return the populated YAML. Do not include explanations or any additional output.""" % data['query']
         data_resp = qa_chain.invoke(prompt)
         print("Response: %s" % data_resp['result'])
         return jsonify({"response": data_resp['result']}), 200
