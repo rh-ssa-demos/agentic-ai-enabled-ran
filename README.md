@@ -84,18 +84,18 @@ Below is the repository structure and each components
 
 ```
 .
-├── agentic-ai <-- Contains MCP agents
+├── 📁 agentic-ai <- Contains MCP agents
 │   └── agent_forecast
-│       └── manifests <-- Manifests used to deploy the forecast agent
-├── kubeflow-pipeline <-- KubeFlow pipeline used for metrics machine learning and anomaly detection
-├── ranchat <-- UI Interface
-│   ├── manifests <-- Manifests to deploy ranchat
-│   │   └── mysql <-- Example deployment for MariaDB used for storing anomaly events
-│   ├── static <-- Assets used by the UI
+│       └── manifests <- Manifests used to deploy the forecast agent
+├── 📁 kubeflow-pipeline <- ML pipeline used for metrics and anomaly detection
+├── 📁 ranchat <- UI Interface
+│   ├── manifests <- Manifests to deploy ranchat
+│   │   └── mysql <- Example deployment for MariaDB used for storing anomaly events
+│   ├── static <- Assets used by the UI
 │   │   ├── css
 │   │   └── images
-│   └── templates <-- HTML templates
-└── ransim <-- RAN topology generator and RAN simulator
+│   └── templates <- HTML templates
+└── 📁 ransim <- RAN topology generator and RAN simulator
 ```
 
 ## Running the Demo
