@@ -80,7 +80,7 @@ WIP
 
 ## Repository Structure
 
-Below is the repository structure and each components
+The following outlines the repository layout and its key components.
 
 ```
 .
