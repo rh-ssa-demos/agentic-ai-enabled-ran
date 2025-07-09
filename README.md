@@ -81,6 +81,8 @@ WIP
 ## Repository Structure
 
 Below is the repository structure and each components
+
+```
 .
 ├── agentic-ai <-- Contains MCP agents
 │   └── agent_forecast
@@ -94,7 +96,7 @@ Below is the repository structure and each components
 │   │   └── images
 │   └── templates <-- HTML templates
 └── ransim <-- RAN topology generator and RAN simulator
-
+```
 
 ## Running the Demo
 
