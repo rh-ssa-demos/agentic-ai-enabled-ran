@@ -43,6 +43,7 @@ from io import StringIO # REQUIRED: Import StringIO for CSV serialization
 
 # Kafka Configuration (enhanced for batching and large messages)
 conf = {
+    #please change the bootstrap server according to your kafka configuration
     'bootstrap.servers': 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092',
     #'bootstrap.servers': '192.168.154.101:30139',
     'client.id': 'ransim',
