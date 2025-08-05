@@ -65,11 +65,11 @@ Begin by deploying the RAN simulator to generate metrics and stream them into Ka
 
 ## Kubeflow Pipelines for continuous flow of RAN Anomaly Detection and Traffic Prediction
 
-We used the `kubeflow-pipeline/ran-genai-kfp.py` which is based on kubeflow pipelines automates an end-to-end MLOps workflow for Radio Access Network (RAN) performance metrics. It encompasses real-time data ingestion, persistent storage, machine learning model training for traffic prediction, and a robust anomaly detection system powered by Generative AI (GenAI) with Retrieval-Augmented Generation (RAG).
+`kubeflow-pipeline/ran-genai-kfp.py` code is based on kubeflow pipelines automates an end-to-end MLOps workflow for Radio Access Network (RAN) performance metrics. It encompasses real-time data ingestion, persistent storage, machine learning model training for traffic prediction, and a robust anomaly detection system powered by Generative AI (GenAI) with Retrieval-Augmented Generation (RAG).
 
 The pipeline is designed to process streaming RAN data, identify key performance indicator (KPI) anomalies, provide intelligent explanations, and offer actionable recommendations.
 
-* Use this code to modify the Kafka server, Model API keys, S3 Storage information relevant to your environment.
+* Use this code `kubeflow-pipeline/ran-genai-kfp.py` to modify the Kafka server, Model API keys, S3 Storage information relevant to your environment.
 * Compile the python code to generate the pipeline yaml to upload in OpenShift AI pipelines. For example please refer the generated pipeline yaml `kubeflow-pipeline/ran_multi_prediction_pipeline_with_genai.yaml`
 * The generated yaml can be uploaded in OpenShift AI pipelines under the namespace you have created for this demo. 
 
