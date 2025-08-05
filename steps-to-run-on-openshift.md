@@ -51,10 +51,28 @@ Once the required OpenShift components are running, you’ll need the following 
 Follow the instructions here to create and configure the S3 bucket.
 **Model Access**: Obtain the model API key, URL , and model name from MaaS or your local deployment.
 
+Once you have access to OpenShift AI, ensure to configure the following;
+- Access the Data science project and select your namespace `ai-ran-genai` for this demo.
+- Select Workbenches and create workbench. You can select image `TensorFlow` or image of your choice. Container size `small or medium`.
+- Select Pipelines and configure pipeline server in order to use later for kubeflow pipelines. Ensure to provide the S3 Object Storage details to configure pipeline server.
+
 ## Deploy RAN Simulator 
 
 Begin by deploying the RAN simulator to generate metrics and stream them into Kafka.
 
 * The repository includes a default `cell_config.json` file with a predefined RAN topology of 100 cell sites.
 * To create a custom topology, refer to the `generate_ran_topology` documentation.
+
+## Kubeflow Pipelines for continuous flow of RAN Anomaly Detection and Traffic Prediction
+
+We used the `kubeflow-pipeline/ran-genai-kfp.py` which is based on kubeflow pipelines automates an end-to-end MLOps workflow for Radio Access Network (RAN) performance metrics. It encompasses real-time data ingestion, persistent storage, machine learning model training for traffic prediction, and a robust anomaly detection system powered by Generative AI (GenAI) with Retrieval-Augmented Generation (RAG).
+
+The pipeline is designed to process streaming RAN data, identify key performance indicator (KPI) anomalies, provide intelligent explanations, and offer actionable recommendations.
+
+* Use this code to modify the Kafka server, Model API keys, S3 Storage information relevant to your environment.
+* Compile the python code to generate the pipeline yaml to upload in OpenShift AI pipelines. For example please refer the generated pipeline yaml `kubeflow-pipeline/ran_multi_prediction_pipeline_with_genai.yaml`
+* The generated yaml can be uploaded in OpenShift AI pipelines under the namespace you have created for this demo. 
+
+- Access OpenShift AI Pipelines and Import Pipeline. Provide Pipeline name and upload the generated pipeline yaml based on the output after compiling this python code `kubeflow-pipeline/ran-genai-kfp.py`.
+
 
