@@ -5,7 +5,7 @@ Date: June 27, 2025
 
 Notes:
 This script generates a static network topology for a RAN (Radio Access Network) simulator.
-It creates a 'cell_config.json' file containing configuration details for 2000 cells.
+It creates a 'cell_config.json' file containing configuration details for 100 cells.
 
 The generated topology adheres to the following rules:
 - **Fixed Cell Properties**: Each cell has a unique ID, max capacity, geographical coordinates (latitude/longitude),
