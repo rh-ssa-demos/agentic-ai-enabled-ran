@@ -65,7 +65,7 @@ Begin by deploying the RAN simulator to generate metrics and stream them into Ka
 
 ## Kubeflow Pipelines for continuous flow of RAN Anomaly Detection and Traffic Prediction
 
-`kubeflow-pipeline/ran-genai-kfp.py` code is based on kubeflow pipelines automates an end-to-end MLOps workflow for Radio Access Network (RAN) performance metrics. It encompasses real-time data ingestion, persistent storage, machine learning model training for traffic prediction, and a robust anomaly detection system powered by Generative AI (GenAI) with Retrieval-Augmented Generation (RAG).
+`kubeflow-pipeline/ran-genai-kfp.py` code is based on kubeflow pipelines automates an end-to-end MLOps workflow for Radio Access Network (RAN) performance metrics. It encompasses real-time data ingestion, persistent storage, machine learning model training for traffic prediction, and a robust anomaly detection system powered by both Predictive AI and Generative AI (GenAI) with Retrieval-Augmented Generation (RAG).
 
 The pipeline is designed to process streaming RAN data, identify key performance indicator (KPI) anomalies, provide intelligent explanations, and offer actionable recommendations.
 
