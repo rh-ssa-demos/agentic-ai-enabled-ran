@@ -33,7 +33,7 @@ To run the AI-Enabled-RAN demo, ensure the following OpenShift components are in
 - OpenShift AI
 - Kafka
 
-## Create the Working Namespace
+## 3. Create the Working Namespace
 
 This nameapce will be used to deploy all components related to the demo:
 
@@ -41,7 +41,7 @@ This nameapce will be used to deploy all components related to the demo:
 # oc create ns ai-ran-genai
 ```
 
-## Prerequisite Variables
+## 4. Prerequisite Variables
 
 Once the required OpenShift components are running, you’ll need the following credentials and configuration details:
 
@@ -56,7 +56,7 @@ Once you have access to OpenShift AI, ensure to configure the following;
 - Select Workbenches and create workbench. You can select image `TensorFlow` or image of your choice. Container size `small or medium`.
 - Select Pipelines and configure pipeline server in order to use later for kubeflow pipelines. Ensure to provide the S3 Object Storage details to configure pipeline server.
 
-## Deploy RAN Simulator 
+## 5. Deploy RAN Simulator 
 
 Begin by deploying the RAN simulator to generate metrics and stream them into Kafka.
 
