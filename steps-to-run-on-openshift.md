@@ -22,9 +22,9 @@ This section provides quick access to the official Red Hat documentation for ins
 
    | Operator |                        Minmum requirements |
     | ------             |          ------ |
-    |   RHOAI            |     At least 2 worker nodes with at least 8 CPUs and 32 GiB RAM available.    |   
-    |   ODF           |    Less than 2 vCPU and 120GB storage per Node     | 
-    |   Kafka           |    Less than 2 vCPU and 10GB of Memory     |  
+    |   Red Hat OpenShift AI            |     At least 2 worker nodes with at least 8 CPUs and 32 GiB RAM available.    |   
+    |   OpenShift Data Foundation           |    Less than 2 vCPU and 120GB storage per Node     | 
+    |   Streams for Apache Kafka 3.0           |    Less than 2 vCPU and 10GB of Memory     |  
 
 
 To run the AI-Enabled-RAN demo, ensure the following OpenShift components are installed and operational:
