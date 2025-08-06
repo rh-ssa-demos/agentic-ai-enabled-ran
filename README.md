@@ -91,10 +91,10 @@ The following outlines the repository layout and its key components.
 ├── 📁 ranchat <- UI Interface
 │   ├── manifests/ <- Manifests to deploy ranchat
 │   │   └── mysql/ <- Example deployment for MariaDB used for storing anomaly events
-│   ├── static <- Assets used by the UI
+│   ├── static/ <- Assets used by the UI
 │   │   ├── css/
 │   │   └── images/
-│   └── templates <- HTML templates
+│   └── templates/ <- HTML templates
 └── 📁 ransim <- RAN topology generator and RAN simulator
 ```
 

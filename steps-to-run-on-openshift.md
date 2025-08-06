@@ -10,13 +10,11 @@ This section provides quick access to the official Red Hat documentation for ins
 
 ## 2. Minimum resource requirements
 
-- Recommended minimum cluster resources:
-
 A compact OpenShift clusters with 3 nodes:
 
-   | Topology | Number of nodes       | vCPU    | Memory  | Storage       |
-    |-----------------|----------------|----------------|----------------|----------------|
-     | Compact       | 3              | 8vCPU cores              |      16GB of RAM          | 120GB           |    
+| Topology | Number of Nodes | vCPU         | Memory         | Storage |
+|----------|------------------|--------------|----------------|---------|
+| Compact  | 3                | 8 vCPU cores | 16 GB of RAM   | 120 GB  |
 
 GPU resources are optional, when using MaaS this demo can run only using CPU resources. 
 If the model is served locally a GPU must be provided. From NVIDIA perspectice customer can choose:
@@ -25,9 +23,7 @@ If the model is served locally a GPU must be provided. From NVIDIA perspectice c
 - NVIDIA A100 (up to 80GB vRAM)
 - NVIDIA L40
 
-
-- Recommended minimum operator resources:
-
+Recommended minimum operator resources:
 
    | Operator |                        Minmum requirements |
     | ------             |          ------ |
@@ -44,21 +40,53 @@ To run the AI-Enabled-RAN demo, ensure the following OpenShift components are in
 
 ## 3. Create the Working Namespace
 
-This nameapce will be used to deploy all components related to the demo:
+This namespace will be used to deploy all components related to the demo:
 
 ```bash
 # oc create ns ai-ran-genai
 ```
 
-## 4. Prerequisite Variables
+## 4. Prerequisites
 
 Once the required OpenShift components are running, you’ll need the following credentials and configuration details:
 
 - **Model**: API key, URL, model name
+
+Obtain the model API key, URL , and model name from MaaS or your local deployment.
+
 - **S3 Storage**: Access key, secret key, bucket name, and host
 
-Follow the instructions here to create and configure the S3 bucket.
-**Model Access**: Obtain the model API key, URL , and model name from MaaS or your local deployment.
+Create an S3 bucket (which will refer to as `S3_BUCKET`) in ODF and save the name.
+You can retrieve the additional necessary variables. Be sure to save this information for future use.
+
+``bash
+export S3_KEY=$(oc get secret noobaa-admin -n openshift-storage -o jsonpath="{.data.AWS_ACCESS_KEY_ID}" | base64 -d)
+export S3_SECRET_ACCESS_KEY=$(oc get secret noobaa-admin -n openshift-storage -o jsonpath="{.data.AWS_SECRET_ACCESS_KEY}" | base64 -d)
+export S3_HOST=$(oc get route s3 -n openshift-storage -o jsonpath='{.spec.host}')
+```
+
+### Upload docs for RAG
+
+The documents for RAG are used to enhance the model with additional domain context.
+The supported file formats are `.docx`, `.pdf`, `.json`, and `.csv`. These documents are used as input for the Retrieval-Augmented Generation (RAG) process.
+
+For this demo, you can use the sample documents available in the `docs` folder of this repository.
+
+Once you have your S3 credentials, you can upload the documents to your bucket using the following method:
+
+Please note you need AWS CLI installed (out of scope of those instruction).
+
+```bash
+export AWS_ACCESS_KEY_ID=$S3_KEY
+export AWS_SECRET_ACCESS_KEY=$S3_SECRET_ACCESS_KEY
+
+aws --endpoint-url $S3_HOST s3 cp ./docs/OpenShift_Container_Platform-4.18-Edge_computing-en-US.pdf s3://$S3_BUCKET/docs/OpenShift_Container_Platform-4.18-Edge_computing-en-US.pdf
+aws --endpoint-url $S3_HOST s3 cp ./docs/gnodeb.pdf s3://$S3_BUCKET/docs/gnodeb.pdf
+aws --endpoint-url $S3_HOST s3 cp ./docs/ran_metrics_and_anomalies.docx s3://$S3_BUCKET/docs/ran_metrics_and_anomalies.docx
+aws --endpoint-url $S3_HOST s3 cp ./docs/cell_config.json s3://$S3_BUCKET/docs/cell_config.json
+```
+
+### Configure OpenShift AI
 
 Once you have access to OpenShift AI, ensure to configure the following;
 - Access the Data science project and select your namespace `ai-ran-genai` for this demo.
@@ -84,13 +112,13 @@ The pipeline is designed to process streaming RAN data, identify key performance
 
 - Access OpenShift AI Pipelines and Import Pipeline. Provide Pipeline name and upload the generated pipeline yaml based on the output after compiling this python code `kubeflow-pipeline/ran-genai-kfp.py`.
 
-## 7. Deploying MCP Forecast Agent
+## 7. Deploy MCP Forecast Agent
 
 The MCP Forecast Agent is responsible for handling predictive processing using the models stored in S3.
 
 ### Create required secrets
 
-The Forecast Agent requires S3 credentials to access the model artifacts. These are stored in a secret named `agent-forecast`secrets`.
+The Forecast Agent requires S3 credentials to access the model artifacts. These are stored in a secret named `agent-forecast-secrets`.
 You can edit the `secrets.yaml` file, ensuring the values are base64-encoded:
 
 ```yaml
@@ -123,7 +151,7 @@ The `agent-forecast` container uses the following enviroments variables, defined
 Once the secrets and environment variables are configured, deploy the Forecast Agent:
 
 ```bash
-oc apply -f agent_forecast/manifests/
+oc apply -f agentic_ai/agent_forecast/manifests/
 ```
 
 ### Verify Forecast Agent is running
@@ -137,8 +165,9 @@ After deployment verify the pod is running and check the logs to ensure the serv
 ```
 
 
-## 8. Deploying RANCHAT
+## 8. Deploy RANCHAT
 
+RANCHAT provide the user interface to interact with model and also view automatically detected anomalies in the network.
 To deploy the RANCHAT service, follow the steps:
 
 ### Create required secrets
