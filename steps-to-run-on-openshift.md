@@ -59,7 +59,7 @@ Obtain the model API key, URL , and model name from MaaS or your local deploymen
 Create an S3 bucket (which will refer to as `S3_BUCKET`) in ODF and save the name.
 You can retrieve the additional necessary variables. Be sure to save this information for future use.
 
-``bash
+```bash
 export S3_KEY=$(oc get secret noobaa-admin -n openshift-storage -o jsonpath="{.data.AWS_ACCESS_KEY_ID}" | base64 -d)
 export S3_SECRET_ACCESS_KEY=$(oc get secret noobaa-admin -n openshift-storage -o jsonpath="{.data.AWS_SECRET_ACCESS_KEY}" | base64 -d)
 export S3_HOST=$(oc get route s3 -n openshift-storage -o jsonpath='{.spec.host}')
@@ -68,8 +68,7 @@ export S3_HOST=$(oc get route s3 -n openshift-storage -o jsonpath='{.spec.host}'
 ### Upload docs for RAG
 
 The documents for RAG are used to enhance the model with additional domain context.
-The supported file formats are `.docx`, `.pdf`, `.json`, and `.csv`. These documents are used as input for the Retrieval-Augmented Generation (RAG) process.
-
+The supported file formats are `.docx`, `.pdf`, `.json`, and `.csv`.
 For this demo, you can use the sample documents available in the `docs` folder of this repository.
 
 Once you have your S3 credentials, you can upload the documents to your bucket using the following method:
@@ -85,6 +84,9 @@ aws --endpoint-url $S3_HOST s3 cp ./docs/gnodeb.pdf s3://$S3_BUCKET/docs/gnodeb.
 aws --endpoint-url $S3_HOST s3 cp ./docs/ran_metrics_and_anomalies.docx s3://$S3_BUCKET/docs/ran_metrics_and_anomalies.docx
 aws --endpoint-url $S3_HOST s3 cp ./docs/cell_config.json s3://$S3_BUCKET/docs/cell_config.json
 ```
+
+> ⚠️ **Note:** The file must be uploaded as folder *docs* in the S3 Bucket. The RANCHAT process list that index for files to be processed for RAG. Leave it as is in the example above.
+
 
 ### Configure OpenShift AI
 
