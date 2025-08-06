@@ -1,6 +1,7 @@
 # Running the AI-Enabled-RAN Demo on OpenShift
 
 ## 1. Installing a cluster on Public Cloud
+
 This section provides quick access to the official Red Hat documentation for installing OpenShift Container Platform (OCP) on major public cloud providers. Follow the links below for step-by-step instructions to deploy OpenShift on AWS, Azure, or Google Cloud Platform (GCP) using installer-provisioned infrastructure.
 | Cloud | Instruction Link | 
 | ------ | ------ |
@@ -25,12 +26,11 @@ If the model is served locally a GPU must be provided. From NVIDIA perspectice c
 
 Recommended minimum operator resources:
 
-   | Operator |                        Minmum requirements |
-    | ------             |          ------ |
-    |   Red Hat OpenShift AI            |     At least 2 worker nodes with at least 8 CPUs and 32 GiB RAM available.    |   
-    |   OpenShift Data Foundation           |    Less than 2 vCPU and 120GB storage per Node     | 
-    |   Streams for Apache Kafka           |    Less than 2 vCPU and 10GB of Memory     |  
-
+| Operator                    | Minimum Requirements                                               |
+|-----------------------------|--------------------------------------------------------------------|
+| Red Hat OpenShift AI        | At least 2 worker nodes with at least 8 CPUs and 32 GiB RAM        |
+| OpenShift Data Foundation   | Less than 2 vCPU and 120 GB storage per node                       |
+| Streams for Apache Kafka    | Less than 2 vCPU and 10 GB of memory                               |
 
 To run the AI-Enabled-RAN demo, ensure the following OpenShift components are installed and operational:
 
@@ -38,7 +38,7 @@ To run the AI-Enabled-RAN demo, ensure the following OpenShift components are in
 - OpenShift AI
 - Kafka
 
-## 3. Create the Working Namespace
+## 3. Create the working namespace
 
 This namespace will be used to deploy all components related to the demo:
 
@@ -169,12 +169,11 @@ After deployment verify the pod is running and check the logs to ensure the serv
 
 ## 8. Deploy RANCHAT
 
-RANCHAT provide the user interface to interact with model and also view automatically detected anomalies in the network.
-To deploy the RANCHAT service, follow the steps:
+RANCHAT provides a user interface for interacting with the model and viewing automatically detected network anomalies. Follow the steps below to deploy the RANCHAT service:
 
 ### Create required secrets
 
-The secrets define the KEY for the API to access the LLM and the S3 object storage.
+The secrets define the KEY for the API to access the model API and the S3 object storage.
 RANCHAT requires three keys: `API_KEY`, `S3_KEY`, and `S3_SECRET_ACCESS_KEY`. These must be base64-encoded if you are editing the `secrets.yaml` file directly.
 
 To encode the values manually use:
