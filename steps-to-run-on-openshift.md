@@ -43,7 +43,7 @@ To run the AI-Enabled-RAN demo, ensure the following OpenShift components are in
 This namespace will be used to deploy all components related to the demo:
 
 ```bash
-# oc create ns ai-ran-genai
+oc create ns ai-ran-genai
 ```
 
 ## 4. Prerequisites
