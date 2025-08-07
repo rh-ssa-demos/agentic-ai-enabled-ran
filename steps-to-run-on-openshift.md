@@ -1,6 +1,30 @@
 # Running the AI-Enabled-RAN Demo on OpenShift
 
-## 1. Installing a cluster on Public Cloud
+## Table of Contents
+
+1. [Installing a cluster](#1-installing-a-cluster)  
+2. [Minimum resource requirements](#2-minimum-resource-requirements)  
+3. [Create the working namespace](#3-create-the-working-namespace)  
+4. [Prerequisites](#4-prerequisites)  
+   - [Upload docs for RAG](#upload-docs-for-rag)  
+   - [Configure OpenShift AI](#configure-openshift-ai)  
+5. [Deploy RAN Simulator](#5-deploy-ran-simulator)  
+6. [Kubeflow Pipelines for continuous flow of RAN Anomaly Detection and Traffic Prediction](#6-kubeflow-pipelines-for-continuous-flow-of-ran-anomaly-detection-and-traffic-prediction)  
+7. [Deploy MCP Forecast Agent](#7-deploy-mcp-forecast-agent)  
+   - [Create required secrets](#create-required-secrets-1)  
+   - [Deployment variables](#deployment-variables)  
+   - [Deploying the Forecast Agent](#deploying-the-forecast-agent)  
+   - [Verify Forecast Agent is running](#verify-forecast-agent-is-running)  
+8. [Deploy RANCHAT](#8-deploy-ranchat)  
+   - [Create required secrets](#create-required-secrets)  
+   - [Configure Deployment Environment Variables](#configure-deployment-environment-variables)  
+   - [Optional: Use External MySQL Database](#optional-use-external-mysql-database)  
+     - [Enable MySQL support in the deployment](#enable-mysql-support-in-the-deployment)  
+     - [Deploy MySQL to OpenShift](#deploy-mysql-to-openshift)  
+   - [Deploy RANCHAT](#deploy-ranchat)  
+   - [Verify RANCHAT is running](#verify-ranchat-is-running)
+
+## 1. Installing a cluster
 
 This section provides quick access to the official Red Hat documentation for installing OpenShift Container Platform (OCP) on major public cloud providers. Follow the links below for step-by-step instructions to deploy OpenShift on AWS, Azure, or Google Cloud Platform (GCP) using installer-provisioned infrastructure.
 | Cloud | Instruction Link | 
