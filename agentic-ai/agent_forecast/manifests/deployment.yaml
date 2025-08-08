@@ -32,6 +32,6 @@ spec:
         - name: S3_HOST
           value: '[S3_HOST]'
         - name: S3_BUCKET
-          value: 'ai-cloud-ran-genai-bucket-5f0934a3-ebae-45cc-a327-e1f60d7ae15a' 
+          value: '[S3_BUCKET]' 
         ports:
         - containerPort: 5001
