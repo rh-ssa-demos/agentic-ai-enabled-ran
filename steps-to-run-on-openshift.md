@@ -48,19 +48,14 @@ If the model is served locally a GPU must be provided. From NVIDIA perspectice c
 - NVIDIA A100 (up to 80GB vRAM)
 - NVIDIA L40
 
-Recommended minimum operator resources:
-
-| Operator                    | Minimum Requirements                                               |
-|-----------------------------|--------------------------------------------------------------------|
-| Red Hat OpenShift AI        | At least 2 worker nodes with at least 8 CPUs and 32 GiB RAM        |
-| OpenShift Data Foundation   | Less than 2 vCPU and 120 GB storage per node                       |
-| Streams for Apache Kafka    | Less than 2 vCPU and 10 GB of memory                               |
-
 To run the AI-Enabled-RAN demo, ensure the following OpenShift components are installed and operational:
 
-- OpenShift Data Foundation
-- OpenShift AI
-- Kafka
+| Operator                    | 
+|-----------------------------|
+| Red Hat OpenShift AI        |    
+| OpenShift Data Foundation   |                     
+| Streams for Apache Kafka    |                      
+
 
 ## 3. Create the working namespace
 
