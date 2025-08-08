@@ -20,7 +20,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: KAFKA_HOST
-          value: 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092'
+          value: '[INSERT_HERE_KAFKA_HOST]'
         command: ["python", "-u", "ransim.py"]
         securityContext:
           privileged: true
