@@ -20,9 +20,9 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: API_URL
-          value: 'https://deepseek-r1-qwen-14b-w4a16-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443'
+          value: '[INSERT_HERE_MODEL_API_URL]'
         - name: API_MODEL
-          value: 'r1-qwen-14b-w4a16'
+          value: '[INSERT_HERE_MODEL_NAME]'
         - name: API_KEY
           valueFrom:
             secretKeyRef:
@@ -42,6 +42,8 @@ spec:
           value: '[S3_HOST]'
         - name: S3_BUCKET
           value: 'ai-cloud-ran-genai-bucket-5f0934a3-ebae-45cc-a327-e1f60d7ae15a'
+        - name: USE_MYSQL
+          value: True
         - name: DB_HOST
           value: 'mysql-service'
         - name: DB_USER
