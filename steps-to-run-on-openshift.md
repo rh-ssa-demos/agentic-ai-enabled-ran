@@ -143,7 +143,7 @@ Once deployed, this deployment will start simulating RAN key metrics and push th
 
 The pipeline is designed to process streaming RAN data, identify key performance indicator (KPI) anomalies, provide intelligent explanations, and offer actionable recommendations.
 
-* Use this code `kubeflow-pipeline/ran-genai-kfp.py` to modify the Kafka server, Model API keys, S3 Storage information relevant to your environment.
+* Use this code `kubeflow-pipeline/ran-genai-kfp.py` to modify the Kafka server, Model API keys, Model URL, Model Name, S3 Storage information relevant to your environment.
 * Compile the python code to generate the pipeline yaml to upload in OpenShift AI pipelines. For example please refer the generated pipeline yaml `kubeflow-pipeline/ran_multi_prediction_pipeline_with_genai.yaml`
 * The generated yaml can be uploaded in OpenShift AI pipelines under the namespace you have created for this demo. 
 
