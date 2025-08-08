@@ -119,12 +119,22 @@ Once you have access to OpenShift AI, ensure to configure the following;
 - Select Workbenches and create workbench. You can select image `TensorFlow` or image of your choice. Container size `small or medium`.
 - Select Pipelines and configure pipeline server in order to use later for kubeflow pipelines. Ensure to provide the S3 Object Storage details to configure pipeline server.
 
-## 5. Deploy RAN Simulator 
+## 5. Deploy RAN Simulator
+
+## Prerequisites
+Ensure Kafka cluster and topics are configured. For reference you can use the kafka deployment and topics configuration provided part of this repo. It is located in `kafka` folder. 
+
+RAN simulator simulates a Radio Access Network (RAN) to generate realistic telemetry data, including RAN Key Performance Indicators(KPIs). It's designed to push this data to Apache Kafka topics for real-time processing and analysis. 
 
 Begin by deploying the RAN simulator to generate metrics and stream them into Kafka.
 
-* The repository includes a default `cell_config.json` file with a predefined RAN topology of 100 cell sites.
+* The repository includes a default `cell_config.json` file with a predefined RAN topology of 100 cell sites for demo.
 * To create a custom topology, refer to the `generate_ran_topology` documentation.
+
+```bash
+oc apply -f ransim/ransim-deploy.yaml -n ai-ran-genai
+```
+Once deployed, this deployment will start simulating RAN key metrics and push the data using Kafka topics in real-time.  
 
 ## 6. Kubeflow Pipelines for continuous flow of RAN Anomaly Detection and Traffic Prediction
 
