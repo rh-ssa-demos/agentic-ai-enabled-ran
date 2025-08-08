@@ -18,6 +18,9 @@ spec:
       - name: ransim
         image: quay.io/dlakshma/ransim:latest
         imagePullPolicy: Always
+        env:
+        - name: KAFKA_HOST
+          value: 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092'
         command: ["python", "-u", "ransim.py"]
         securityContext:
           privileged: true

@@ -30,6 +30,7 @@ This simulator is designed to run continuously, providing a steady stream of dat
 for monitoring, anomaly detection, and AI/ML model training in a simulated RAN environment.
 """
 
+import os
 import random
 import pandas as pd
 import time
@@ -41,10 +42,12 @@ from rich.table import Table
 import json # <--- ADD THIS LINE: Import the JSON library
 from io import StringIO # REQUIRED: Import StringIO for CSV serialization
 
+KAFKA_HOST = os.getenv('KAFKA_HOST')
+
 # Kafka Configuration (enhanced for batching and large messages)
 conf = {
     #please change the bootstrap server according to your kafka configuration
-    'bootstrap.servers': 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092',
+    'bootstrap.servers': KAFKA_HOST,
     #'bootstrap.servers': '192.168.154.101:30139',
     'client.id': 'ransim',
     'acks': 'all',
