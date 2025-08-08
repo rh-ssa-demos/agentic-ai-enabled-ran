@@ -140,7 +140,7 @@ The pipeline is designed to process streaming RAN data, identify key performance
 
 ## 7. Deploy MCP Forecast Agent
 
-The MCP Forecast Agent is responsible for handling predictive processing using the models stored in S3.
+The MCP Forecast Agent is responsible for handling predictive processing using the trained models based on kubeflow-pipelines stored in S3.
 
 ### Create required secrets
 
