@@ -121,7 +121,7 @@ Once you have access to OpenShift AI, ensure to configure the following;
 
 ## 5. Deploy RAN Simulator
 
-## Prerequisites
+### Prerequisites
 Ensure Kafka cluster and topics are configured. For reference you can use the kafka deployment and topics configuration provided part of this repo. It is located in `kafka` folder. 
 
 RAN simulator simulates a Radio Access Network (RAN) to generate realistic telemetry data, including RAN Key Performance Indicators(KPIs). It's designed to push this data to Apache Kafka topics for real-time processing and analysis. 
