@@ -1,101 +1,101 @@
 cell_id,max_capacity,lat,lon,bands,area_type,city,adjacent_cells
-0,57,37.77565,-122.411149,Band 26,industrial,Frisco,
-1,97,37.801665,-122.416792,"Band 29,Band 66",industrial,Plano,45
-2,64,37.790061,-122.418604,Band 66,commercial,McKinney,68
-3,87,37.783246,-122.393321,Band 66,rural,Denton,91
-4,59,37.781359,-122.396495,Band 29,residential,Allen,"26,92"
-5,72,37.800325,-122.401288,Band 66,industrial,Prosper,71
-6,55,37.791461,-122.394518,"Band 71,Band 66,Band 29",industrial,Celina,"28,72"
-7,92,37.781737,-122.410718,Band 26,industrial,The Colony,
-8,67,37.788502,-122.394377,Band 71,rural,Little Elm,"30,52"
-9,92,37.782909,-122.3913,"Band 29,Band 71,Band 66",commercial,Anna,75
-10,79,37.786284,-122.389714,"Band 26,Band 71,Band 66",industrial,Addison,54
-11,52,37.799051,-122.407365,Band 26,rural,Carrollton,55
-12,91,37.789877,-122.39286,"Band 66,Band 29,Band 26",commercial,Coppell,34
-13,97,37.791741,-122.411518,"Band 66,Band 71,Band 26",rural,Farmers Branch,79
-14,58,37.790186,-122.416673,Band 29,commercial,Irving,36
-15,60,37.798662,-122.406735,Band 66,residential,Mesquite,"59,81"
-16,79,37.790773,-122.390268,Band 29,rural,Grand Prairie,60
-17,71,37.778247,-122.406357,"Band 29,Band 71",rural,Southlake,"61,83"
-18,98,37.78026,-122.392021,"Band 71,Band 66,Band 29",commercial,Keller,"40,62,84"
-19,98,37.779746,-122.390795,"Band 29,Band 71,Band 26",residential,Argyle,"41,63"
-20,57,37.802773,-122.393038,"Band 26,Band 29",commercial,Northlake,86
-21,55,37.77747,-122.40482,Band 26,commercial,Westlake,87
-22,80,37.803305,-122.414446,"Band 66,Band 29,Band 71",rural,Frisco,"44,88"
-23,92,37.794396,-122.406257,"Band 66,Band 29,Band 71",commercial,Plano,"67,89"
-24,71,37.775531,-122.402782,"Band 26,Band 29,Band 71",industrial,McKinney,90
-25,54,37.802063,-122.393611,Band 26,rural,Denton,
-26,81,37.781327,-122.415431,"Band 66,Band 29,Band 26",residential,Allen,"4,48"
-27,56,37.777808,-122.406468,"Band 66,Band 26",industrial,Prosper,71
-28,91,37.804425,-122.416447,"Band 71,Band 29",commercial,Celina,"6,94"
-29,62,37.790989,-122.415195,Band 71,residential,The Colony,51
-30,54,37.788194,-122.39356,"Band 29,Band 66,Band 71",industrial,Little Elm,8
-31,60,37.787092,-122.404959,"Band 29,Band 66",residential,Anna,97
-32,74,37.782856,-122.395878,"Band 71,Band 26",residential,Addison,98
-33,62,37.783801,-122.390339,"Band 29,Band 71,Band 26",industrial,Carrollton,77
-34,87,37.789204,-122.391818,"Band 26,Band 29,Band 71",commercial,Coppell,12
-35,88,37.776939,-122.393545,"Band 29,Band 71",commercial,Farmers Branch,57
-36,88,37.776092,-122.41694,"Band 71,Band 26,Band 29",rural,Irving,"14,58,80"
-37,66,37.786774,-122.399249,"Band 66,Band 26",industrial,Mesquite,59
-38,79,37.793535,-122.40251,Band 29,commercial,Grand Prairie,60
-39,66,37.778874,-122.40893,Band 26,rural,Southlake,83
-40,60,37.788046,-122.403103,"Band 29,Band 71",rural,Keller,"18,84"
-41,56,37.803068,-122.415371,Band 29,commercial,Argyle,"19,63"
-42,68,37.793045,-122.397872,Band 71,residential,Northlake,
-43,53,37.777669,-122.406693,"Band 29,Band 66",rural,Westlake,"65,87"
-44,90,37.804294,-122.414553,"Band 66,Band 71",industrial,Frisco,22
-45,54,37.803252,-122.398669,Band 29,rural,Plano,1
-46,85,37.779343,-122.415577,"Band 71,Band 29",rural,McKinney,
-47,93,37.782386,-122.416316,"Band 66,Band 71,Band 29",commercial,Denton,69
-48,61,37.801342,-122.418656,"Band 71,Band 26,Band 29",rural,Allen,26
-49,100,37.795938,-122.407924,Band 66,commercial,Prosper,93
-50,79,37.78539,-122.394784,Band 26,industrial,Celina,72
-51,62,37.786854,-122.411042,Band 71,rural,The Colony,"29,73"
-52,82,37.78689,-122.389966,"Band 71,Band 29,Band 66",rural,Little Elm,"8,74,96"
-53,87,37.803776,-122.411436,Band 66,rural,Anna,75
-54,100,37.78431,-122.401214,"Band 29,Band 26,Band 66",rural,Addison,"10,76"
-55,95,37.787982,-122.403802,"Band 26,Band 66,Band 71",industrial,Carrollton,11
-56,71,37.793595,-122.399498,Band 71,rural,Coppell,
-57,76,37.784685,-122.398484,"Band 26,Band 29,Band 66",residential,Farmers Branch,35
-58,97,37.801984,-122.400935,"Band 66,Band 71",industrial,Irving,"36,80"
-59,68,37.781205,-122.395827,"Band 71,Band 26,Band 66",residential,Mesquite,"15,37"
-60,63,37.790235,-122.395588,"Band 26,Band 71,Band 29",rural,Grand Prairie,"16,38,82"
-61,92,37.793888,-122.409344,Band 71,commercial,Southlake,"17,83"
-62,59,37.775633,-122.412055,"Band 29,Band 26",residential,Keller,18
-63,86,37.780733,-122.398509,"Band 66,Band 29",commercial,Argyle,"19,41,85"
-64,94,37.775066,-122.396871,Band 66,commercial,Northlake,86
-65,94,37.790439,-122.417893,Band 29,residential,Westlake,43
-66,79,37.794927,-122.389763,"Band 71,Band 26,Band 66",residential,Frisco,88
-67,97,37.800745,-122.405898,Band 71,residential,Plano,23
-68,65,37.783138,-122.417075,"Band 26,Band 66",rural,McKinney,"2,90"
-69,84,37.777317,-122.414875,"Band 26,Band 71",commercial,Denton,"47,91"
-70,76,37.787128,-122.403122,"Band 29,Band 66",residential,Allen,92
-71,99,37.792422,-122.398534,"Band 66,Band 26,Band 29",rural,Prosper,"5,27"
-72,98,37.7866,-122.392651,"Band 26,Band 66",commercial,Celina,"6,50"
-73,77,37.789469,-122.407734,"Band 66,Band 71,Band 29",residential,The Colony,"51,95"
-74,89,37.790924,-122.392192,"Band 29,Band 66,Band 26",commercial,Little Elm,52
-75,61,37.776409,-122.408027,Band 66,rural,Anna,"9,53"
-76,98,37.801289,-122.411052,"Band 71,Band 29",residential,Addison,54
-77,97,37.791083,-122.389403,"Band 26,Band 71",industrial,Carrollton,33
-78,52,37.797527,-122.390912,Band 29,commercial,Coppell,
-79,58,37.789107,-122.415968,Band 66,rural,Farmers Branch,13
-80,60,37.793077,-122.390488,"Band 29,Band 66,Band 26",industrial,Irving,"36,58"
-81,51,37.802767,-122.402126,"Band 66,Band 71",commercial,Mesquite,15
-82,87,37.795618,-122.400583,Band 71,industrial,Grand Prairie,60
-83,100,37.776132,-122.403418,"Band 71,Band 29,Band 26",industrial,Southlake,"17,39,61"
-84,81,37.778066,-122.390576,"Band 66,Band 71,Band 29",residential,Keller,"18,40"
-85,96,37.790552,-122.399886,"Band 66,Band 26,Band 71",rural,Argyle,63
-86,65,37.799822,-122.4168,"Band 26,Band 66",residential,Northlake,"20,64"
-87,51,37.789729,-122.40965,"Band 26,Band 66",rural,Westlake,"21,43"
-88,67,37.80131,-122.398364,"Band 29,Band 71",commercial,Frisco,"22,66"
-89,65,37.796502,-122.404743,Band 66,residential,Plano,23
-90,100,37.775417,-122.410573,"Band 26,Band 66",rural,McKinney,"24,68"
-91,85,37.790828,-122.406635,"Band 71,Band 26,Band 66",rural,Denton,"3,69"
-92,66,37.781816,-122.397761,"Band 29,Band 71",commercial,Allen,"4,70"
-93,63,37.797058,-122.411105,"Band 71,Band 29,Band 66",rural,Prosper,49
-94,73,37.780283,-122.418976,"Band 26,Band 66,Band 29",industrial,Celina,28
-95,68,37.795823,-122.415612,"Band 29,Band 66",rural,The Colony,73
-96,80,37.788114,-122.413869,Band 71,residential,Little Elm,52
-97,54,37.786921,-122.417178,"Band 29,Band 66,Band 71",rural,Anna,31
-98,65,37.778454,-122.396467,"Band 26,Band 71,Band 66",residential,Addison,32
-99,69,37.800705,-122.389699,"Band 29,Band 71",industrial,Carrollton,
+0,65,33.135153,-96.813938,Band 26,industrial,Frisco,
+1,87,33.029427,-96.697085,"Band 29,Band 66",industrial,Plano,"23,45,67"
+2,85,33.186806,-96.614519,Band 66,commercial,McKinney,46
+3,50,33.218371,-97.120723,Band 66,rural,Denton,"69,91"
+4,71,33.090119,-96.653011,Band 29,residential,Allen,26
+5,66,33.237259,-96.811142,Band 66,industrial,Prosper,71
+6,90,33.298852,-96.817473,"Band 71,Band 66,Band 29",industrial,Celina,"72,94"
+7,55,33.096851,-96.892677,Band 29,residential,The Colony,95
+8,60,33.168536,-96.907436,"Band 71,Band 29",rural,Little Elm,96
+9,88,33.382266,-96.523879,"Band 26,Band 71,Band 29",commercial,Anna,"31,75,97"
+10,90,32.964778,-96.817719,"Band 26,Band 71,Band 66",industrial,Addison,"54,76"
+11,75,33.005472,-96.878398,"Band 29,Band 66",rural,Carrollton,33
+12,91,32.966318,-97.011075,"Band 26,Band 66",commercial,Coppell,
+13,97,32.9446,-96.891241,"Band 66,Band 71,Band 26",rural,Farmers Branch,57
+14,81,32.833893,-96.963367,Band 29,industrial,Irving,80
+15,77,32.771898,-96.587917,"Band 29,Band 26,Band 71",residential,Mesquite,37
+16,50,32.735557,-96.999571,"Band 29,Band 71,Band 26",rural,Grand Prairie,"38,60,82"
+17,50,32.93324,-97.148674,"Band 71,Band 66,Band 29",industrial,Southlake,61
+18,88,32.927938,-97.229242,Band 26,rural,Keller,62
+19,83,33.113375,-97.161255,Band 71,residential,Argyle,63
+20,69,33.032975,-97.241381,Band 29,commercial,Northlake,64
+21,81,32.991278,-97.221074,Band 26,commercial,Westlake,43
+22,66,33.149711,-96.821608,"Band 66,Band 29,Band 71",rural,Frisco,"44,66"
+23,78,33.039606,-96.692905,"Band 66,Band 29,Band 71",commercial,Plano,1
+24,64,33.191023,-96.615068,"Band 26,Band 29,Band 71",industrial,McKinney,68
+25,71,33.197496,-97.151843,Band 26,rural,Denton,69
+26,96,33.103317,-96.669731,"Band 66,Band 29,Band 26",residential,Allen,"4,48,92"
+27,72,33.226673,-96.798541,"Band 66,Band 26",industrial,Prosper,71
+28,53,33.321838,-96.803353,"Band 71,Band 29",commercial,Celina,50
+29,77,33.078008,-96.905655,Band 71,residential,The Colony,
+30,85,33.185379,-96.937785,Band 29,industrial,Little Elm,74
+31,60,33.381855,-96.515852,"Band 66,Band 26",commercial,Anna,9
+32,50,32.985698,-96.850715,"Band 71,Band 26",rural,Addison,54
+33,100,33.000464,-96.88138,"Band 66,Band 29,Band 71",rural,Carrollton,"11,77"
+34,84,32.978848,-97.003733,Band 71,industrial,Coppell,56
+35,83,32.938167,-96.892686,Band 29,industrial,Farmers Branch,79
+36,65,32.796741,-96.966182,"Band 29,Band 71",commercial,Irving,80
+37,76,32.770581,-96.594825,"Band 71,Band 26,Band 29",rural,Mesquite,"15,59,81"
+38,91,32.736125,-97.016465,"Band 66,Band 26",industrial,Grand Prairie,16
+39,56,32.939831,-97.115062,Band 26,rural,Southlake,83
+40,65,32.95333,-97.219565,"Band 71,Band 29",residential,Keller,84
+41,91,33.119942,-97.167933,"Band 29,Band 71,Band 26",industrial,Argyle,"63,85"
+42,97,33.039079,-97.220311,"Band 26,Band 66,Band 71",commercial,Northlake,86
+43,66,32.967115,-97.197,"Band 66,Band 26,Band 29",industrial,Westlake,"21,65,87"
+44,50,33.147643,-96.832533,"Band 26,Band 71",rural,Frisco,"22,66,88"
+45,77,33.029449,-96.696833,"Band 29,Band 66,Band 71",commercial,Plano,1
+46,85,33.178941,-96.623831,Band 66,commercial,McKinney,"2,90"
+47,100,33.20713,-97.117141,Band 71,commercial,Denton,
+48,99,33.093881,-96.687188,"Band 66,Band 71,Band 29",commercial,Allen,"26,70,92"
+49,76,33.261948,-96.792469,Band 26,rural,Prosper,
+50,65,33.327789,-96.794637,"Band 26,Band 71",industrial,Celina,28
+51,64,33.105287,-96.889256,Band 66,rural,The Colony,"73,95"
+52,64,33.183221,-96.905947,Band 26,residential,Little Elm,
+53,99,33.355944,-96.547023,"Band 71,Band 66",residential,Anna,
+54,51,32.988846,-96.835851,Band 71,commercial,Addison,"10,32"
+55,56,33.011101,-96.899981,"Band 66,Band 26,Band 71",residential,Carrollton,"77,99"
+56,86,32.979469,-97.022274,Band 71,industrial,Coppell,34
+57,84,32.932242,-96.892003,"Band 26,Band 66,Band 71",industrial,Farmers Branch,13
+58,92,32.830831,-96.943974,Band 71,rural,Irving,80
+59,68,32.763136,-96.603504,"Band 26,Band 29,Band 66",residential,Mesquite,37
+60,86,32.755425,-97.014739,"Band 66,Band 71",industrial,Grand Prairie,16
+61,87,32.932977,-97.137804,"Band 71,Band 26,Band 66",residential,Southlake,"17,83"
+62,100,32.924548,-97.235873,"Band 26,Band 71,Band 29",rural,Keller,"18,84"
+63,55,33.118354,-97.16763,Band 71,commercial,Argyle,"19,41"
+64,80,33.034394,-97.254051,"Band 29,Band 26,Band 71",commercial,Northlake,20
+65,65,32.981254,-97.204725,Band 29,industrial,Westlake,"43,87"
+66,94,33.139454,-96.811436,"Band 66,Band 29,Band 71",industrial,Frisco,"22,44"
+67,83,33.005134,-96.700314,"Band 71,Band 26,Band 66",residential,Plano,"1,89"
+68,66,33.207246,-96.619613,Band 71,residential,McKinney,24
+69,95,33.20437,-97.135505,"Band 26,Band 66",rural,Denton,"3,25,91"
+70,59,33.119621,-96.688077,Band 66,commercial,Allen,48
+71,71,33.231458,-96.808305,"Band 66,Band 26,Band 29",commercial,Prosper,"5,27,93"
+72,94,33.311279,-96.798408,Band 66,residential,Celina,6
+73,74,33.10811,-96.911655,"Band 26,Band 66",commercial,The Colony,51
+74,71,33.167833,-96.939639,"Band 66,Band 71,Band 29",residential,Little Elm,"30,96"
+75,75,33.384029,-96.528435,"Band 29,Band 66,Band 26",commercial,Anna,9
+76,70,32.956869,-96.846894,Band 66,rural,Addison,"10,98"
+77,98,33.003049,-96.895435,"Band 71,Band 29",residential,Carrollton,"33,55"
+78,72,32.970061,-97.024817,Band 29,industrial,Coppell,
+79,51,32.952784,-96.904826,"Band 26,Band 29,Band 71",residential,Farmers Branch,35
+80,79,32.798576,-96.93099,"Band 71,Band 26,Band 29",industrial,Irving,"14,36,58"
+81,51,32.785389,-96.615276,"Band 66,Band 26",commercial,Mesquite,37
+82,65,32.749184,-96.988477,Band 71,industrial,Grand Prairie,16
+83,77,32.952805,-97.141112,"Band 71,Band 29,Band 26",industrial,Southlake,"39,61"
+84,73,32.948893,-97.250578,"Band 66,Band 71,Band 29",residential,Keller,"40,62"
+85,67,33.121152,-97.153781,"Band 66,Band 26,Band 71",rural,Argyle,41
+86,55,33.062569,-97.222671,"Band 66,Band 29",residential,Northlake,42
+87,51,32.977813,-97.20934,"Band 71,Band 29",residential,Westlake,"43,65"
+88,67,33.144893,-96.833266,"Band 71,Band 66,Band 29",commercial,Frisco,44
+89,85,33.009454,-96.702643,Band 66,residential,Plano,67
+90,64,33.209217,-96.634878,"Band 26,Band 66",rural,McKinney,46
+91,97,33.216939,-97.13935,"Band 71,Band 26,Band 66",rural,Denton,"3,69"
+92,62,33.093956,-96.686474,"Band 29,Band 71",commercial,Allen,"26,48"
+93,96,33.231555,-96.805532,"Band 71,Band 29,Band 66",rural,Prosper,71
+94,95,33.310135,-96.817109,"Band 26,Band 66,Band 29",industrial,Celina,6
+95,90,33.082085,-96.885836,"Band 29,Band 66",rural,The Colony,"7,51"
+96,53,33.169549,-96.927172,"Band 66,Band 29",industrial,Little Elm,"8,74"
+97,93,33.36447,-96.526719,Band 26,commercial,Anna,9
+98,65,32.987565,-96.853893,Band 66,commercial,Addison,76
+99,69,32.987815,-96.87426,"Band 66,Band 26,Band 29",industrial,Carrollton,55

@@ -1,7 +1,7 @@
 """
 Author: Dinesh Lakshmanan
 Email: dineshlakshmanan@redhat.com
-Date: June 27, 2025
+Date: Aug 11, 2025
 
 Notes:
 This script generates a static network topology for a RAN (Radio Access Network) simulator.
@@ -28,7 +28,33 @@ at its startup to ensure consistent network topology across simulation runs.
 import random
 import json
 import math
-import csv # <--- ADDED: Import the CSV module
+import csv
+
+# --- New: Accurate DFW City Coordinates ---
+DFW_CITIES_COORDS = {
+    "Frisco": (33.1507, -96.8236),
+    "Plano": (33.0198, -96.6989),
+    "McKinney": (33.1975, -96.6186),
+    "Denton": (33.2148, -97.1331),
+    "Allen": (33.1039, -96.6713),
+    "Prosper": (33.2429, -96.8049),
+    "Celina": (33.3157, -96.8092),
+    "The Colony": (33.0904, -96.9036),
+    "Little Elm": (33.1704, -96.9208),
+    "Anna": (33.3648, -96.5298),
+    "Addison": (32.9696, -96.8373),
+    "Carrollton": (32.9926, -96.8906),
+    "Coppell": (32.9601, -97.0069),
+    "Farmers Branch": (32.9348, -96.8928),
+    "Irving": (32.8140, -96.9489),
+    "Mesquite": (32.7668, -96.5996),
+    "Grand Prairie": (32.7455, -97.0017),
+    "Southlake": (32.9415, -97.1350),
+    "Keller": (32.9360, -97.2348),
+    "Argyle": (33.1118, -97.1724),
+    "Northlake": (33.0485, -97.2359),
+    "Westlake": (32.9734, -97.2045)
+}
 
 # --- Configuration for cell properties ---
 BAND_FREQUENCY_MAP = {
@@ -38,12 +64,7 @@ BAND_FREQUENCY_MAP = {
     'Band 66': '1700-2100'
 }
 
-CITIES = [
-    "Frisco", "Plano", "McKinney", "Denton", "Allen", "Prosper", "Celina",
-    "The Colony", "Little Elm", "Anna", "Addison", "Carrollton", "Coppell",
-    "Farmers Branch", "Irving", "Mesquite", "Grand Prairie", "Southlake",
-    "Keller", "Argyle", "Northlake", "Westlake"
-]
+CITIES = list(DFW_CITIES_COORDS.keys()) # Use the keys from the new coordinate map
 
 USAGE_PATTERNS = {
     'industrial': {'weekdays': {'day': (0.7, 0.9), 'night': (0.1, 0.3)},
@@ -78,28 +99,9 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return distance
 
 def generate_static_cell_config(num_cells_param=100, seed=None):
-    """
-    Generates cell configurations with static properties, ensuring:
-    1. Bidirectional adjacencies.
-    2. Adjacent cells are in the same city.
-    3. Adjacent cells share at least 1 common band.
-    4. Each cell aims for a random number of adjacent cells between 1 and 3.
-    5. Adjacency preference for GEOGRAPHICALLY CLOSER cells (based on lat/lon).
-
-    Args:
-        num_cells_param (int): The total number of cells to generate.
-        seed (int, optional): A seed for the random number generator to ensure
-                              reproducible results. If None, uses current system time.
-
-    Returns:
-        tuple: A tuple containing:
-            - dict: A dictionary with a "cells" key, containing a list of cell configuration dictionaries.
-            - dict: A mapping from cell_id to its assigned city.
-    """
     if seed is not None:
         random.seed(seed)
 
-    # --- Step 1: Generate initial cell properties and create lookup maps ---
     initial_cells_data_list = []
     cell_id_to_data_map = {}
     city_to_cell_ids_map = {city: [] for city in CITIES}
@@ -116,11 +118,19 @@ def generate_static_cell_config(num_cells_param=100, seed=None):
         
         desired_adj_counts[cell_id] = random.randint(1, THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL)
 
+        # NEW LOGIC: Get the base coordinates for the assigned city
+        city_lat, city_lon = DFW_CITIES_COORDS[assigned_city]
+        
+        # Add a small random offset to the city's center point
+        # This creates a cluster of cells around the city's location.
+        lat_offset = random.uniform(-0.02, 0.02)
+        lon_offset = random.uniform(-0.02, 0.02)
+
         cell_data = {
             'cell_id': int(cell_id),
             'max_capacity': random.randint(50, 100),
-            'lat': round(random.uniform(37.7749, 37.8049), 6),
-            'lon': round(random.uniform(-122.4194, -122.3894), 6),
+            'lat': round(city_lat + lat_offset, 6),
+            'lon': round(city_lon + lon_offset, 6),
             'bands': random.sample(list(BAND_FREQUENCY_MAP.keys()), k=random.randint(1, 3)),
             'area_type': random.choice(list(USAGE_PATTERNS.keys())),
             'city': assigned_city,
@@ -159,17 +169,12 @@ def generate_static_cell_config(num_cells_param=100, seed=None):
             
             potential_links.add((cell_A_id, cell_B_id, distance_km, common_bands_count))
 
-    # Convert the set of links to a list and sort it for prioritization:
-    # 1. Smallest geographical distance (closer cells first).
-    # 2. More common bands (descending order).
     sorted_potential_links = sorted(list(potential_links), key=lambda x: (x[2], -x[3]))
 
     # --- Step 3: Iteratively build the bidirectional graph aiming for desired counts ---
     for cell_A_id, cell_B_id, _, _ in sorted_potential_links:
-        # Check if both cells can accept a new link without exceeding their *desired* adjacent count
         if len(adjacencies_sets[cell_A_id]) < desired_adj_counts[cell_A_id] and \
            len(adjacencies_sets[cell_B_id]) < desired_adj_counts[cell_B_id]:
-            # Add the link bidirectionally
             adjacencies_sets[cell_A_id].add(cell_B_id)
             adjacencies_sets[cell_B_id].add(cell_A_id)
 
@@ -184,15 +189,10 @@ def generate_static_cell_config(num_cells_param=100, seed=None):
 
 # Function to write data to CSV
 def write_cells_to_csv(cells_data, filename="cell_config.csv"):
-    """
-    Writes cell configuration data to a CSV file.
-    Lists (bands, adjacent_cells) are converted to comma-separated strings.
-    """
     if not cells_data:
         print(f"No cell data to write to {filename}.")
         return
 
-    # Define the order of columns for the CSV
     fieldnames = [
         'cell_id', 'max_capacity', 'lat', 'lon', 'bands',
         'area_type', 'city', 'adjacent_cells'
@@ -202,9 +202,7 @@ def write_cells_to_csv(cells_data, filename="cell_config.csv"):
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for cell in cells_data:
-            # Create a shallow copy to modify list fields for CSV output
             row_data = cell.copy()
-            # Convert lists to comma-separated strings for CSV
             row_data['bands'] = ",".join(row_data['bands'])
             row_data['adjacent_cells'] = ",".join(map(str, row_data['adjacent_cells']))
             writer.writerow(row_data)
@@ -213,7 +211,7 @@ def write_cells_to_csv(cells_data, filename="cell_config.csv"):
 
 if __name__ == "__main__":
     fixed_seed = 42
-    num_cells = 100 # Corrected to 100 cells for the main run
+    num_cells = 100
 
     print(f"Using random seed: {fixed_seed} for reproducible cell configuration.")
 
@@ -229,7 +227,6 @@ if __name__ == "__main__":
     csv_file_name = "cell_config.csv"
     write_cells_to_csv(cell_configuration['cells'], csv_file_name)
 
-
     print("This file contains a FIXED network topology with the following rules:")
     print(f"  - **Bidirectional Adjacencies:** If Cell A is adjacent to Cell B, Cell B is adjacent to Cell A.")
     print(f"  - **Variable Neighbors (1-{THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL} max):** Each cell aims for 1 to {THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL} adjacent cells.")
@@ -239,17 +236,14 @@ if __name__ == "__main__":
 
     # --- Verification Sample ---
     print("\n--- Verification Sample ---")
-    # Adjust sample_cell_ids_to_check to be within the num_cells range if num_cells is small
-    sample_cell_ids_to_check = [0] # Start with cell 0
+    sample_cell_ids_to_check = [0] 
     if num_cells > 1: sample_cell_ids_to_check.append(1)
-    if num_cells > 10: sample_cell_ids_to_check.append(10)
-    if num_cells > 50: sample_cell_ids_to_check.append(50)
-    if num_cells > 100: sample_cell_ids_to_check.append(100)
-    if num_cells > 500: sample_cell_ids_to_check.append(500)
-    if num_cells > 1000: sample_cell_ids_to_check.append(1000)
-    if num_cells > 1500: sample_cell_ids_to_check.append(1500)
-    if num_cells > 1999: sample_cell_ids_to_check.append(1999) # For 2000 cells
-    
+    if num_cells > 10: sample_cell_ids_to_check.append(int(num_cells * 0.1))
+    if num_cells > 50: sample_cell_ids_to_check.append(int(num_cells * 0.5))
+    if num_cells > 99: sample_cell_ids_to_check.append(int(num_cells * 0.75))
+    sample_cell_ids_to_check.append(num_cells - 1)
+    sample_cell_ids_to_check = sorted(list(set(sample_cell_ids_to_check)))
+
     cells_by_id = {cell['cell_id']: cell for cell in cell_configuration['cells']}
 
     total_cells_verified = 0
@@ -274,29 +268,24 @@ if __name__ == "__main__":
             for adj_id in sample_cell['adjacent_cells']:
                 adj_cell = cells_by_id.get(adj_id)
                 if adj_cell:
-                    # 1. Verify Bidirectionality
                     is_bidirectional = sample_cell['cell_id'] in adj_cell['adjacent_cells']
                     if not is_bidirectional: errors_in_sample += 1
                     print(f"    - Adj Cell ID {adj_id}: City={adj_cell['city']}, Lat={adj_cell['lat']:.6f}, Lon={adj_cell['lon']:.6f}, Bands={adj_cell['bands']}")
                     print(f"      Bidirectional: {is_bidirectional} {'(OK)' if is_bidirectional else '(ERROR)'}")
 
-                    # 2. Verify Same City
                     same_city = (adj_cell['city'] == sample_cell['city'])
                     if not same_city: errors_in_sample += 1
                     print(f"      Same City: {same_city} {'(OK)' if same_city else '(ERROR)'}")
 
-                    # 3. Verify Band Match
                     common_bands = set(sample_cell['bands']).intersection(set(adj_cell['bands']))
                     band_match_ok = (len(common_bands) >= 1)
                     if not band_match_ok: errors_in_sample += 1
                     print(f"      Common Bands: {list(common_bands)}, Match OK: {band_match_ok} {'(OK)' if band_match_ok else '(ERROR)'}")
 
-                    # 4. Verify Adjacent cell's count also <= theoretical max
                     if not (len(adj_cell['adjacent_cells']) <= THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL):
                          print(f"      !!! ERROR: Neighbor {adj_id} has {len(adj_cell['adjacent_cells'])} adjacent cells, exceeding max {THEORETICAL_MAX_ADJACENT_CELLS_PER_CELL} !!!")
                          errors_in_sample += 1
                     
-                    # 5. Show Geographical Distance (Informational)
                     dist = haversine_distance(sample_cell['lat'], sample_cell['lon'], adj_cell['lat'], adj_cell['lon'])
                     print(f"      Geographical Distance: {dist:.2f} km")
 
@@ -306,7 +295,6 @@ if __name__ == "__main__":
         else:
             print(f"\n--- Cell ID {cell_id_to_check} not found in generated config. ---")
 
-    # Overall degree statistics for the entire graph
     all_final_degrees = [len(cell['adjacent_cells']) for cell in cell_configuration['cells']]
     min_degree = min(all_final_degrees) if all_final_degrees else 0
     max_degree = max(all_final_degrees) if all_final_degrees else 0

@@ -2,9 +2,9 @@
   "cells": [
     {
       "cell_id": 0,
-      "max_capacity": 57,
-      "lat": 37.77565,
-      "lon": -122.411149,
+      "max_capacity": 65,
+      "lat": 33.135153,
+      "lon": -96.813938,
       "bands": [
         "Band 26"
       ],
@@ -14,9 +14,9 @@
     },
     {
       "cell_id": 1,
-      "max_capacity": 97,
-      "lat": 37.801665,
-      "lon": -122.416792,
+      "max_capacity": 87,
+      "lat": 33.029427,
+      "lon": -96.697085,
       "bands": [
         "Band 29",
         "Band 66"
@@ -24,57 +24,59 @@
       "area_type": "industrial",
       "city": "Plano",
       "adjacent_cells": [
-        45
+        23,
+        45,
+        67
       ]
     },
     {
       "cell_id": 2,
-      "max_capacity": 64,
-      "lat": 37.790061,
-      "lon": -122.418604,
+      "max_capacity": 85,
+      "lat": 33.186806,
+      "lon": -96.614519,
       "bands": [
         "Band 66"
       ],
       "area_type": "commercial",
       "city": "McKinney",
       "adjacent_cells": [
-        68
+        46
       ]
     },
     {
       "cell_id": 3,
-      "max_capacity": 87,
-      "lat": 37.783246,
-      "lon": -122.393321,
+      "max_capacity": 50,
+      "lat": 33.218371,
+      "lon": -97.120723,
       "bands": [
         "Band 66"
       ],
       "area_type": "rural",
       "city": "Denton",
       "adjacent_cells": [
+        69,
         91
       ]
     },
     {
       "cell_id": 4,
-      "max_capacity": 59,
-      "lat": 37.781359,
-      "lon": -122.396495,
+      "max_capacity": 71,
+      "lat": 33.090119,
+      "lon": -96.653011,
       "bands": [
         "Band 29"
       ],
       "area_type": "residential",
       "city": "Allen",
       "adjacent_cells": [
-        26,
-        92
+        26
       ]
     },
     {
       "cell_id": 5,
-      "max_capacity": 72,
-      "lat": 37.800325,
-      "lon": -122.401288,
+      "max_capacity": 66,
+      "lat": 33.237259,
+      "lon": -96.811142,
       "bands": [
         "Band 66"
       ],
@@ -86,9 +88,9 @@
     },
     {
       "cell_id": 6,
-      "max_capacity": 55,
-      "lat": 37.791461,
-      "lon": -122.394518,
+      "max_capacity": 90,
+      "lat": 33.298852,
+      "lon": -96.817473,
       "bands": [
         "Band 71",
         "Band 66",
@@ -97,58 +99,62 @@
       "area_type": "industrial",
       "city": "Celina",
       "adjacent_cells": [
-        28,
-        72
+        72,
+        94
       ]
     },
     {
       "cell_id": 7,
-      "max_capacity": 92,
-      "lat": 37.781737,
-      "lon": -122.410718,
+      "max_capacity": 55,
+      "lat": 33.096851,
+      "lon": -96.892677,
       "bands": [
-        "Band 26"
+        "Band 29"
       ],
-      "area_type": "industrial",
+      "area_type": "residential",
       "city": "The Colony",
-      "adjacent_cells": []
+      "adjacent_cells": [
+        95
+      ]
     },
     {
       "cell_id": 8,
-      "max_capacity": 67,
-      "lat": 37.788502,
-      "lon": -122.394377,
+      "max_capacity": 60,
+      "lat": 33.168536,
+      "lon": -96.907436,
       "bands": [
-        "Band 71"
+        "Band 71",
+        "Band 29"
       ],
       "area_type": "rural",
       "city": "Little Elm",
       "adjacent_cells": [
-        30,
-        52
+        96
       ]
     },
     {
       "cell_id": 9,
-      "max_capacity": 92,
-      "lat": 37.782909,
-      "lon": -122.3913,
+      "max_capacity": 88,
+      "lat": 33.382266,
+      "lon": -96.523879,
       "bands": [
-        "Band 29",
+        "Band 26",
         "Band 71",
-        "Band 66"
+        "Band 29"
       ],
       "area_type": "commercial",
       "city": "Anna",
       "adjacent_cells": [
-        75
+        31,
+        75,
+        97
       ]
     },
     {
       "cell_id": 10,
-      "max_capacity": 79,
-      "lat": 37.786284,
-      "lon": -122.389714,
+      "max_capacity": 90,
+      "lat": 32.964778,
+      "lon": -96.817719,
       "bands": [
         "Band 26",
         "Band 71",
@@ -157,44 +163,43 @@
       "area_type": "industrial",
       "city": "Addison",
       "adjacent_cells": [
-        54
+        54,
+        76
       ]
     },
     {
       "cell_id": 11,
-      "max_capacity": 52,
-      "lat": 37.799051,
-      "lon": -122.407365,
+      "max_capacity": 75,
+      "lat": 33.005472,
+      "lon": -96.878398,
       "bands": [
-        "Band 26"
+        "Band 29",
+        "Band 66"
       ],
       "area_type": "rural",
       "city": "Carrollton",
       "adjacent_cells": [
-        55
+        33
       ]
     },
     {
       "cell_id": 12,
       "max_capacity": 91,
-      "lat": 37.789877,
-      "lon": -122.39286,
+      "lat": 32.966318,
+      "lon": -97.011075,
       "bands": [
-        "Band 66",
-        "Band 29",
-        "Band 26"
+        "Band 26",
+        "Band 66"
       ],
       "area_type": "commercial",
       "city": "Coppell",
-      "adjacent_cells": [
-        34
-      ]
+      "adjacent_cells": []
     },
     {
       "cell_id": 13,
       "max_capacity": 97,
-      "lat": 37.791741,
-      "lon": -122.411518,
+      "lat": 32.9446,
+      "lon": -96.891241,
       "bands": [
         "Band 66",
         "Band 71",
@@ -203,137 +208,134 @@
       "area_type": "rural",
       "city": "Farmers Branch",
       "adjacent_cells": [
-        79
+        57
       ]
     },
     {
       "cell_id": 14,
-      "max_capacity": 58,
-      "lat": 37.790186,
-      "lon": -122.416673,
+      "max_capacity": 81,
+      "lat": 32.833893,
+      "lon": -96.963367,
       "bands": [
         "Band 29"
       ],
-      "area_type": "commercial",
+      "area_type": "industrial",
       "city": "Irving",
       "adjacent_cells": [
-        36
+        80
       ]
     },
     {
       "cell_id": 15,
-      "max_capacity": 60,
-      "lat": 37.798662,
-      "lon": -122.406735,
+      "max_capacity": 77,
+      "lat": 32.771898,
+      "lon": -96.587917,
       "bands": [
-        "Band 66"
+        "Band 29",
+        "Band 26",
+        "Band 71"
       ],
       "area_type": "residential",
       "city": "Mesquite",
       "adjacent_cells": [
-        59,
-        81
+        37
       ]
     },
     {
       "cell_id": 16,
-      "max_capacity": 79,
-      "lat": 37.790773,
-      "lon": -122.390268,
-      "bands": [
-        "Band 29"
-      ],
-      "area_type": "rural",
-      "city": "Grand Prairie",
-      "adjacent_cells": [
-        60
-      ]
-    },
-    {
-      "cell_id": 17,
-      "max_capacity": 71,
-      "lat": 37.778247,
-      "lon": -122.406357,
-      "bands": [
-        "Band 29",
-        "Band 71"
-      ],
-      "area_type": "rural",
-      "city": "Southlake",
-      "adjacent_cells": [
-        61,
-        83
-      ]
-    },
-    {
-      "cell_id": 18,
-      "max_capacity": 98,
-      "lat": 37.78026,
-      "lon": -122.392021,
-      "bands": [
-        "Band 71",
-        "Band 66",
-        "Band 29"
-      ],
-      "area_type": "commercial",
-      "city": "Keller",
-      "adjacent_cells": [
-        40,
-        62,
-        84
-      ]
-    },
-    {
-      "cell_id": 19,
-      "max_capacity": 98,
-      "lat": 37.779746,
-      "lon": -122.390795,
+      "max_capacity": 50,
+      "lat": 32.735557,
+      "lon": -96.999571,
       "bands": [
         "Band 29",
         "Band 71",
         "Band 26"
       ],
+      "area_type": "rural",
+      "city": "Grand Prairie",
+      "adjacent_cells": [
+        38,
+        60,
+        82
+      ]
+    },
+    {
+      "cell_id": 17,
+      "max_capacity": 50,
+      "lat": 32.93324,
+      "lon": -97.148674,
+      "bands": [
+        "Band 71",
+        "Band 66",
+        "Band 29"
+      ],
+      "area_type": "industrial",
+      "city": "Southlake",
+      "adjacent_cells": [
+        61
+      ]
+    },
+    {
+      "cell_id": 18,
+      "max_capacity": 88,
+      "lat": 32.927938,
+      "lon": -97.229242,
+      "bands": [
+        "Band 26"
+      ],
+      "area_type": "rural",
+      "city": "Keller",
+      "adjacent_cells": [
+        62
+      ]
+    },
+    {
+      "cell_id": 19,
+      "max_capacity": 83,
+      "lat": 33.113375,
+      "lon": -97.161255,
+      "bands": [
+        "Band 71"
+      ],
       "area_type": "residential",
       "city": "Argyle",
       "adjacent_cells": [
-        41,
         63
       ]
     },
     {
       "cell_id": 20,
-      "max_capacity": 57,
-      "lat": 37.802773,
-      "lon": -122.393038,
+      "max_capacity": 69,
+      "lat": 33.032975,
+      "lon": -97.241381,
       "bands": [
-        "Band 26",
         "Band 29"
       ],
       "area_type": "commercial",
       "city": "Northlake",
       "adjacent_cells": [
-        86
+        64
       ]
     },
     {
       "cell_id": 21,
-      "max_capacity": 55,
-      "lat": 37.77747,
-      "lon": -122.40482,
+      "max_capacity": 81,
+      "lat": 32.991278,
+      "lon": -97.221074,
       "bands": [
         "Band 26"
       ],
       "area_type": "commercial",
       "city": "Westlake",
       "adjacent_cells": [
-        87
+        43
       ]
     },
     {
       "cell_id": 22,
-      "max_capacity": 80,
-      "lat": 37.803305,
-      "lon": -122.414446,
+      "max_capacity": 66,
+      "lat": 33.149711,
+      "lon": -96.821608,
       "bands": [
         "Band 66",
         "Band 29",
@@ -343,14 +345,14 @@
       "city": "Frisco",
       "adjacent_cells": [
         44,
-        88
+        66
       ]
     },
     {
       "cell_id": 23,
-      "max_capacity": 92,
-      "lat": 37.794396,
-      "lon": -122.406257,
+      "max_capacity": 78,
+      "lat": 33.039606,
+      "lon": -96.692905,
       "bands": [
         "Band 66",
         "Band 29",
@@ -359,15 +361,14 @@
       "area_type": "commercial",
       "city": "Plano",
       "adjacent_cells": [
-        67,
-        89
+        1
       ]
     },
     {
       "cell_id": 24,
-      "max_capacity": 71,
-      "lat": 37.775531,
-      "lon": -122.402782,
+      "max_capacity": 64,
+      "lat": 33.191023,
+      "lon": -96.615068,
       "bands": [
         "Band 26",
         "Band 29",
@@ -376,26 +377,28 @@
       "area_type": "industrial",
       "city": "McKinney",
       "adjacent_cells": [
-        90
+        68
       ]
     },
     {
       "cell_id": 25,
-      "max_capacity": 54,
-      "lat": 37.802063,
-      "lon": -122.393611,
+      "max_capacity": 71,
+      "lat": 33.197496,
+      "lon": -97.151843,
       "bands": [
         "Band 26"
       ],
       "area_type": "rural",
       "city": "Denton",
-      "adjacent_cells": []
+      "adjacent_cells": [
+        69
+      ]
     },
     {
       "cell_id": 26,
-      "max_capacity": 81,
-      "lat": 37.781327,
-      "lon": -122.415431,
+      "max_capacity": 96,
+      "lat": 33.103317,
+      "lon": -96.669731,
       "bands": [
         "Band 66",
         "Band 29",
@@ -405,14 +408,15 @@
       "city": "Allen",
       "adjacent_cells": [
         4,
-        48
+        48,
+        92
       ]
     },
     {
       "cell_id": 27,
-      "max_capacity": 56,
-      "lat": 37.777808,
-      "lon": -122.406468,
+      "max_capacity": 72,
+      "lat": 33.226673,
+      "lon": -96.798541,
       "bands": [
         "Band 66",
         "Band 26"
@@ -425,9 +429,9 @@
     },
     {
       "cell_id": 28,
-      "max_capacity": 91,
-      "lat": 37.804425,
-      "lon": -122.416447,
+      "max_capacity": 53,
+      "lat": 33.321838,
+      "lon": -96.803353,
       "bands": [
         "Band 71",
         "Band 29"
@@ -435,169 +439,163 @@
       "area_type": "commercial",
       "city": "Celina",
       "adjacent_cells": [
-        6,
-        94
+        50
       ]
     },
     {
       "cell_id": 29,
-      "max_capacity": 62,
-      "lat": 37.790989,
-      "lon": -122.415195,
+      "max_capacity": 77,
+      "lat": 33.078008,
+      "lon": -96.905655,
       "bands": [
         "Band 71"
       ],
       "area_type": "residential",
       "city": "The Colony",
-      "adjacent_cells": [
-        51
-      ]
+      "adjacent_cells": []
     },
     {
       "cell_id": 30,
-      "max_capacity": 54,
-      "lat": 37.788194,
-      "lon": -122.39356,
+      "max_capacity": 85,
+      "lat": 33.185379,
+      "lon": -96.937785,
       "bands": [
-        "Band 29",
-        "Band 66",
-        "Band 71"
+        "Band 29"
       ],
       "area_type": "industrial",
       "city": "Little Elm",
       "adjacent_cells": [
-        8
+        74
       ]
     },
     {
       "cell_id": 31,
       "max_capacity": 60,
-      "lat": 37.787092,
-      "lon": -122.404959,
+      "lat": 33.381855,
+      "lon": -96.515852,
       "bands": [
-        "Band 29",
-        "Band 66"
+        "Band 66",
+        "Band 26"
       ],
-      "area_type": "residential",
+      "area_type": "commercial",
       "city": "Anna",
       "adjacent_cells": [
-        97
+        9
       ]
     },
     {
       "cell_id": 32,
-      "max_capacity": 74,
-      "lat": 37.782856,
-      "lon": -122.395878,
+      "max_capacity": 50,
+      "lat": 32.985698,
+      "lon": -96.850715,
       "bands": [
         "Band 71",
         "Band 26"
       ],
-      "area_type": "residential",
+      "area_type": "rural",
       "city": "Addison",
       "adjacent_cells": [
-        98
+        54
       ]
     },
     {
       "cell_id": 33,
-      "max_capacity": 62,
-      "lat": 37.783801,
-      "lon": -122.390339,
+      "max_capacity": 100,
+      "lat": 33.000464,
+      "lon": -96.88138,
       "bands": [
+        "Band 66",
         "Band 29",
-        "Band 71",
-        "Band 26"
+        "Band 71"
       ],
-      "area_type": "industrial",
+      "area_type": "rural",
       "city": "Carrollton",
       "adjacent_cells": [
+        11,
         77
       ]
     },
     {
       "cell_id": 34,
-      "max_capacity": 87,
-      "lat": 37.789204,
-      "lon": -122.391818,
+      "max_capacity": 84,
+      "lat": 32.978848,
+      "lon": -97.003733,
       "bands": [
-        "Band 26",
-        "Band 29",
         "Band 71"
       ],
-      "area_type": "commercial",
+      "area_type": "industrial",
       "city": "Coppell",
       "adjacent_cells": [
-        12
+        56
       ]
     },
     {
       "cell_id": 35,
-      "max_capacity": 88,
-      "lat": 37.776939,
-      "lon": -122.393545,
+      "max_capacity": 83,
+      "lat": 32.938167,
+      "lon": -96.892686,
+      "bands": [
+        "Band 29"
+      ],
+      "area_type": "industrial",
+      "city": "Farmers Branch",
+      "adjacent_cells": [
+        79
+      ]
+    },
+    {
+      "cell_id": 36,
+      "max_capacity": 65,
+      "lat": 32.796741,
+      "lon": -96.966182,
       "bands": [
         "Band 29",
         "Band 71"
       ],
       "area_type": "commercial",
-      "city": "Farmers Branch",
+      "city": "Irving",
       "adjacent_cells": [
-        57
+        80
       ]
     },
     {
-      "cell_id": 36,
-      "max_capacity": 88,
-      "lat": 37.776092,
-      "lon": -122.41694,
+      "cell_id": 37,
+      "max_capacity": 76,
+      "lat": 32.770581,
+      "lon": -96.594825,
       "bands": [
         "Band 71",
         "Band 26",
         "Band 29"
       ],
       "area_type": "rural",
-      "city": "Irving",
+      "city": "Mesquite",
       "adjacent_cells": [
-        14,
-        58,
-        80
+        15,
+        59,
+        81
       ]
     },
     {
-      "cell_id": 37,
-      "max_capacity": 66,
-      "lat": 37.786774,
-      "lon": -122.399249,
+      "cell_id": 38,
+      "max_capacity": 91,
+      "lat": 32.736125,
+      "lon": -97.016465,
       "bands": [
         "Band 66",
         "Band 26"
       ],
       "area_type": "industrial",
-      "city": "Mesquite",
-      "adjacent_cells": [
-        59
-      ]
-    },
-    {
-      "cell_id": 38,
-      "max_capacity": 79,
-      "lat": 37.793535,
-      "lon": -122.40251,
-      "bands": [
-        "Band 29"
-      ],
-      "area_type": "commercial",
       "city": "Grand Prairie",
       "adjacent_cells": [
-        60
+        16
       ]
     },
     {
       "cell_id": 39,
-      "max_capacity": 66,
-      "lat": 37.778874,
-      "lon": -122.40893,
+      "max_capacity": 56,
+      "lat": 32.939831,
+      "lon": -97.115062,
       "bands": [
         "Band 26"
       ],
@@ -609,12 +607,348 @@
     },
     {
       "cell_id": 40,
-      "max_capacity": 60,
-      "lat": 37.788046,
-      "lon": -122.403103,
+      "max_capacity": 65,
+      "lat": 32.95333,
+      "lon": -97.219565,
+      "bands": [
+        "Band 71",
+        "Band 29"
+      ],
+      "area_type": "residential",
+      "city": "Keller",
+      "adjacent_cells": [
+        84
+      ]
+    },
+    {
+      "cell_id": 41,
+      "max_capacity": 91,
+      "lat": 33.119942,
+      "lon": -97.167933,
       "bands": [
         "Band 29",
+        "Band 71",
+        "Band 26"
+      ],
+      "area_type": "industrial",
+      "city": "Argyle",
+      "adjacent_cells": [
+        63,
+        85
+      ]
+    },
+    {
+      "cell_id": 42,
+      "max_capacity": 97,
+      "lat": 33.039079,
+      "lon": -97.220311,
+      "bands": [
+        "Band 26",
+        "Band 66",
         "Band 71"
+      ],
+      "area_type": "commercial",
+      "city": "Northlake",
+      "adjacent_cells": [
+        86
+      ]
+    },
+    {
+      "cell_id": 43,
+      "max_capacity": 66,
+      "lat": 32.967115,
+      "lon": -97.197,
+      "bands": [
+        "Band 66",
+        "Band 26",
+        "Band 29"
+      ],
+      "area_type": "industrial",
+      "city": "Westlake",
+      "adjacent_cells": [
+        21,
+        65,
+        87
+      ]
+    },
+    {
+      "cell_id": 44,
+      "max_capacity": 50,
+      "lat": 33.147643,
+      "lon": -96.832533,
+      "bands": [
+        "Band 26",
+        "Band 71"
+      ],
+      "area_type": "rural",
+      "city": "Frisco",
+      "adjacent_cells": [
+        22,
+        66,
+        88
+      ]
+    },
+    {
+      "cell_id": 45,
+      "max_capacity": 77,
+      "lat": 33.029449,
+      "lon": -96.696833,
+      "bands": [
+        "Band 29",
+        "Band 66",
+        "Band 71"
+      ],
+      "area_type": "commercial",
+      "city": "Plano",
+      "adjacent_cells": [
+        1
+      ]
+    },
+    {
+      "cell_id": 46,
+      "max_capacity": 85,
+      "lat": 33.178941,
+      "lon": -96.623831,
+      "bands": [
+        "Band 66"
+      ],
+      "area_type": "commercial",
+      "city": "McKinney",
+      "adjacent_cells": [
+        2,
+        90
+      ]
+    },
+    {
+      "cell_id": 47,
+      "max_capacity": 100,
+      "lat": 33.20713,
+      "lon": -97.117141,
+      "bands": [
+        "Band 71"
+      ],
+      "area_type": "commercial",
+      "city": "Denton",
+      "adjacent_cells": []
+    },
+    {
+      "cell_id": 48,
+      "max_capacity": 99,
+      "lat": 33.093881,
+      "lon": -96.687188,
+      "bands": [
+        "Band 66",
+        "Band 71",
+        "Band 29"
+      ],
+      "area_type": "commercial",
+      "city": "Allen",
+      "adjacent_cells": [
+        26,
+        70,
+        92
+      ]
+    },
+    {
+      "cell_id": 49,
+      "max_capacity": 76,
+      "lat": 33.261948,
+      "lon": -96.792469,
+      "bands": [
+        "Band 26"
+      ],
+      "area_type": "rural",
+      "city": "Prosper",
+      "adjacent_cells": []
+    },
+    {
+      "cell_id": 50,
+      "max_capacity": 65,
+      "lat": 33.327789,
+      "lon": -96.794637,
+      "bands": [
+        "Band 26",
+        "Band 71"
+      ],
+      "area_type": "industrial",
+      "city": "Celina",
+      "adjacent_cells": [
+        28
+      ]
+    },
+    {
+      "cell_id": 51,
+      "max_capacity": 64,
+      "lat": 33.105287,
+      "lon": -96.889256,
+      "bands": [
+        "Band 66"
+      ],
+      "area_type": "rural",
+      "city": "The Colony",
+      "adjacent_cells": [
+        73,
+        95
+      ]
+    },
+    {
+      "cell_id": 52,
+      "max_capacity": 64,
+      "lat": 33.183221,
+      "lon": -96.905947,
+      "bands": [
+        "Band 26"
+      ],
+      "area_type": "residential",
+      "city": "Little Elm",
+      "adjacent_cells": []
+    },
+    {
+      "cell_id": 53,
+      "max_capacity": 99,
+      "lat": 33.355944,
+      "lon": -96.547023,
+      "bands": [
+        "Band 71",
+        "Band 66"
+      ],
+      "area_type": "residential",
+      "city": "Anna",
+      "adjacent_cells": []
+    },
+    {
+      "cell_id": 54,
+      "max_capacity": 51,
+      "lat": 32.988846,
+      "lon": -96.835851,
+      "bands": [
+        "Band 71"
+      ],
+      "area_type": "commercial",
+      "city": "Addison",
+      "adjacent_cells": [
+        10,
+        32
+      ]
+    },
+    {
+      "cell_id": 55,
+      "max_capacity": 56,
+      "lat": 33.011101,
+      "lon": -96.899981,
+      "bands": [
+        "Band 66",
+        "Band 26",
+        "Band 71"
+      ],
+      "area_type": "residential",
+      "city": "Carrollton",
+      "adjacent_cells": [
+        77,
+        99
+      ]
+    },
+    {
+      "cell_id": 56,
+      "max_capacity": 86,
+      "lat": 32.979469,
+      "lon": -97.022274,
+      "bands": [
+        "Band 71"
+      ],
+      "area_type": "industrial",
+      "city": "Coppell",
+      "adjacent_cells": [
+        34
+      ]
+    },
+    {
+      "cell_id": 57,
+      "max_capacity": 84,
+      "lat": 32.932242,
+      "lon": -96.892003,
+      "bands": [
+        "Band 26",
+        "Band 66",
+        "Band 71"
+      ],
+      "area_type": "industrial",
+      "city": "Farmers Branch",
+      "adjacent_cells": [
+        13
+      ]
+    },
+    {
+      "cell_id": 58,
+      "max_capacity": 92,
+      "lat": 32.830831,
+      "lon": -96.943974,
+      "bands": [
+        "Band 71"
+      ],
+      "area_type": "rural",
+      "city": "Irving",
+      "adjacent_cells": [
+        80
+      ]
+    },
+    {
+      "cell_id": 59,
+      "max_capacity": 68,
+      "lat": 32.763136,
+      "lon": -96.603504,
+      "bands": [
+        "Band 26",
+        "Band 29",
+        "Band 66"
+      ],
+      "area_type": "residential",
+      "city": "Mesquite",
+      "adjacent_cells": [
+        37
+      ]
+    },
+    {
+      "cell_id": 60,
+      "max_capacity": 86,
+      "lat": 32.755425,
+      "lon": -97.014739,
+      "bands": [
+        "Band 66",
+        "Band 71"
+      ],
+      "area_type": "industrial",
+      "city": "Grand Prairie",
+      "adjacent_cells": [
+        16
+      ]
+    },
+    {
+      "cell_id": 61,
+      "max_capacity": 87,
+      "lat": 32.932977,
+      "lon": -97.137804,
+      "bands": [
+        "Band 71",
+        "Band 26",
+        "Band 66"
+      ],
+      "area_type": "residential",
+      "city": "Southlake",
+      "adjacent_cells": [
+        17,
+        83
+      ]
+    },
+    {
+      "cell_id": 62,
+      "max_capacity": 100,
+      "lat": 32.924548,
+      "lon": -97.235873,
+      "bands": [
+        "Band 26",
+        "Band 71",
+        "Band 29"
       ],
       "area_type": "rural",
       "city": "Keller",
@@ -624,251 +958,262 @@
       ]
     },
     {
-      "cell_id": 41,
-      "max_capacity": 56,
-      "lat": 37.803068,
-      "lon": -122.415371,
+      "cell_id": 63,
+      "max_capacity": 55,
+      "lat": 33.118354,
+      "lon": -97.16763,
       "bands": [
-        "Band 29"
+        "Band 71"
       ],
       "area_type": "commercial",
       "city": "Argyle",
       "adjacent_cells": [
         19,
-        63
+        41
       ]
     },
     {
-      "cell_id": 42,
-      "max_capacity": 68,
-      "lat": 37.793045,
-      "lon": -122.397872,
-      "bands": [
-        "Band 71"
-      ],
-      "area_type": "residential",
-      "city": "Northlake",
-      "adjacent_cells": []
-    },
-    {
-      "cell_id": 43,
-      "max_capacity": 53,
-      "lat": 37.777669,
-      "lon": -122.406693,
+      "cell_id": 64,
+      "max_capacity": 80,
+      "lat": 33.034394,
+      "lon": -97.254051,
       "bands": [
         "Band 29",
-        "Band 66"
+        "Band 26",
+        "Band 71"
       ],
-      "area_type": "rural",
+      "area_type": "commercial",
+      "city": "Northlake",
+      "adjacent_cells": [
+        20
+      ]
+    },
+    {
+      "cell_id": 65,
+      "max_capacity": 65,
+      "lat": 32.981254,
+      "lon": -97.204725,
+      "bands": [
+        "Band 29"
+      ],
+      "area_type": "industrial",
       "city": "Westlake",
       "adjacent_cells": [
-        65,
+        43,
         87
       ]
     },
     {
-      "cell_id": 44,
-      "max_capacity": 90,
-      "lat": 37.804294,
-      "lon": -122.414553,
+      "cell_id": 66,
+      "max_capacity": 94,
+      "lat": 33.139454,
+      "lon": -96.811436,
       "bands": [
         "Band 66",
+        "Band 29",
         "Band 71"
       ],
       "area_type": "industrial",
       "city": "Frisco",
       "adjacent_cells": [
-        22
+        22,
+        44
       ]
     },
     {
-      "cell_id": 45,
-      "max_capacity": 54,
-      "lat": 37.803252,
-      "lon": -122.398669,
-      "bands": [
-        "Band 29"
-      ],
-      "area_type": "rural",
-      "city": "Plano",
-      "adjacent_cells": [
-        1
-      ]
-    },
-    {
-      "cell_id": 46,
-      "max_capacity": 85,
-      "lat": 37.779343,
-      "lon": -122.415577,
+      "cell_id": 67,
+      "max_capacity": 83,
+      "lat": 33.005134,
+      "lon": -96.700314,
       "bands": [
         "Band 71",
-        "Band 29"
+        "Band 26",
+        "Band 66"
       ],
-      "area_type": "rural",
-      "city": "McKinney",
-      "adjacent_cells": []
+      "area_type": "residential",
+      "city": "Plano",
+      "adjacent_cells": [
+        1,
+        89
+      ]
     },
     {
-      "cell_id": 47,
-      "max_capacity": 93,
-      "lat": 37.782386,
-      "lon": -122.416316,
+      "cell_id": 68,
+      "max_capacity": 66,
+      "lat": 33.207246,
+      "lon": -96.619613,
+      "bands": [
+        "Band 71"
+      ],
+      "area_type": "residential",
+      "city": "McKinney",
+      "adjacent_cells": [
+        24
+      ]
+    },
+    {
+      "cell_id": 69,
+      "max_capacity": 95,
+      "lat": 33.20437,
+      "lon": -97.135505,
+      "bands": [
+        "Band 26",
+        "Band 66"
+      ],
+      "area_type": "rural",
+      "city": "Denton",
+      "adjacent_cells": [
+        3,
+        25,
+        91
+      ]
+    },
+    {
+      "cell_id": 70,
+      "max_capacity": 59,
+      "lat": 33.119621,
+      "lon": -96.688077,
+      "bands": [
+        "Band 66"
+      ],
+      "area_type": "commercial",
+      "city": "Allen",
+      "adjacent_cells": [
+        48
+      ]
+    },
+    {
+      "cell_id": 71,
+      "max_capacity": 71,
+      "lat": 33.231458,
+      "lon": -96.808305,
+      "bands": [
+        "Band 66",
+        "Band 26",
+        "Band 29"
+      ],
+      "area_type": "commercial",
+      "city": "Prosper",
+      "adjacent_cells": [
+        5,
+        27,
+        93
+      ]
+    },
+    {
+      "cell_id": 72,
+      "max_capacity": 94,
+      "lat": 33.311279,
+      "lon": -96.798408,
+      "bands": [
+        "Band 66"
+      ],
+      "area_type": "residential",
+      "city": "Celina",
+      "adjacent_cells": [
+        6
+      ]
+    },
+    {
+      "cell_id": 73,
+      "max_capacity": 74,
+      "lat": 33.10811,
+      "lon": -96.911655,
+      "bands": [
+        "Band 26",
+        "Band 66"
+      ],
+      "area_type": "commercial",
+      "city": "The Colony",
+      "adjacent_cells": [
+        51
+      ]
+    },
+    {
+      "cell_id": 74,
+      "max_capacity": 71,
+      "lat": 33.167833,
+      "lon": -96.939639,
       "bands": [
         "Band 66",
         "Band 71",
         "Band 29"
       ],
-      "area_type": "commercial",
-      "city": "Denton",
-      "adjacent_cells": [
-        69
-      ]
-    },
-    {
-      "cell_id": 48,
-      "max_capacity": 61,
-      "lat": 37.801342,
-      "lon": -122.418656,
-      "bands": [
-        "Band 71",
-        "Band 26",
-        "Band 29"
-      ],
-      "area_type": "rural",
-      "city": "Allen",
-      "adjacent_cells": [
-        26
-      ]
-    },
-    {
-      "cell_id": 49,
-      "max_capacity": 100,
-      "lat": 37.795938,
-      "lon": -122.407924,
-      "bands": [
-        "Band 66"
-      ],
-      "area_type": "commercial",
-      "city": "Prosper",
-      "adjacent_cells": [
-        93
-      ]
-    },
-    {
-      "cell_id": 50,
-      "max_capacity": 79,
-      "lat": 37.78539,
-      "lon": -122.394784,
-      "bands": [
-        "Band 26"
-      ],
-      "area_type": "industrial",
-      "city": "Celina",
-      "adjacent_cells": [
-        72
-      ]
-    },
-    {
-      "cell_id": 51,
-      "max_capacity": 62,
-      "lat": 37.786854,
-      "lon": -122.411042,
-      "bands": [
-        "Band 71"
-      ],
-      "area_type": "rural",
-      "city": "The Colony",
-      "adjacent_cells": [
-        29,
-        73
-      ]
-    },
-    {
-      "cell_id": 52,
-      "max_capacity": 82,
-      "lat": 37.78689,
-      "lon": -122.389966,
-      "bands": [
-        "Band 71",
-        "Band 29",
-        "Band 66"
-      ],
-      "area_type": "rural",
+      "area_type": "residential",
       "city": "Little Elm",
       "adjacent_cells": [
-        8,
-        74,
+        30,
         96
       ]
     },
     {
-      "cell_id": 53,
-      "max_capacity": 87,
-      "lat": 37.803776,
-      "lon": -122.411436,
+      "cell_id": 75,
+      "max_capacity": 75,
+      "lat": 33.384029,
+      "lon": -96.528435,
       "bands": [
-        "Band 66"
+        "Band 29",
+        "Band 66",
+        "Band 26"
       ],
-      "area_type": "rural",
+      "area_type": "commercial",
       "city": "Anna",
       "adjacent_cells": [
-        75
+        9
       ]
     },
     {
-      "cell_id": 54,
-      "max_capacity": 100,
-      "lat": 37.78431,
-      "lon": -122.401214,
+      "cell_id": 76,
+      "max_capacity": 70,
+      "lat": 32.956869,
+      "lon": -96.846894,
       "bands": [
-        "Band 29",
-        "Band 26",
         "Band 66"
       ],
       "area_type": "rural",
       "city": "Addison",
       "adjacent_cells": [
         10,
-        76
+        98
       ]
     },
     {
-      "cell_id": 55,
-      "max_capacity": 95,
-      "lat": 37.787982,
-      "lon": -122.403802,
+      "cell_id": 77,
+      "max_capacity": 98,
+      "lat": 33.003049,
+      "lon": -96.895435,
       "bands": [
-        "Band 26",
-        "Band 66",
-        "Band 71"
+        "Band 71",
+        "Band 29"
       ],
-      "area_type": "industrial",
+      "area_type": "residential",
       "city": "Carrollton",
       "adjacent_cells": [
-        11
+        33,
+        55
       ]
     },
     {
-      "cell_id": 56,
-      "max_capacity": 71,
-      "lat": 37.793595,
-      "lon": -122.399498,
+      "cell_id": 78,
+      "max_capacity": 72,
+      "lat": 32.970061,
+      "lon": -97.024817,
       "bands": [
-        "Band 71"
+        "Band 29"
       ],
-      "area_type": "rural",
+      "area_type": "industrial",
       "city": "Coppell",
       "adjacent_cells": []
     },
     {
-      "cell_id": 57,
-      "max_capacity": 76,
-      "lat": 37.784685,
-      "lon": -122.398484,
+      "cell_id": 79,
+      "max_capacity": 51,
+      "lat": 32.952784,
+      "lon": -96.904826,
       "bands": [
         "Band 26",
         "Band 29",
-        "Band 66"
+        "Band 71"
       ],
       "area_type": "residential",
       "city": "Farmers Branch",
@@ -877,358 +1222,19 @@
       ]
     },
     {
-      "cell_id": 58,
-      "max_capacity": 97,
-      "lat": 37.801984,
-      "lon": -122.400935,
-      "bands": [
-        "Band 66",
-        "Band 71"
-      ],
-      "area_type": "industrial",
-      "city": "Irving",
-      "adjacent_cells": [
-        36,
-        80
-      ]
-    },
-    {
-      "cell_id": 59,
-      "max_capacity": 68,
-      "lat": 37.781205,
-      "lon": -122.395827,
-      "bands": [
-        "Band 71",
-        "Band 26",
-        "Band 66"
-      ],
-      "area_type": "residential",
-      "city": "Mesquite",
-      "adjacent_cells": [
-        15,
-        37
-      ]
-    },
-    {
-      "cell_id": 60,
-      "max_capacity": 63,
-      "lat": 37.790235,
-      "lon": -122.395588,
-      "bands": [
-        "Band 26",
-        "Band 71",
-        "Band 29"
-      ],
-      "area_type": "rural",
-      "city": "Grand Prairie",
-      "adjacent_cells": [
-        16,
-        38,
-        82
-      ]
-    },
-    {
-      "cell_id": 61,
-      "max_capacity": 92,
-      "lat": 37.793888,
-      "lon": -122.409344,
-      "bands": [
-        "Band 71"
-      ],
-      "area_type": "commercial",
-      "city": "Southlake",
-      "adjacent_cells": [
-        17,
-        83
-      ]
-    },
-    {
-      "cell_id": 62,
-      "max_capacity": 59,
-      "lat": 37.775633,
-      "lon": -122.412055,
-      "bands": [
-        "Band 29",
-        "Band 26"
-      ],
-      "area_type": "residential",
-      "city": "Keller",
-      "adjacent_cells": [
-        18
-      ]
-    },
-    {
-      "cell_id": 63,
-      "max_capacity": 86,
-      "lat": 37.780733,
-      "lon": -122.398509,
-      "bands": [
-        "Band 66",
-        "Band 29"
-      ],
-      "area_type": "commercial",
-      "city": "Argyle",
-      "adjacent_cells": [
-        19,
-        41,
-        85
-      ]
-    },
-    {
-      "cell_id": 64,
-      "max_capacity": 94,
-      "lat": 37.775066,
-      "lon": -122.396871,
-      "bands": [
-        "Band 66"
-      ],
-      "area_type": "commercial",
-      "city": "Northlake",
-      "adjacent_cells": [
-        86
-      ]
-    },
-    {
-      "cell_id": 65,
-      "max_capacity": 94,
-      "lat": 37.790439,
-      "lon": -122.417893,
-      "bands": [
-        "Band 29"
-      ],
-      "area_type": "residential",
-      "city": "Westlake",
-      "adjacent_cells": [
-        43
-      ]
-    },
-    {
-      "cell_id": 66,
-      "max_capacity": 79,
-      "lat": 37.794927,
-      "lon": -122.389763,
-      "bands": [
-        "Band 71",
-        "Band 26",
-        "Band 66"
-      ],
-      "area_type": "residential",
-      "city": "Frisco",
-      "adjacent_cells": [
-        88
-      ]
-    },
-    {
-      "cell_id": 67,
-      "max_capacity": 97,
-      "lat": 37.800745,
-      "lon": -122.405898,
-      "bands": [
-        "Band 71"
-      ],
-      "area_type": "residential",
-      "city": "Plano",
-      "adjacent_cells": [
-        23
-      ]
-    },
-    {
-      "cell_id": 68,
-      "max_capacity": 65,
-      "lat": 37.783138,
-      "lon": -122.417075,
-      "bands": [
-        "Band 26",
-        "Band 66"
-      ],
-      "area_type": "rural",
-      "city": "McKinney",
-      "adjacent_cells": [
-        2,
-        90
-      ]
-    },
-    {
-      "cell_id": 69,
-      "max_capacity": 84,
-      "lat": 37.777317,
-      "lon": -122.414875,
-      "bands": [
-        "Band 26",
-        "Band 71"
-      ],
-      "area_type": "commercial",
-      "city": "Denton",
-      "adjacent_cells": [
-        47,
-        91
-      ]
-    },
-    {
-      "cell_id": 70,
-      "max_capacity": 76,
-      "lat": 37.787128,
-      "lon": -122.403122,
-      "bands": [
-        "Band 29",
-        "Band 66"
-      ],
-      "area_type": "residential",
-      "city": "Allen",
-      "adjacent_cells": [
-        92
-      ]
-    },
-    {
-      "cell_id": 71,
-      "max_capacity": 99,
-      "lat": 37.792422,
-      "lon": -122.398534,
-      "bands": [
-        "Band 66",
-        "Band 26",
-        "Band 29"
-      ],
-      "area_type": "rural",
-      "city": "Prosper",
-      "adjacent_cells": [
-        5,
-        27
-      ]
-    },
-    {
-      "cell_id": 72,
-      "max_capacity": 98,
-      "lat": 37.7866,
-      "lon": -122.392651,
-      "bands": [
-        "Band 26",
-        "Band 66"
-      ],
-      "area_type": "commercial",
-      "city": "Celina",
-      "adjacent_cells": [
-        6,
-        50
-      ]
-    },
-    {
-      "cell_id": 73,
-      "max_capacity": 77,
-      "lat": 37.789469,
-      "lon": -122.407734,
-      "bands": [
-        "Band 66",
-        "Band 71",
-        "Band 29"
-      ],
-      "area_type": "residential",
-      "city": "The Colony",
-      "adjacent_cells": [
-        51,
-        95
-      ]
-    },
-    {
-      "cell_id": 74,
-      "max_capacity": 89,
-      "lat": 37.790924,
-      "lon": -122.392192,
-      "bands": [
-        "Band 29",
-        "Band 66",
-        "Band 26"
-      ],
-      "area_type": "commercial",
-      "city": "Little Elm",
-      "adjacent_cells": [
-        52
-      ]
-    },
-    {
-      "cell_id": 75,
-      "max_capacity": 61,
-      "lat": 37.776409,
-      "lon": -122.408027,
-      "bands": [
-        "Band 66"
-      ],
-      "area_type": "rural",
-      "city": "Anna",
-      "adjacent_cells": [
-        9,
-        53
-      ]
-    },
-    {
-      "cell_id": 76,
-      "max_capacity": 98,
-      "lat": 37.801289,
-      "lon": -122.411052,
-      "bands": [
-        "Band 71",
-        "Band 29"
-      ],
-      "area_type": "residential",
-      "city": "Addison",
-      "adjacent_cells": [
-        54
-      ]
-    },
-    {
-      "cell_id": 77,
-      "max_capacity": 97,
-      "lat": 37.791083,
-      "lon": -122.389403,
-      "bands": [
-        "Band 26",
-        "Band 71"
-      ],
-      "area_type": "industrial",
-      "city": "Carrollton",
-      "adjacent_cells": [
-        33
-      ]
-    },
-    {
-      "cell_id": 78,
-      "max_capacity": 52,
-      "lat": 37.797527,
-      "lon": -122.390912,
-      "bands": [
-        "Band 29"
-      ],
-      "area_type": "commercial",
-      "city": "Coppell",
-      "adjacent_cells": []
-    },
-    {
-      "cell_id": 79,
-      "max_capacity": 58,
-      "lat": 37.789107,
-      "lon": -122.415968,
-      "bands": [
-        "Band 66"
-      ],
-      "area_type": "rural",
-      "city": "Farmers Branch",
-      "adjacent_cells": [
-        13
-      ]
-    },
-    {
       "cell_id": 80,
-      "max_capacity": 60,
-      "lat": 37.793077,
-      "lon": -122.390488,
+      "max_capacity": 79,
+      "lat": 32.798576,
+      "lon": -96.93099,
       "bands": [
-        "Band 29",
-        "Band 66",
-        "Band 26"
+        "Band 71",
+        "Band 26",
+        "Band 29"
       ],
       "area_type": "industrial",
       "city": "Irving",
       "adjacent_cells": [
+        14,
         36,
         58
       ]
@@ -1236,37 +1242,37 @@
     {
       "cell_id": 81,
       "max_capacity": 51,
-      "lat": 37.802767,
-      "lon": -122.402126,
+      "lat": 32.785389,
+      "lon": -96.615276,
       "bands": [
         "Band 66",
-        "Band 71"
+        "Band 26"
       ],
       "area_type": "commercial",
       "city": "Mesquite",
       "adjacent_cells": [
-        15
+        37
       ]
     },
     {
       "cell_id": 82,
-      "max_capacity": 87,
-      "lat": 37.795618,
-      "lon": -122.400583,
+      "max_capacity": 65,
+      "lat": 32.749184,
+      "lon": -96.988477,
       "bands": [
         "Band 71"
       ],
       "area_type": "industrial",
       "city": "Grand Prairie",
       "adjacent_cells": [
-        60
+        16
       ]
     },
     {
       "cell_id": 83,
-      "max_capacity": 100,
-      "lat": 37.776132,
-      "lon": -122.403418,
+      "max_capacity": 77,
+      "lat": 32.952805,
+      "lon": -97.141112,
       "bands": [
         "Band 71",
         "Band 29",
@@ -1275,16 +1281,15 @@
       "area_type": "industrial",
       "city": "Southlake",
       "adjacent_cells": [
-        17,
         39,
         61
       ]
     },
     {
       "cell_id": 84,
-      "max_capacity": 81,
-      "lat": 37.778066,
-      "lon": -122.390576,
+      "max_capacity": 73,
+      "lat": 32.948893,
+      "lon": -97.250578,
       "bands": [
         "Band 66",
         "Band 71",
@@ -1293,15 +1298,15 @@
       "area_type": "residential",
       "city": "Keller",
       "adjacent_cells": [
-        18,
-        40
+        40,
+        62
       ]
     },
     {
       "cell_id": 85,
-      "max_capacity": 96,
-      "lat": 37.790552,
-      "lon": -122.399886,
+      "max_capacity": 67,
+      "lat": 33.121152,
+      "lon": -97.153781,
       "bands": [
         "Band 66",
         "Band 26",
@@ -1310,76 +1315,75 @@
       "area_type": "rural",
       "city": "Argyle",
       "adjacent_cells": [
-        63
+        41
       ]
     },
     {
       "cell_id": 86,
-      "max_capacity": 65,
-      "lat": 37.799822,
-      "lon": -122.4168,
+      "max_capacity": 55,
+      "lat": 33.062569,
+      "lon": -97.222671,
       "bands": [
-        "Band 26",
-        "Band 66"
+        "Band 66",
+        "Band 29"
       ],
       "area_type": "residential",
       "city": "Northlake",
       "adjacent_cells": [
-        20,
-        64
+        42
       ]
     },
     {
       "cell_id": 87,
       "max_capacity": 51,
-      "lat": 37.789729,
-      "lon": -122.40965,
+      "lat": 32.977813,
+      "lon": -97.20934,
       "bands": [
-        "Band 26",
-        "Band 66"
+        "Band 71",
+        "Band 29"
       ],
-      "area_type": "rural",
+      "area_type": "residential",
       "city": "Westlake",
       "adjacent_cells": [
-        21,
-        43
+        43,
+        65
       ]
     },
     {
       "cell_id": 88,
       "max_capacity": 67,
-      "lat": 37.80131,
-      "lon": -122.398364,
+      "lat": 33.144893,
+      "lon": -96.833266,
       "bands": [
-        "Band 29",
-        "Band 71"
+        "Band 71",
+        "Band 66",
+        "Band 29"
       ],
       "area_type": "commercial",
       "city": "Frisco",
       "adjacent_cells": [
-        22,
-        66
+        44
       ]
     },
     {
       "cell_id": 89,
-      "max_capacity": 65,
-      "lat": 37.796502,
-      "lon": -122.404743,
+      "max_capacity": 85,
+      "lat": 33.009454,
+      "lon": -96.702643,
       "bands": [
         "Band 66"
       ],
       "area_type": "residential",
       "city": "Plano",
       "adjacent_cells": [
-        23
+        67
       ]
     },
     {
       "cell_id": 90,
-      "max_capacity": 100,
-      "lat": 37.775417,
-      "lon": -122.410573,
+      "max_capacity": 64,
+      "lat": 33.209217,
+      "lon": -96.634878,
       "bands": [
         "Band 26",
         "Band 66"
@@ -1387,15 +1391,14 @@
       "area_type": "rural",
       "city": "McKinney",
       "adjacent_cells": [
-        24,
-        68
+        46
       ]
     },
     {
       "cell_id": 91,
-      "max_capacity": 85,
-      "lat": 37.790828,
-      "lon": -122.406635,
+      "max_capacity": 97,
+      "lat": 33.216939,
+      "lon": -97.13935,
       "bands": [
         "Band 71",
         "Band 26",
@@ -1410,9 +1413,9 @@
     },
     {
       "cell_id": 92,
-      "max_capacity": 66,
-      "lat": 37.781816,
-      "lon": -122.397761,
+      "max_capacity": 62,
+      "lat": 33.093956,
+      "lon": -96.686474,
       "bands": [
         "Band 29",
         "Band 71"
@@ -1420,15 +1423,15 @@
       "area_type": "commercial",
       "city": "Allen",
       "adjacent_cells": [
-        4,
-        70
+        26,
+        48
       ]
     },
     {
       "cell_id": 93,
-      "max_capacity": 63,
-      "lat": 37.797058,
-      "lon": -122.411105,
+      "max_capacity": 96,
+      "lat": 33.231555,
+      "lon": -96.805532,
       "bands": [
         "Band 71",
         "Band 29",
@@ -1437,14 +1440,14 @@
       "area_type": "rural",
       "city": "Prosper",
       "adjacent_cells": [
-        49
+        71
       ]
     },
     {
       "cell_id": 94,
-      "max_capacity": 73,
-      "lat": 37.780283,
-      "lon": -122.418976,
+      "max_capacity": 95,
+      "lat": 33.310135,
+      "lon": -96.817109,
       "bands": [
         "Band 26",
         "Band 66",
@@ -1453,14 +1456,14 @@
       "area_type": "industrial",
       "city": "Celina",
       "adjacent_cells": [
-        28
+        6
       ]
     },
     {
       "cell_id": 95,
-      "max_capacity": 68,
-      "lat": 37.795823,
-      "lon": -122.415612,
+      "max_capacity": 90,
+      "lat": 33.082085,
+      "lon": -96.885836,
       "bands": [
         "Band 29",
         "Band 66"
@@ -1468,67 +1471,69 @@
       "area_type": "rural",
       "city": "The Colony",
       "adjacent_cells": [
-        73
+        7,
+        51
       ]
     },
     {
       "cell_id": 96,
-      "max_capacity": 80,
-      "lat": 37.788114,
-      "lon": -122.413869,
+      "max_capacity": 53,
+      "lat": 33.169549,
+      "lon": -96.927172,
       "bands": [
-        "Band 71"
+        "Band 66",
+        "Band 29"
       ],
-      "area_type": "residential",
+      "area_type": "industrial",
       "city": "Little Elm",
       "adjacent_cells": [
-        52
+        8,
+        74
       ]
     },
     {
       "cell_id": 97,
-      "max_capacity": 54,
-      "lat": 37.786921,
-      "lon": -122.417178,
+      "max_capacity": 93,
+      "lat": 33.36447,
+      "lon": -96.526719,
       "bands": [
-        "Band 29",
-        "Band 66",
-        "Band 71"
+        "Band 26"
       ],
-      "area_type": "rural",
+      "area_type": "commercial",
       "city": "Anna",
       "adjacent_cells": [
-        31
+        9
       ]
     },
     {
       "cell_id": 98,
       "max_capacity": 65,
-      "lat": 37.778454,
-      "lon": -122.396467,
+      "lat": 32.987565,
+      "lon": -96.853893,
       "bands": [
-        "Band 26",
-        "Band 71",
         "Band 66"
       ],
-      "area_type": "residential",
+      "area_type": "commercial",
       "city": "Addison",
       "adjacent_cells": [
-        32
+        76
       ]
     },
     {
       "cell_id": 99,
       "max_capacity": 69,
-      "lat": 37.800705,
-      "lon": -122.389699,
+      "lat": 32.987815,
+      "lon": -96.87426,
       "bands": [
-        "Band 29",
-        "Band 71"
+        "Band 66",
+        "Band 26",
+        "Band 29"
       ],
       "area_type": "industrial",
       "city": "Carrollton",
-      "adjacent_cells": []
+      "adjacent_cells": [
+        55
+      ]
     }
   ]
 }
