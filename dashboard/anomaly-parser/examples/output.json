@@ -1,0 +1,1170 @@
+[
+  {
+    "cell_id": 18,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 50.86 Mbps (Current) vs. 125.43 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 19,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 23.79 Mbps (Current) vs. 74.30 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 19,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.17 dBm < -110 dBm",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 19,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 22.02 Mbps (Current) vs. 87.76 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 20,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.24 dBm < -110 dBm",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 21,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 32.12 Mbps (Current) vs. 91.49 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 22,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.31 dBm < -110 dBm",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 23,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.35 dBm < -110 dBm",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 23,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 19.09 Mbps (Current) vs. 92.99 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 26,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.49 dBm < -110 dBm",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 27,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.47 dBm < -110 dBm",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 28,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.66 dBm < -110 dBm",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 28,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.05 dBm < -110 dBm",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 28,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 30.55 Mbps (Current) vs. 79.60 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 30,
+    "band": 66,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 16.0 UEs (Current) vs. 10.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 30,
+    "band": 71,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 5.0 UEs (Current) vs. 13.67 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 157,
+    "creation_date": "2025-07-11 01:09:41"
+  },
+  {
+    "cell_id": 1,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.94 dBm < -110 dBm",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 1,
+    "band": 66,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 26.0 UEs (Current) vs. 11.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 5,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 122.25 dBm < -110 dBm",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 5,
+    "band": 66,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 16.0 UEs (Current) vs. 10.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 6,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.62 dBm < -110 dBm",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 6,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.1 dBm < -110 dBm",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 8,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 16.71 Mbps (Current) vs. 77.74 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 9,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 13.86 Mbps (Current) vs. 84.68 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 10,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.21 dBm < -110 dBm",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 11,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.95 dBm < -110 dBm",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 14,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.93 dBm < -110 dBm",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 15,
+    "band": 66,
+    "anomaly_type": "Low SINR",
+    "anomaly": "Low SINR: 7.45 dB < 0 dB",
+    "source_id": 156,
+    "creation_date": "2025-07-10 23:09:46"
+  },
+  {
+    "cell_id": 94,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.34 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 94,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.51 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 94,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.81 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 95,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.77 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 95,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 13.08 Mbps (Current) vs. 58.21 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 96,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 18.70 Mbps (Current) vs. 56.88 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 97,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 24.45 Mbps (Current) vs. 86.90 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 98,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 10.19 Mbps (Current) vs. 67.79 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 99,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 35.38 Mbps (Current) vs. 95.79 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 0,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.98 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 1,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.08 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 3,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 15.79 Mbps (Current) vs. 52.85 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 4,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.79 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 5,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.77 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 6,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 55.37 Mbps (Current) vs. 124.59 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 6,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.15 dBm < -110 dBm",
+    "source_id": 155,
+    "creation_date": "2025-07-10 21:09:44"
+  },
+  {
+    "cell_id": 82,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.89 dBm < -110 dBm",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 82,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 41.54 Mbps (Current) vs. 83.97 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 83,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 16.70 Mbps (Current) vs. 108.61 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 84,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.64 dBm < -110 dBm",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 84,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 27.54 Mbps (Current) vs. 92.25 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 84,
+    "band": 66,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 17.0 UEs (Current) vs. 67.00 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 84,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.51 dBm < -110 dBm",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 85,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.19 dBm < -110 dBm",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 87,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 47.88 Mbps (Current) vs. 105.77 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 90,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.45 dBm",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 92,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.61 dBm < -110 dBm",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 93,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.19 dBm < -110 dBm",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 93,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 42.90 Mbps (Current) vs. 104.43 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 154,
+    "creation_date": "2025-07-10 19:09:58"
+  },
+  {
+    "cell_id": 66,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.5 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 66,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 17.40 Mbps (Current) vs. 58.82 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 67,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 134.7 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 67,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 30.11 Mbps (Current) vs. 89.12 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 68,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.1 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 68,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 31.34 Mbps (Current) vs. 74.98 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 69,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 39.16 Mbps (Current) vs. 98.16 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 70,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.38 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 71,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.91 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 71,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 53.75 Mbps (Current) vs. 118.20 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 73,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.93 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 74,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.92 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 74,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.53 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 76,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.18 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 76,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 63.92 Mbps (Current) vs. 128.37 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 76,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.92 dBm < -110 dBm",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 77,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 21.83 Mbps (Current) vs. 66.01 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 78,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 26.68 Mbps (Current) vs. 119.80 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 80,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 0.00 Mbps (Current) vs. 89.41 Mbps (Avg Prior 3) - drop > 50%; UEs Spike/Drop: 0.0 UEs (Current) vs. 9.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 80,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 0.00 Mbps (Current) vs. 89.41 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 80,
+    "band": 29,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 0.0 UEs (Current) vs. 9.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 153,
+    "creation_date": "2025-07-10 17:09:27"
+  },
+  {
+    "cell_id": 52,
+    "band": 66,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 15.0 UEs (Current) vs. 9.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 54,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.01 dBm < -110 dBm",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 57,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 10.15 Mbps (Current) vs. 63.47 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 57,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 30.89 Mbps (Current) vs. 79.51 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 58,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.4 dBm < -110 dBm",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 59,
+    "band": 66,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 52.0 UEs (Current) vs. 32.67 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 60,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 30.19 Mbps (Current) vs. 93.01 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 60,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 14.08 Mbps (Current) vs. 92.38 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 61,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.18 dBm < -110 dBm",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 62,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.11 dBm < -110 dBm",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 63,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 17.46 Mbps (Current) vs. 55.70 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 152,
+    "creation_date": "2025-07-10 15:09:31"
+  },
+  {
+    "cell_id": 34,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.89 dBm < -110 dBm",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 34,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 33.06 Mbps (Current) vs. 74.52 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 34,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 30.15 Mbps (Current) vs. 94.42 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 36,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 15.0 UEs (Current) vs. 35.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 38,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.21 dBm < -110 dBm",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 40,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.1 dBm < -110 dBm",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 40,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 13.26 Mbps (Current) vs. 51.57 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 41,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.58 dBm < -110 dBm",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 44,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.46 dBm < -110 dBm",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 47,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.5 dBm < -110 dBm",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 47,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 30.71 Mbps (Current) vs. 79.40 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 47,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 18.53 Mbps (Current) vs. 63.24 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 48,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.0 dBm < -110 dBm",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 48,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.58 dBm < -110 dBm",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 49,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 53.46 Mbps (Current) vs. 127.86 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 50,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 17.07 Mbps (Current) vs. 81.69 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 50,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 8.0 UEs (Current) vs. 33.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 151,
+    "creation_date": "2025-07-10 13:09:50"
+  },
+  {
+    "cell_id": 22,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.37 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 22,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.17 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 22,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 35.89 Mbps (Current) vs. 81.11 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 23,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.1 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 24,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.99 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 24,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 56.57 Mbps (Current) vs. 139.88 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 24,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 32.56 Mbps (Current) vs. 95.16 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 26,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 44.34 Mbps (Current) vs. 93.22 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 27,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.04 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 27,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.65 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 28,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.15 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 30,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.94 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 30,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 47.44 Mbps (Current) vs. 107.46 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 32,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.04 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 33,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 24.69 Mbps (Current) vs. 54.17 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 33,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.68 dBm < -110 dBm",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 33,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 12.56 Mbps (Current) vs. 89.54 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 150,
+    "creation_date": "2025-07-10 11:09:49"
+  },
+  {
+    "cell_id": 6,
+    "band": 66,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 15.0 UEs (Current) vs. 9.00 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 6,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 18.75 Mbps (Current) vs. 43.82 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 7,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 17.25 Mbps (Current) vs. 61.16 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 9,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.03 dBm < -110 dBm",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 9,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 18.63 Mbps (Current) vs. 74.76 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 9,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.27 dBm < -110 dBm",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 9,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 14.81 Mbps (Current) vs. 98.20 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 10,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.61 dBm < -110 dBm",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 10,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.81 dBm < -110 dBm",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 11,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 42.40 Mbps (Current) vs. 123.71 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 11,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 9.0 UEs (Current) vs. 5.67 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 13,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 18.0 UEs (Current) vs. 11.67 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 15,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 24.48 Mbps (Current) vs. 89.93 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 18,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 10.54 Mbps (Current) vs. 87.22 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 19,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 18.09 Mbps (Current) vs. 100.76 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 20,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.35 dBm < -110 dBm",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 20,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 3.08 Mbps (Current) vs. 49.11 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 149,
+    "creation_date": "2025-07-10 09:09:29"
+  },
+  {
+    "cell_id": 91,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 40.19 Mbps (Current) vs. 107.98 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 148,
+    "creation_date": "2025-07-10 07:08:57"
+  },
+  {
+    "cell_id": 93,
+    "band": 29,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 12.0 UEs (Current) vs. 7.00 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 148,
+    "creation_date": "2025-07-10 07:08:57"
+  },
+  {
+    "cell_id": 93,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 16.56 Mbps (Current) vs. 72.69 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 148,
+    "creation_date": "2025-07-10 07:08:57"
+  },
+  {
+    "cell_id": 99,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.24 dBm < -110 dBm",
+    "source_id": 148,
+    "creation_date": "2025-07-10 07:08:57"
+  },
+  {
+    "cell_id": 1,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.36 dBm < -110 dBm",
+    "source_id": 148,
+    "creation_date": "2025-07-10 07:08:57"
+  },
+  {
+    "cell_id": 3,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.52 dBm < -110 dBm",
+    "source_id": 148,
+    "creation_date": "2025-07-10 07:08:57"
+  }
+]

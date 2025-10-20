@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anomaly-parser
+  labels:
+    app: anomaly-parser
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anomaly-parser
+  template:
+    metadata:
+      labels:
+        app: anomaly-parser
+    spec:
+      volumes:
+        - name: data
+          emptyDir: {}
+      containers:
+        # 1) Your image: fetch → parse → write outputs to /data
+        - name: worker
+          image: docker.io/tolarewaju3/anomaly-parser:latest
+          imagePullPolicy: Always
+          env:
+            - name: RAW_URL
+              value: "http://ranchat.ai-cloud-ran-genai.svc.cluster.local:5000/api/events"
+            - name: INTERVAL_SEC
+              value: "10"          # tune for freshness vs load
+            - name: REQUEST_TIMEOUT
+              value: "5"
+            - name: OUT_JSON
+              value: "/data/anomalies.json"
+            - name: OUT_CSV
+              value: "/data/anomalies.csv"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+
+        # 2) Static web server to expose parsed files to your UI
+        - name: web
+          image: registry.access.redhat.com/ubi9/python-311
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          command: ["/bin/bash","-lc"]
+          args:
+            - |
+              cd /data
+              : > anomalies.json
+              : > anomalies.csv
+              python -m http.server 8080
+          readinessProbe:
+            httpGet:
+              path: /anomalies.json
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]

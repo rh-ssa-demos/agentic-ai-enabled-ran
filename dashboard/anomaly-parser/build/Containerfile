@@ -1,0 +1,17 @@
+FROM registry.access.redhat.com/ubi9/python-311
+
+WORKDIR /app
+
+#COPY requirements.txt .
+
+COPY parser.py parse_anomalies.py parser.py ./
+
+
+ENTRYPOINT ["/bin/sh","-c", "\
+  while true; do \
+    echo Fetching $RAW_URL; \
+    curl -sSf --max-time ${REQUEST_TIMEOUT:-5} \"$RAW_URL\" -o /data/payload.json || true; \
+    /usr/bin/python3 /app/parser.py /data/payload.json /data/anomalies.json /data/anomalies.csv || true; \
+    sleep ${INTERVAL_SEC:-10}; \
+  done \
+"]

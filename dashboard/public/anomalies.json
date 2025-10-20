@@ -1,0 +1,1491 @@
+[
+  {
+    "cell_id": 47,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.55 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.8, Page 65) for optimizing cell configuration and antenna adjustments; consider modifying antenna azimuth/downtilt to redistribute traffic or tuning Cell Individual Offsets (CIO) for better distribution",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 47,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 21.84 Mbps (Current) vs. 103.82 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 48,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.62 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 48,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 17.48 Mbps (Current) vs. 92.76 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 48,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.37 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 48,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 34.01 Mbps (Current) vs. 76.56 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 48,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.89 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 48,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 18.75 Mbps (Current) vs. 80.82 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 51,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.2 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or similar issues, possibly involving antenna adjustments or load balancing features)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 52,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.3 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.8, Configure SAS) for adjusting parameters like Report Quantity, Time To Trigger, and RS Type to optimize signal strength and quality",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 53,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 26.94 Mbps (Current) vs. 66.65 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation) for load balancing features and cell individual offsets tuning; also, consider verifying IP/MPLS tunnels and routing entries as per section 7.8 and 7.2",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 54,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.95 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 55,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 28.0 UEs (Current) vs. 15.00 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Balance DU assignment across available CU instances",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 55,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 10.87 Mbps (Current) vs. 120.15 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 56,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.78 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or similar issues, possibly involving antenna adjustments or load balancing features)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 57,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.91 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or SINR issues, possibly involving antenna adjustments or configuration changes like modifying antenna azimuth/downtilt to redistribute traffic)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 57,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.66 dBm < -110 dBm",
+    "recommended_fix": "Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 59,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.49 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 59,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 25.05 Mbps (Current) vs. 83.57 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 59,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.45 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or similar issues, specifically \"Modify antenna azimuth/downtilt to redistribute traffic.\")",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 60,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 29.14 Mbps (Current) vs. 102.72 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 60,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.65 dBm < -110 dBm",
+    "recommended_fix": "Remediation for poor RSRP and throughput issues may involve modifying antenna azimuth/downtilt to redistribute traffic (Section 7, Remediation). Additionally, consider tuning Cell Individual Offsets (CIO) for better distribution and utilizing Load Balancing Features (e.g., A3/A5 offset tuning for HO) to optimize network performance",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 60,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 21.95 Mbps (Current) vs. 72.68 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation for poor RSRP and throughput issues may involve modifying antenna azimuth/downtilt to redistribute traffic (Section 7, Remediation). Additionally, consider tuning Cell Individual Offsets (CIO) for better distribution and utilizing Load Balancing Features (e.g., A3/A5 offset tuning for HO) to optimize network performance",
+    "source_id": 264,
+    "creation_date": "2025-08-27 15:59:27"
+  },
+  {
+    "cell_id": 32,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.62 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 32,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.32 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 33,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 34.35 Mbps (Current) vs. 81.14 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 33,
+    "band": 71,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 11.0 UEs (Current) vs. 6.67 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Remediation for Load Balancing Features, e.g., A3/A5 offset tuning for HO)",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 34,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 16.70 Mbps (Current) vs. 44.66 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 35,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.88 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or SINR issues, possibly involving antenna adjustments or Load Balancing Features)",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 36,
+    "band": 29,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 15.0 UEs (Current) vs. 32.33 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for \"UE spike: Sudden UE storm or test scenario\")",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 37,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.42 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or similar issues, specifically \"Modify antenna azimuth/downtilt to redistribute traffic.\")",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 39,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 20.33 Mbps (Current) vs. 78.29 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 42,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 23.72 Mbps (Current) vs. 48.48 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 42,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 23.72 Mbps (Current) vs. 48.48 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 43,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 38.54 Mbps (Current) vs. 140.01 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 43,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.54 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 44,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 17.28 Mbps (Current) vs. 104.09 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features)",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 45,
+    "band": 29,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 9.0 UEs (Current) vs. 4.67 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Issue: Inconsistent DU-CU Communication, Load Balancing Features)",
+    "source_id": 263,
+    "creation_date": "2025-08-27 15:39:13"
+  },
+  {
+    "cell_id": 18,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 40.44 Mbps (Current) vs. 101.14 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 19,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 16.86 Mbps (Current) vs. 45.28 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 19,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 24.99 Mbps (Current) vs. 65.81 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 23,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 25.49 Mbps (Current) vs. 56.39 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 23,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.84 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 23,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 34.77 Mbps (Current) vs. 82.32 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 24,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.64 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or SINR issues, specifically \"Modify antenna azimuth/downtilt to redistribute traffic\")",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 26,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 18.46 Mbps (Current) vs. 56.95 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features)",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 26,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.22 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 29,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 3.47 Mbps (Current) vs. 106.62 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 30,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.06 dBm < -110 dBm",
+    "recommended_fix": "Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 30,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.89 dBm < -110 dBm",
+    "source_id": 262,
+    "creation_date": "2025-08-27 15:23:49"
+  },
+  {
+    "cell_id": 0,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 54.0 UEs (Current) vs. 10.00 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Issue: Inconsistent DU-CU Communication, Load Balancing Features)",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 1,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.11 dBm < -110 dBm",
+    "recommended_fix": "For low RSRP, consider modifying antenna azimuth/downtilt to redistribute traffic. For UE spike/drop, use Load Balancing Features such as A3/A5 offset tuning for handover optimization",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 1,
+    "band": 29,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 25.0 UEs (Current) vs. 14.00 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "For low RSRP, consider modifying antenna azimuth/downtilt to redistribute traffic. For UE spike/drop, use Load Balancing Features such as A3/A5 offset tuning for handover optimization",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 1,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 25.94 Mbps (Current) vs. 133.25 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 2,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 23.77 Mbps (Current) vs. 72.77 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features)",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 5,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.07 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.2.1 IntraFREQ Measurement List, Page 46) for adjusting IntraFREQ Measurement parameters like RSRP thresholds and offsets to optimize signal strength",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 6,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.61 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Inconsistent DU-CU Communication and Load Balancing Features)",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 6,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 31.91 Mbps (Current) vs. 68.14 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Inconsistent DU-CU Communication and Load Balancing Features)",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 7,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 46.32 Mbps (Current) vs. 100.42 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 8,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.87 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.2 Configure NR Neighbor Frequency and Cell, Page 53) for adjusting parameters like Report Quantity, RS IDX, Time To Trigger, and RS Type to optimize cell measurement and handover performance",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 9,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.4 dBm < -110 dBm",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 10,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.52 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 11,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 5.0 UEs (Current) vs. 22.00 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Issue: Inconsistent DU-CU Communication, and Load Balancing Features)",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 13,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.55 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 15,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.61 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 16,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 44.36 Mbps (Current) vs. 90.85 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 17,
+    "band": 71,
+    "anomaly_type": "Low SINR",
+    "anomaly": "Low SINR: 6.58 dB < 0 dB",
+    "source_id": 261,
+    "creation_date": "2025-08-27 15:09:01"
+  },
+  {
+    "cell_id": 88,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 115.16 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 94,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.16 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or similar issues, specifically \"Modify antenna azimuth/downtilt to redistribute traffic.\")",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 95,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 26.33 Mbps (Current) vs. 97.34 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 95,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 27.96 Mbps (Current) vs. 112.86 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 97,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 0.00 Mbps (Current) vs. 121.97 Mbps (Avg Prior 3) - drop > 50%; UEs Spike/Drop: 0.0 UEs (Current) vs. 7.67 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 97,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 39.96 Mbps (Current) vs. 118.26 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 97,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.83 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 98,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.4 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 98,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 19.72 Mbps (Current) vs. 61.45 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 99,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 26.63 Mbps (Current) vs. 102.71 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 260,
+    "creation_date": "2025-08-27 14:53:57"
+  },
+  {
+    "cell_id": 72,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 26.96 Mbps (Current) vs. 81.40 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 73,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.92 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 73,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 29.74 Mbps (Current) vs. 100.89 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 74,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 48.63 Mbps (Current) vs. 136.07 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 76,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.72 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 76,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 31.93 Mbps (Current) vs. 91.33 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 77,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.94 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.3.2, Page 53) for adjusting A2 event thresholds which may help in triggering mobility events when moving towards cell edge, or consider modifying antenna azimuth/downtilt to redistribute traffic as per remediation suggestions",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 78,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.49 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 80,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.41 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.8, Configure SAS) for adjusting parameters like Report Quantity, Time To Trigger, and RS Type to optimize signal strength and quality",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 80,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 16.0 UEs (Current) vs. 9.67 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Issue: Inconsistent DU-CU Communication, Load Balancing Features)",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 81,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 24.50 Mbps (Current) vs. 71.05 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 83,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.49 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 84,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.7 dBm < -110 dBm",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 85,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.01 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 259,
+    "creation_date": "2025-08-27 14:38:41"
+  },
+  {
+    "cell_id": 57,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 17.63 Mbps (Current) vs. 108.99 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 59,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.76 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 59,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 21.64 Mbps (Current) vs. 100.51 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 59,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.64 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Remediation)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 59,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 26.15 Mbps (Current) vs. 88.77 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Remediation)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 60,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.98 dBm < -110 dBm",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 62,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.84 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 62,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.85 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 63,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 39.45 Mbps (Current) vs. 95.58 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features, Page 65)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 64,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 13.79 Mbps (Current) vs. 68.55 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 65,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.86 dBm < -110 dBm",
+    "recommended_fix": "For Low RSRP, consider modifying antenna azimuth/downtilt to redistribute traffic or tuning Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Remediation)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 65,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 27.03 Mbps (Current) vs. 78.49 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "For Low RSRP, consider modifying antenna azimuth/downtilt to redistribute traffic or tuning Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Remediation)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 66,
+    "band": 71,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 58.0 UEs (Current) vs. 35.67 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Issue: Inconsistent DU-CU Communication, Load Balancing Features)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 67,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 135.92 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 69,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 19.98 Mbps (Current) vs. 86.39 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features)",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 71,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.5 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.2.1, Page 46) for configuring intra-frequency measurements, which may help in optimizing RSRP by adjusting parameters like RSRP offset, thresholds, and measurement consolidation",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 71,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 36.25 Mbps (Current) vs. 74.42 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 258,
+    "creation_date": "2025-08-27 14:23:58"
+  },
+  {
+    "cell_id": 42,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 12.14 Mbps (Current) vs. 92.61 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 43,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.96 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.8, Configuring SAS, and Section 7.3.2, A2 Event Threshold) for optimizing cell configuration, threshold adjustments, and ensuring proper network planning for improved RSRP",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 44,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 41.26 Mbps (Current) vs. 83.73 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 44,
+    "band": 71,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 26.0 UEs (Current) vs. 16.67 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Balance DU assignment across available CU instances",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 45,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.82 dBm < -110 dBm; Low SINR: -9.44 dB < 0 dB",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 45,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.82 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 45,
+    "band": 29,
+    "anomaly_type": "Low SINR",
+    "anomaly": "Low SINR: 9.44 dB < 0 dB",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 46,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.02 dBm < -110 dBm",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 46,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 31.90 Mbps (Current) vs. 125.79 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 47,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 39.75 Mbps (Current) vs. 138.59 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 47,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 39.75 Mbps (Current) vs. 138.59 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low Throughput)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 48,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.29 dBm < -110 dBm",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 48,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.81 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 49,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 28.37 Mbps (Current) vs. 77.47 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 50,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.05 dBm < -110 dBm; UEs Spike/Drop: 20.0 UEs (Current) vs. 12.33 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 50,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.05 dBm < -110 dBm",
+    "recommended_fix": "For Low RSRP, consider modifying antenna azimuth/downtilt to redistribute traffic or tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Remediation)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 50,
+    "band": 26,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 20.0 UEs (Current) vs. 12.33 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "For Low RSRP, consider modifying antenna azimuth/downtilt to redistribute traffic or tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Remediation)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 51,
+    "band": 71,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 11.0 UEs (Current) vs. 6.00 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Balance DU assignment across available CU instances",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 52,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 113.92 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 52,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 26.42 Mbps (Current) vs. 72.68 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Check and optimize RRC timers (T310, N310, N311). Verify Xn/S1 interface stability and congestion. Optimize handover thresholds and ensure no coverage gaps. Refer to Baicells documentation (Section 7, Issue: Inconsistent DU-CU Communication)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 53,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.31 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.2.1 IntraFREQ Measurement List, Page 46) for adjusting IntraFREQ Measurement parameters like RSRP thresholds and offsets to optimize signal strength",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 54,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 118.14 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation: Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 54,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 43.86 Mbps (Current) vs. 108.47 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 54,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 11.44 Mbps (Current) vs. 84.44 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 55,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 16.15 Mbps (Current) vs. 106.08 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 55,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.07 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or similar issues, e.g., Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 56,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 37.11 Mbps (Current) vs. 95.39 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 57,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 40.05 Mbps (Current) vs. 80.79 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 57,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 10.76 Mbps (Current) vs. 82.06 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 257,
+    "creation_date": "2025-08-27 14:09:20"
+  },
+  {
+    "cell_id": 27,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 32.50 Mbps (Current) vs. 83.54 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 28,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 20.08 Mbps (Current) vs. 91.33 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.8, Remediation for Load Balancing Issues)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 30,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.13 dBm < -110 dBm",
+    "recommended_fix": "For low RSRP, consider modifying antenna azimuth/downtilt to redistribute traffic or tuning Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Remediation)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 30,
+    "band": 66,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 5.0 UEs (Current) vs. 11.67 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "For low RSRP, consider modifying antenna azimuth/downtilt to redistribute traffic or tuning Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Remediation)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 32,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 48.34 Mbps (Current) vs. 113.62 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 33,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 19.97 Mbps (Current) vs. 102.65 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Issue: High Interference in Downlink or Issue: Uneven Load Between Sectors)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 34,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 26.01 Mbps (Current) vs. 93.53 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 34,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.2 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.3.2, Page 53) for adjusting parameters like antenna azimuth/downtilt to redistribute traffic, or use Load Balancing Features (e.g., A3/A5 offset tuning for HO) and tune Cell Individual Offsets (CIO) for better distribution",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 34,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 27.78 Mbps (Current) vs. 74.08 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 36,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 114.68 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 36,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 10.74 Mbps (Current) vs. 66.87 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic. Use Load Balancing Features (e.g., A3/A5 offset tuning for HO). Tune Cell Individual Offsets (CIO) for better distribution. Refer to Baicells documentation (Section 7, Page 46)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 36,
+    "band": 29,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 79.0 UEs (Current) vs. 10.67 UEs (Avg Prior 3) - change > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Issue: Inconsistent DU-CU Communication, Load Balancing Features)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 37,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 110.55 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Low RSRP or similar issues, e.g., Modify antenna azimuth/downtilt to redistribute traffic.)",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 40,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 24.51 Mbps (Current) vs. 95.19 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 256,
+    "creation_date": "2025-08-27 13:53:34"
+  },
+  {
+    "cell_id": 13,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 20.03 Mbps (Current) vs. 96.77 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing Features)",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 13,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 13.12 Mbps (Current) vs. 102.78 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 13,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 39.80 Mbps (Current) vs. 92.33 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 17,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 10.93 Mbps (Current) vs. 59.66 Mbps (Avg Prior 3) - drop > 50%; UEs Spike/Drop: 12.0 UEs (Current) vs. 7.67 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 17,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 10.93 Mbps (Current) vs. 59.66 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 17,
+    "band": 29,
+    "anomaly_type": "UEs Spike/Drop",
+    "anomaly": "UEs Spike/Drop: 12.0 UEs (Current) vs. 7.67 UEs (Avg Prior 3) - change > 50%",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 17,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.2 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.3.2, Page 53) for A2 event threshold configuration to adjust RSRP thresholds and potentially trigger mobility events or neighbor cell measurements to improve signal strength",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 18,
+    "band": 71,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.22 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.8, Page 65) for optimizing cell configuration and antenna adjustments to improve RSRP. Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 18,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 119.48 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.8, Page 65) for optimizing cell configuration and antenna adjustments; consider modifying antenna azimuth/downtilt to redistribute traffic or tuning Cell Individual Offsets (CIO) for better distribution",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 19,
+    "band": 26,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 112.18 dBm < -110 dBm",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 19,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 42.11 Mbps (Current) vs. 95.29 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Remediation: Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 20,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 43.03 Mbps (Current) vs. 109.20 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Issue: High Interference in Downlink or Uneven Load Between Sectors)",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 22,
+    "band": 66,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 51.23 Mbps (Current) vs. 121.73 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 22,
+    "band": 29,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 12.51 Mbps (Current) vs. 73.07 Mbps (Avg Prior 3) - drop > 50%",
+    "recommended_fix": "Refer to Baicells documentation (Section 7, Remediation for Load Balancing and Optimization)",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 22,
+    "band": 71,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 15.00 Mbps (Current) vs. 48.51 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 23,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 111.97 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.8, Page 65) for optimizing cell configuration and antenna adjustments to improve RSRP. Modify antenna azimuth/downtilt to redistribute traffic",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 24,
+    "band": 26,
+    "anomaly_type": "Throughput Drop",
+    "anomaly": "Throughput Drop: 36.13 Mbps (Current) vs. 78.72 Mbps (Avg Prior 3) - drop > 50%",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 24,
+    "band": 29,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 117.03 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.3.2, Page 53) for adjusting parameters like antenna azimuth/downtilt to redistribute traffic, or use Load Balancing Features (e.g., A3/A5 offset tuning for HO) and tune Cell Individual Offsets (CIO) for better distribution",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  },
+  {
+    "cell_id": 26,
+    "band": 66,
+    "anomaly_type": "Low RSRP",
+    "anomaly": "Low RSRP: 116.45 dBm < -110 dBm",
+    "recommended_fix": "Refer to Baicells documentation (Section 7.2.1 IntraFREQ Measurement List, Page 46) for adjusting IntraFREQ Measurement parameters like RSRP thresholds and offsets to optimize cell performance",
+    "source_id": 255,
+    "creation_date": "2025-08-27 13:39:14"
+  }
+]

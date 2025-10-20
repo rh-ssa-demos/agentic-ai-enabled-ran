@@ -1,0 +1,224 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Theme-aware glass morphism utilities */
+  .glass {
+    @apply backdrop-blur-md border transition-all duration-300;
+    @apply bg-black/5 border-black/15;
+    @apply dark:bg-white/10 dark:border-white/20;
+  }
+  
+  .glass-strong {
+    @apply backdrop-blur-lg border transition-all duration-300;
+    @apply bg-black/8 border-black/20;
+    @apply dark:bg-white/15 dark:border-white/30;
+  }
+  
+  .glass-dark {
+    @apply backdrop-blur-md border transition-all duration-300;
+    @apply bg-white/60 border-black/10;
+    @apply dark:bg-black/20 dark:border-white/10;
+  }
+  
+  .glass-card {
+    @apply backdrop-blur-md border rounded-lg shadow-xl transition-all duration-300;
+    @apply bg-white/60 border-black/10;
+    @apply dark:bg-white/5 dark:border-white/10;
+  }
+  
+  .glass-hover {
+    @apply transition-all duration-300 hover:shadow-2xl;
+    @apply hover:bg-white/80 hover:border-black/20;
+    @apply dark:hover:bg-white/20 dark:hover:border-white/40;
+  }
+  
+  .stat-card {
+    @apply glass-card px-4 py-3 glass-hover;
+  }
+  
+  .glass-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .glass-scrollbar::-webkit-scrollbar-track {
+    @apply rounded-full backdrop-blur-sm transition-all duration-300;
+    @apply bg-black/5;
+    @apply dark:bg-white/5;
+  }
+  
+  .glass-scrollbar::-webkit-scrollbar-thumb {
+    @apply rounded-full backdrop-blur-sm transition-all duration-300;
+    @apply bg-black/20 hover:bg-black/30;
+    @apply dark:bg-white/20 dark:hover:bg-white/30;
+  }
+  
+  .theme-bg {
+    @apply transition-all duration-300;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%);
+  }
+  
+  .dark .theme-bg {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%);
+  }
+  
+  .glass-glow {
+    @apply transition-all duration-300;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  
+  .dark .glass-glow {
+    box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Theme-aware Mapbox popup styles */
+.mapboxgl-popup-content {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #1f2937 !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  font-family: inherit !important;
+  transition: all 0.3s ease !important;
+}
+
+.dark .mapboxgl-popup-content {
+  background-color: rgba(31, 41, 55, 0.95) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.mapboxgl-popup-close-button {
+  color: rgba(31, 41, 55, 0.7) !important;
+  font-size: 16px !important;
+  padding: 5px 10px !important;
+  transition: all 0.3s ease !important;
+}
+
+.dark .mapboxgl-popup-close-button {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.mapboxgl-popup-close-button:hover {
+  color: #1f2937 !important;
+  background: transparent !important;
+}
+
+.dark .mapboxgl-popup-close-button:hover {
+  color: white !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.95) !important;
+  transition: all 0.3s ease !important;
+}
+
+.dark .mapboxgl-popup-tip {
+  border-top-color: rgba(31, 41, 55, 0.95) !important;
+  border-bottom-color: rgba(31, 41, 55, 0.95) !important;
+}
+
