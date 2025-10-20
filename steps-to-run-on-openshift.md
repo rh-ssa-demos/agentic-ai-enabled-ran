@@ -23,6 +23,11 @@
      - [Deploy MySQL to OpenShift](#deploy-mysql-to-openshift)  
    - [Deploy RANCHAT](#deploy-ranchat)  
    - [Verify RANCHAT is running](#verify-ranchat-is-running)
+9. [Deploy Network Dashboard](#9-deploy-network-dashboard)
+   - [Deploy the Anomaly Parser](#1-deploy-the-anomaly-parser)
+   - [Deploy the Dashboard](#2--deploy-the-dashboard)
+   - [Expose the Dashboard](#3-expose-the-dashboard)
+
 
 ## 1. Installing a cluster
 
@@ -346,4 +351,71 @@ Once this appears, open the route URL in your browser you should see the RANCHAT
 
 ![RANCHAT UI](docs/img/ranchat_ui.png?raw=true "RANCHAT UI")
 
+## 9. Deploy Network Dashboard
+
+The network dashboard is a comprehensive real-time network monitoring dashboard for cellular tower networks, featuring interactive maps, live event feeds, anomaly detection, and AI-powered insights.
+
+### Prerequisites
+
+- [OpenShift CLI (`oc`)](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html) - For deployment
+- [Mapbox access token](https://www.mapbox.com/) - Required for map functionality  
+- OpenShift cluster access with deployment permissions
+
+### 1. Deploy the Anomaly Parser
+The anomaly parser extracts the required data for the dashboard from the AI RAN Event API. It must be deployed before the dashboard.
+
+First, **login to your OpenShift cluster.**
+
+```
+oc login <your_cluster_url> -u <your_username> -p <your_password>
+```
+
+Next, **modify the anomaly parser** to point to your RAN event API.
+
+```yml
+# anomaly-parser/manifests/deployment.yml
+
+- name: RAW_URL
+  value: "http://ranchat.ai-cloud-ran-genai.svc.cluster.local:5000/api/events"
+```
+
+Finally, **deploy the anomaly service**.
+```bash
+oc apply -f dashboard/anomaly-parser/manifests/
+```
+
+This will deploy the service and expose it through an OpenShift route. **Visit the route URL** to make sure the anomaly parser is running.
+
+```
+echo "https://$(oc get route anomaly-parser -o jsonpath='{.spec.host}')"
+```
+### 2.  Deploy the Dashboard
+
+Deploy the image to OpenShift:
+```bash
+oc new-app quay.io/tolarewa/network-dashboard-ui \
+  -e VITE_MAPBOX_TOKEN=<your-mapbox-token> \
+  -e VITE_ANOMALIES_URL=<your-anomalies-service-url> \
+```
+
+- **`VITE_MAPBOX_TOKEN`** – Your Mapbox access token (required for the interactive map).
+- **`VITE_ANOMALIES_URL`** – The URL of your anomaly parser service (from the route you deployed in step 1).
+
+### 3. Expose the Dashboard
+
+Create a route so the dashboard is accessible externally:
+```bash
+oc create route edge network-dashboard \
+  --service=network-dashboard \
+  --port=8080 \
+  --insecure-policy=Redirect
+```
+Your dashboard will now be available via the OpenShift route. Please note that you may need to change the TLS settings on the route depending on your OpenShift setup.
+
+Navigate to the url of your dashboard. Find the URL in the network dashboard route.
+
+```
+echo "https://$(oc get route network-dashboard -o jsonpath='{.spec.host}')"
+```
+![Network dashboard](dashboard/img/dashboard-ui.png "Screenshot of network dashboard")
 
