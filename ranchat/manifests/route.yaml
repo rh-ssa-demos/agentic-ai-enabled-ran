@@ -5,7 +5,7 @@ metadata:
 spec:
   to:
     kind: Service
-    name: ranchat
+    name: ranchat-service
   port:
     targetPort: 5000
   tls:

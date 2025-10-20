@@ -53,6 +53,6 @@ spec:
         - name: DB_NAME
           value: 'ran_events'
         - name: FORECAST_AGENT_URL
-          value: 'http://forecast-agent:5001/mcp'        
+          value: 'http://agent-forecast-service:5001/mcp'        
         ports:
         - containerPort: 5000
