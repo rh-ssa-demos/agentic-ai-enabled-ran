@@ -59,9 +59,10 @@ AI-driven, automated RAN operations framework built on Red Hat OpenShift, combin
  - Loads trained models from the S3 object store.
  - Performs prediction inference based on the historical data.
 
- **Web Interface**
- - Simple UI to chat with LLM.
- - Display automatically detected events.
+ **Network Dashboard UI**
+ - Interactive Network Map
+ - Live Event Monitoring
+ - AI-powered chat for network insights
 
 ## Components
  - **Red Hat OpenShift AI (RHOAI)**
