@@ -24,9 +24,9 @@
    - [Deploy RANCHAT](#deploy-ranchat)  
    - [Verify RANCHAT is running](#verify-ranchat-is-running)
 9. [Deploy Network Dashboard](#9-deploy-network-dashboard)
-   - [Deploy the Anomaly Parser](#1-deploy-the-anomaly-parser)
-   - [Deploy the Dashboard](#2--deploy-the-dashboard)
-   - [Expose the Dashboard](#3-expose-the-dashboard)
+   - [Deploy the Anomaly Parser](#deploy-the-anomaly-parser)
+   - [Deploy the Dashboard](#deploy-the-dashboard)
+   - [Expose the Dashboard](#expose-the-dashboard)
 
 
 ## 1. Installing a cluster
@@ -361,7 +361,7 @@ The network dashboard is a comprehensive real-time network monitoring dashboard 
 - [Mapbox access token](https://www.mapbox.com/) - Required for map functionality  
 - OpenShift cluster access with deployment permissions
 
-### 1. Deploy the Anomaly Parser
+### Deploy the Anomaly Parser
 The anomaly parser extracts the required data for the dashboard from the AI RAN Event API. It must be deployed before the dashboard.
 
 First, **login to your OpenShift cluster.**
@@ -389,7 +389,7 @@ This will deploy the service and expose it through an OpenShift route. **Visit t
 ```
 echo "https://$(oc get route anomaly-parser -o jsonpath='{.spec.host}')"
 ```
-### 2.  Deploy the Dashboard
+### Deploy the Dashboard
 
 Deploy the image to OpenShift:
 ```bash
@@ -401,7 +401,7 @@ oc new-app quay.io/tolarewa/network-dashboard-ui \
 - **`VITE_MAPBOX_TOKEN`** – Your Mapbox access token (required for the interactive map).
 - **`VITE_ANOMALIES_URL`** – The URL of your anomaly parser service (from the route you deployed in step 1).
 
-### 3. Expose the Dashboard
+### Expose the Dashboard
 
 Create a route so the dashboard is accessible externally:
 ```bash
