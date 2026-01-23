@@ -1,259 +1,416 @@
 import re
 import os
-import httpx
+import json
 import asyncio
 import boto3
-import shutil
-import requests
-import json
 import pandas as pd
-from ast import literal_eval
-from pathlib import Path
-from botocore.config import Config
-from fastmcp import Client
-from langchain_community.llms import VLLMOpenAI
-from langchain_community.document_loaders import Docx2txtLoader
-from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain.tools import Tool
-from langchain.schema import Document
-from langchain.agents import initialize_agent, AgentType
-from flask import Flask, request, jsonify, render_template
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Text, DateTime
-from sqlalchemy.sql import select, desc
+import httpx
+import shutil
+
 from datetime import datetime
+from ast import literal_eval
 
-# API vars
-API_URL = os.getenv('API_URL')
-API_KEY = os.getenv('API_KEY')
-API_MODEL = os.getenv('API_MODEL')
+from flask import Flask, request, jsonify, render_template
 
-# S3 access vars
-S3_KEY = os.getenv('S3_KEY')
-S3_SECRET_ACCESS_KEY = os.getenv('S3_SECRET_ACCESS_KEY')
+from sqlalchemy import (
+    create_engine, MetaData, Table, Column,
+    Integer, Text, DateTime, select, desc, update
+)
+
+from fastmcp import Client
+
+# =========================
+# LangChain (MODERN)
+# =========================
+from langchain_openai import ChatOpenAI
+
+from langchain_community.vectorstores import FAISS
+#from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import FastEmbedEmbeddings
+from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader
+
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
+
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+
+from langchain.tools import Tool
+from langchain.agents import initialize_agent, AgentType
+
+from langchain.prompts import ChatPromptTemplate
+
+# =========================
+# ENV VARS
+# =========================
+API_URL = os.getenv("API_URL")
+API_KEY = os.getenv("API_KEY")
+API_MODEL = os.getenv("API_MODEL")
+
+S3_KEY = os.getenv("S3_KEY")
+S3_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_ACCESS_KEY")
 S3_BUCKET = os.getenv("S3_BUCKET")
 S3_HOST = os.getenv("S3_HOST")
 
-# DB vars
-DB_HOST = os.getenv('DB_HOST')
-DB_USER = os.getenv('DB_USER')
-DB_PWD = os.getenv('DB_PWD')
-DB_NAME = os.getenv('DB_NAME')
+DB_HOST = os.getenv("DB_HOST")
+DB_USER = os.getenv("DB_USER")
+DB_PWD = os.getenv("DB_PWD")
+DB_NAME = os.getenv("DB_NAME")
 
-FORECAST_AGENT = os.getenv('FORECAST_AGENT_URL')
+FORECAST_AGENT = os.getenv("FORECAST_AGENT_URL")
 
-# DB stuff
-USE_MYSQL = True
-if USE_MYSQL:
-    engine = create_engine('mysql+pymysql://%s:%s@%s/%s' % (DB_USER, DB_PWD, DB_HOST, DB_NAME), echo=True)
-else:
-    engine = create_engine('sqlite:////tmp/events.db', echo=True)
+# =========================
+# DATABASE
+# =========================
+engine = create_engine(
+    f"mysql+pymysql://{DB_USER}:{DB_PWD}@{DB_HOST}/{DB_NAME}",
+    echo=True
+)
 
 metadata = MetaData()
-# DB table
+
 events = Table(
-    'events', metadata,
-    Column('id', Integer, primary_key=True, autoincrement=True),
-    Column('creation_date', DateTime, nullable=False),
-    Column('event', Text, nullable=False),
-    Column('data', Text, nullable=True)
+    "events",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("cell_id", Integer, nullable=False),
+    Column("creation_date", DateTime, nullable=False),
+    Column("event", Text, nullable=False),
+    Column("data", Text),
+    Column("active", Integer, server_default="1"),
 )
-# create the table if it doesn't exist
+
 metadata.create_all(engine)
 
-s3 = boto3.client("s3", verify=False, endpoint_url=S3_HOST, aws_access_key_id=S3_KEY, aws_secret_access_key=S3_SECRET_ACCESS_KEY)
+# =========================
+# S3 CLIENT
+# =========================
+s3 = boto3.client(
+    "s3",
+    verify=False,
+    endpoint_url=S3_HOST,
+    aws_access_key_id=S3_KEY,
+    aws_secret_access_key=S3_SECRET_ACCESS_KEY,
+)
 
+
+
+# =========================
+# MCP FORECAST TOOL
+# =========================
 async def call_forecast(cell_data: list) -> str:
-    """Call the remote MCP forecast tool. Pass a list of cell data records."""
     async with Client(FORECAST_AGENT) as client:
         result = await client.call_tool("forecast", {"cell_data": cell_data})
-        print("Result: %s" % result)
         return str(result)
 
-forecast_tool = Tool(name="forecast",
-                 func=lambda data: asyncio.run(call_forecast(eval(data))),
-                 description="Call to remote MCP agent to forecast if a cell is busy based on 'cell_data', Pass a list of dicts."
-            )
+forecast_tool = Tool(
+    name="forecast",
+    func=lambda data: asyncio.run(call_forecast(literal_eval(data))),
+    description="Call MCP forecast agent. Input: list of dicts."
+)
 
-# S3 related functions
-# ==========================
-def s3_index_exists(bucket, prefix):
-    try:
-        response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
-    except s3.exceptions.ClientError:
-        return False
+# =========================
+# S3 HELPERS
+# =========================
+def list_s3_objects(bucket, prefix):
+    paginator = s3.get_paginator("list_objects_v2")
+    pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
+    return [obj["Key"] for page in pages for obj in page.get("Contents", [])]
 
-def download_index_from_s3(bucket, prefix, local_dir):
+def download_from_s3(bucket, prefix, local_dir):
     os.makedirs(local_dir, exist_ok=True)
-    response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
-    for obj in response.get('Contents', []):
-        s3_key = obj['Key']
-        local_path = os.path.join(local_dir, os.path.relpath(s3_key, prefix))
+    for key in list_s3_objects(bucket, prefix):
+        local_path = os.path.join(local_dir, os.path.relpath(key, prefix))
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
-        s3.download_file(bucket, s3_key, local_path)
+        s3.download_file(bucket, key, local_path)
 
-def upload_index_to_s3(bucket, prefix, local_dir):
+def upload_to_s3(bucket, prefix, local_dir):
     for root, _, files in os.walk(local_dir):
         for file in files:
-            local_path = os.path.join(root, file)
-            relative_path = os.path.relpath(local_path, local_dir)
-            s3_key = os.path.join(prefix, relative_path)
-            s3.upload_file(local_path, bucket, s3_key)
+            full = os.path.join(root, file)
+            s3.upload_file(
+                full,
+                bucket,
+                os.path.join(prefix, os.path.relpath(full, local_dir)),
+            )
 
-def list_s3_objects(bucket, prefix):
-    paginator = s3.get_paginator('list_objects_v2')
-    pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
-
-    all_keys = []
-    for page in pages:
-        for obj in page.get('Contents', []):
-            all_keys.append(obj['Key'])
-
-    return all_keys
-# ==========================
-
-
-# DB related functions
-# ==========================
-# Insert an event in the DB
+# =========================
+# DB HELPERS
+# =========================
 def insert_event(event_text, data):
     with engine.begin() as conn:
-        conn.execute(events.insert().values(
-            creation_date=datetime.utcnow(),
-            event=event_text,
-            data=data
-        ))
+        conn.execute(
+            events.insert().values(
+                creation_date=datetime.utcnow(),
+                event=event_text,
+                data=data,
+            )
+        )
 
-# fetch all events
 def fetch_all_events():
     with engine.begin() as conn:
-        stmt = select(events).order_by(desc(events.c.creation_date)).limit(10)
-        result = conn.execute(stmt).fetchall()
-        return result
-# ==========================
+        return conn.execute(
+            select(events).order_by(desc(events.c.creation_date)).limit(10)
+        ).fetchall()
 
+RAG_PROMPT = ChatPromptTemplate.from_messages([
+    ("system",
+     "You are a Radio Access Network (RAN) engineer and telecom operations expert. "
+     "Use ONLY the provided documentation to answer the question. "
+     "If the answer cannot be found in the documents, say you do not know."),
+    ("human",
+     "Context:\n{context}\n\nQuestion:\n{input}")
+])
+
+# =========================
+# LLM
+# =========================
+def load_llm():
+    return ChatOpenAI(
+        api_key=API_KEY,
+        base_url=f"{API_URL}/v1",
+        model=API_MODEL,
+        temperature=0,
+        max_tokens=2000,
+    )
+
+# =========================
+# DOCUMENT INGESTION
+# =========================
+def get_rag_docs():
+    docs = []
+    download_from_s3(S3_BUCKET, "docs/", "/tmp/docs")
+
+    for file in os.listdir("/tmp/docs"):
+        path = f"/tmp/docs/{file}"
+
+        if file.lower().endswith(".pdf"):
+            docs.extend(PyPDFLoader(path).load())
+        elif file.lower().endswith(".docx"):
+            docs.extend(Docx2txtLoader(path).load())
+        elif file.lower().endswith(".json"):
+            with open(path) as f:
+                docs.append(
+                    Document(
+                        page_content=json.dumps(json.load(f), indent=2),
+                        metadata={"source": path, "type": "json"},
+                    )
+                )
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=50)
+    return splitter.split_documents(docs)
+
+# =========================
+# RAG CHAIN (MODERN)
+# =========================
+def build_rag_chain(llm):
+    embeddings = FastEmbedEmbeddings()#HuggingFaceEmbeddings(
+        #model_name="sentence-transformers/all-MiniLM-L6-v2"
+    #)
+
+    if list_s3_objects(S3_BUCKET, "faiss_index/"):
+        download_from_s3(S3_BUCKET, "faiss_index", "/tmp/faiss")
+        vectordb = FAISS.load_local(
+            "/tmp/faiss",
+            embeddings,
+            allow_dangerous_deserialization=True,
+        )
+    else:
+        docs = get_rag_docs()
+        vectordb = FAISS.from_documents(docs, embeddings)
+        vectordb.save_local("/tmp/faiss")
+        upload_to_s3(S3_BUCKET, "faiss_index", "/tmp/faiss")
+
+    retriever = vectordb.as_retriever()
+
+    doc_chain = create_stuff_documents_chain(
+        llm=llm,
+        prompt=RAG_PROMPT
+    )
+
+    rag_chain = create_retrieval_chain(
+        retriever=retriever,
+        combine_docs_chain=doc_chain
+    )
+
+    return rag_chain#create_retrieval_chain(retriever, doc_chain)
+
+# =========================
+# ORIGINAL PROMPTS
+# =========================
+CLASSIFIER_PROMPT = """
+You are a strict classifier. Classify the following user question into only one of the following categories:
+
+PREDICTION – The question is about predictions or forecasts.
+UPGRADE – The question contains the term "ClusterGroupUpgrade".
+GENERAL – The question does not fall into the above categories.
+
+Respond with exactly one word only.
+
+User question: {question}
+"""
+
+PREDICTION_PROMPT = """
+Extract the Cell ID and the date or day from the user input, and internally convert it into this JSON format:
+[{{"Cell ID": "100", "Datetime_ts": "2025-08-04T12:00:00"}}]
+
+Use this JSON to call the forecast agent.
+
+Return a plain English sentence only.
+
+User input: {input}
+"""
+
+UPGRADE_PROMPT = """
+Return the following YAML populated with the correct clusters:
+
+```yaml
+apiVersion: ran.openshift.io/v1alpha1
+kind: ClusterGroupUpgrade
+metadata:
+  name: cgu-platform-operator-upgrade-prep
+  namespace: default
+spec:
+  managedPolicies:
+  - du-upgrade-platform-upgrade-prep
+  - du-upgrade-platform-upgrade
+  clusters:
+  remediationStrategy:
+    maxConcurrency: 1
+  enable: true
+
+User input: {input}
+"""
+
+#=========================
+#FLASK APP
+#=========================
 
 app = Flask(__name__)
 
-def load_maas():
-    # Connect to MaaS
-    #custom_http_client = httpx.Client(timeout=httpx.Timeout(120))
-    llm = VLLMOpenAI(
-        openai_api_key=API_KEY,
-        openai_api_base=API_URL+"/v1",
-        model_name=API_MODEL,
-        max_tokens=2000,
-        temperature=0
+@app.route("/api/query", methods=["POST"])
+async def query_model():
+    user_query = request.json["query"]
+
+    classification = rag_chain.invoke({
+        "input": CLASSIFIER_PROMPT.format(question=user_query)
+    })["answer"]
+
+    if "PREDICTION" in classification:
+        result = await agent.arun(
+            PREDICTION_PROMPT.format(input=user_query)
+        )
+        return jsonify({"response": result})
+
+    if "UPGRADE" in classification:
+        result = rag_chain.invoke({
+            "input": UPGRADE_PROMPT.format(input=user_query)
+        })
+        return jsonify({"response": result["answer"]})
+
+    result = rag_chain.invoke({"input": user_query})
+    return jsonify({"response": result["answer"]})
+
+@app.route("/api/events", methods=["GET"])
+def get_events():
+    try:
+        with engine.begin() as conn:
+            stmt = select(events).where(events.c.active == 1).order_by(desc(events.c.creation_date))
+            rows = conn.execute(stmt).fetchall()
+
+        return jsonify([
+            {
+                "id": r.id,
+                "cell_id": r.cell_id,
+                "date": r.creation_date.isoformat(),
+                "event": r.event,
+                "data": r.data,
+            } for r in rows
+        ])
+    except Exception as e:
+        print("Error on the API: " % str(e))
+        return jsonify({"error": str(e)}), 500
+
+    #rows = fetch_all_events()
+    #return jsonify([
+    #{
+    #    "id": r.id,
+    #    "date": r.creation_date.isoformat(),
+    #    "event": r.event,
+    #    "data": r.data,
+    #} for r in rows
+    #])
+
+@app.route('/api/ran', methods=['POST'])
+def get_ran_cmd():
+    try:
+        data = request.get_json()
+        print(f"Received request: {data}")
+
+        if not data or 'cell_id' not in data:
+            return jsonify({"error": "Missing 'cell_id' in request body"}), 400
+
+        cell_id = data['cell_id']
+
+        # Update event(s) in DB for this cell_id
+        with engine.begin() as conn:
+            stmt = (
+                update(events)
+                .where(events.c.cell_id == cell_id)
+                .values(active=0)
+            )
+            result = conn.execute(stmt)
+            print(f"Updated {result.rowcount} row(s) to active=0 for cell_id={cell_id}")
+
+        return jsonify({"message": f"cell_id {cell_id} remediated"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+async def run_agent_test(agent):
+    print("test agent")
+
+    prompt = (
+        "Use the MCP forecast tool to determine if cell 22 is busy at noon on "
+        "August 4, 2025. The input is a list with this format "
+        '[{"Cell ID": "100", "Datetime_ts": "2025-08-04T12:00:00"}]'
     )
-    return llm
+
+    response = await agent.ainvoke({"input": prompt})
+    print(response["output"])
 
 
-def get_rag_docs():
-    all_docs = []
-    print("Check if index exists")
-    files = list_s3_objects(S3_BUCKET, 'docs/')
-    print("Files: %s" % files)
-    if files:#s3_index_exists(S3_BUCKET, "docs/gnodeb.pdf"):
-        print("docs index found, download to local dir")
-        download_index_from_s3(S3_BUCKET, "docs/", "/tmp/docs")
-        for filename in os.listdir("/tmp/docs"):
-            file_path = os.path.join('/tmp/docs/', filename)
-            
-            if os.path.isfile(file_path):
-                if filename.lower().endswith(".pdf"):
-                    print("Detected PDF: %s" % file_path)
-                    loader = PyPDFLoader(file_path)
-                    loader_docs = loader.load_and_split() 
-                elif filename.lower().endswith(".docx"):
-                    print("Detected DOCX: %s" % file_path)
-                    loader = Docx2txtLoader(file_path)
-                    loader_docs = loader.load()
-                #elif filename.lower().endswith(".json"):
-                #    print("Detected JSON file: %s" % file_path)
-                #    with open(file_path, 'r', encoding='utf-8') as f:
-                #        data = json.load(f)
-                #    json_str = json.dumps(data, indent=2)
-                #    print("Load json data and metadata")
-                #    loader_docs = [Document(page_content=json_str, metadata={"source": file_path, "type": "json"} )]
-                # add all docs
-                all_docs += loader_docs
-        # split documents into chunks for embeddings
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=50)
-        docs = text_splitter.split_documents(all_docs)
-        return docs
+async def run_anomaly_detection(rag_chain, text_prompt):
+    print("Execute sample anomaly detection")
+    print("===============================================")
 
-def load_csv():
-    files = list_s3_objects(S3_BUCKET, 'docs/')
-    print("Files: %s" % files)
-    loader_docs = []
-    if files:
-        print("docs index found, download to local dir")
-        download_index_from_s3(S3_BUCKET, "docs/", "/tmp/docs")
-        for filename in os.listdir("/tmp/docs"):
-            file_path = os.path.join('/tmp/docs/', filename)
-            if os.path.isfile(file_path):
-                if filename.lower().endswith(".csv"):
-                    df = pd.read_csv(file_path)
-                    for _, row in df.iterrows():
-                        bands = [b.strip() for b in row["bands"].split(",")] if pd.notna(row["bands"]) else [] 
-                        adjacent_cells = ([int(cell.strip()) for cell in str(row["adjacent_cells"]).split(",")] if pd.notna(row["adjacent_cells"]) and row["adjacent_cells"] != "" else [])
+    response = rag_chain.invoke({"input": text_prompt})
+    result_text = response["answer"]
 
-                        content = (
-                            f"Cell {row['cell_id']} in city {row['city']} is an {row['area_type']} area "
-                            f"with capacity {row.get('max_capacity', 'unknown')} and bands: {', '.join(bands)}."
-                        )
-                        metadata = {
-                            "cell_id": row["cell_id"],
-                            "lat": row["lat"],
-                            "lon": row["lon"],
-                            "bands": bands,
-                            "adjacent_cells": adjacent_cells,
-                            "area_type": row["area_type"],
-                            "city": row["city"],
-                            "source": file_path
-                        }
-                        loader_docs.append(Document(page_content=content, metadata=metadata))
-                        print("Loaded CSV and metadata:", content)
-                    
-                    return loader_docs
+    print(result_text)
 
+    if "ANOMALY_DETECT" in result_text:
+        print("Anomaly detected – saving event to DB")
 
-def get_chain(llm):
-    # create FAISS
-    embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    faiss_index = list_s3_objects(S3_BUCKET, 'faiss_index/')
-    print("FAISS files: %s" % faiss_index)
-    #faiss_index = []
-    if faiss_index != []:
-        print("Loading FAISS index from S3...")
-        download_index_from_s3(S3_BUCKET, "faiss_index", "/tmp/faiss_index")
-        vectordb = FAISS.load_local("/tmp/faiss_index", embeddings=embedding, allow_dangerous_deserialization=True)
-    else:
-        print("FAISS index not found on S3. Creating a new one...")
-        print("Get RAG docs")
-        docs = get_rag_docs()
-        print("Get JSON for RAG")
-        csv_doc = load_csv()
-        vectordb = FAISS.from_documents(docs, embedding)
-        vectordb.add_documents(json_docs)
-        vectordb.save_local("/tmp/faiss_index")
+        match = re.search(
+            r"\*\*\*\* START_EVENT \*\*\*\*(.*?)\*\*\*\* END_EVENT \*\*\*\*",
+            result_text,
+            re.DOTALL,
+        )
 
-        print("Upload index to S3")
-        upload_index_to_s3(S3_BUCKET, "faiss_index", "/tmp/faiss_index")
+        if match:
+            extracted_event = (
+                match.group(1)
+                .strip()
+                .replace("ANOMALY_DETECTED", "")
+            )
 
-    #print("VectorDB debug")
-    #print(f"Number of docs in FAISS: {len(vectordb.docstore._dict)}")
-    #print("Documents ID: %s" % vectordb.docstore._dict.keys())
+            print(f"Extracted event: {extracted_event}")
+            insert_event(extracted_event, sample_data)
 
-    print("Set retriever")
-    retriever = vectordb.as_retriever()
-    print("Create qa_chain")
-    qa_chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
+        else:
+            print("No event block found.")
 
-    return qa_chain
+    print("===============================================")
 
 
 # Set benchmark prompt
@@ -297,151 +454,25 @@ A table of network performance data, including Cell ID, Timestamp, Band, RSRP, R
 %s
 """ % sample_data
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-
-@app.route('/api/query', methods=['POST'])
-async def query_model():
-    data = request.get_json()
-    
-    if not data or 'query' not in data:
-        return jsonify({"error": "Missing 'query' in request body"}), 400
-
-    # perform classification
-    prompt = """You are a strict classifier. Classify the following user question into only one of the following categories:
-
-PREDICTION – The question is about predictions, forecasts, or any kind of predictive modeling, including AI or ML forecasts.
-
-UPGRADE – The question contains the term "ClusterGroupUpgrade" (case-insensitive).
-
-GENERAL – The question does not fall into the above two categories.
-
-Respond with exactly one of the following words only: PREDICTION, UPGRADE, or GENERAL.
-
-Do not explain your answer. Do not return anything else.
-                
-                 User question: %s""" % (data['query'])
-    response = qa_chain.invoke(prompt)
-    print("Response: <br/> %s" % response['result'])
-
-    if 'PREDICTION' in response['result']:
-        # extract data
-        #prompt = """Based on the user input can you extract the CELL Id and add the date or day and put it in a JSON structure like this: {"cells": "LIST_OF_CELLS", "date": "TIMESTAMP"}, you should only answer with the filled in JSON and nothing else in the response. The TIMESTAMP must always be a date in the future.
-                    #User input: %s""" % data['query']
-        llm_prompt = "This is a prediction request extract the Cell IDs are needed and the correct date requested by the user. User input: %s" % data['query']
-        response = qa_chain.invoke(llm_prompt)
-
-        prompt = """Extract the Cell ID and the date or day from the user input, and internally convert it into this JSON format:
-[{"Cell ID": "100", "Datetime_ts": "2025-08-04T12:00:00"}]
-Use this JSON to call the forecast agent to get a prediction.
-
-Return the final result as a human-readable sentence, such as:
-"The predicted usage for Cell 100 on Monday, August 4th, 2025 is busy with a 92 percent confidence level."
-
-Do not return the JSON or any structured data to the user. Only return a plain English summary of the prediction result.
-                    User input: %s""" % response['result']
-        data_resp = await agent.arun(prompt)
-        print("Agent Response: %s" % data_resp)
-
-        return jsonify({"response": data_resp}), 200
-
-    elif 'UPGRADE' in response['result']:
-        print("Upgrade request")
-        prompt = """You are given a user input and have access to additional context that contains one or more valid cell site names from the RAN topology (e.g., cell-site-0, cell-site-1).
-Your task is to return the following YAML template, replacing the placeholder cluster names under spec.clusters with the correct cell site names from the context.
-Use only the relevant cell site IDs mentioned or implied in the user input and found in the provided context.
-Preserve the structure of the YAML exactly.
-If no valid cell sites are found, leave the clusters list empty.
-User input: %s
-YAML Template to populate:
-```yaml
-apiVersion: ran.openshift.io/v1alpha1
-kind: ClusterGroupUpgrade
-metadata:
-  name: cgu-platform-operator-upgrade-prep
-  namespace: default
-spec:
-  managedPolicies:
-  - du-upgrade-platform-upgrade-prep
-  - du-upgrade-platform-upgrade
-  clusters:
-  # Insert matching cell site names here
-  remediationStrategy:
-    maxConcurrency: 1
-  enable: true```
-  Only return the populated YAML. Do not include explanations or any additional output.""" % data['query']
-        data_resp = qa_chain.invoke(prompt)
-        print("Response: %s" % data_resp['result'])
-        return jsonify({"response": data_resp['result']}), 200
-    
-    else:
-
-        try:
-            #prompt = """You are a Radio Access Network (RAN) engineer and telecom operations expert. You have access to the technical documentation and manuals for Baicells BaiBNQ gNodeBs used in a 5G cellular network and also to the OpenShift Documentation to upgrade clusters using Topology Aware Lifecycle Manager. You also have access to the cell sites topology data so you have full visibility of the RAN topology and if needed you can access that information. Use your knowledge of RAN and the documentation available including the network topology to answer the question provided by the user.
-            #User Question: %s
-            #""" % data['query']
-            prompt = data['query']
-            response = qa_chain.invoke(prompt)
-            return jsonify({"response": response['result']}), 200
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-@app.route('/api/events', methods=['GET'])
-def get_events():
-    try:
-        db_events = fetch_all_events()
-        events_list = [
-            {
-                "id": row.id,
-                "creation_date": row.creation_date.strftime("%Y-%m-%d %H:%M:%S"),
-                "event": row.event,
-                "data": row.data
-            }
-            for row in db_events
-        ]
-        return jsonify(events_list), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-if __name__ == '__main__':
-
-    llm = load_maas()
-    qa_chain = get_chain(llm)
+# ==============
+# MAIN
+# ==============
+if __name__ == "__main__":
+    llm = load_llm()
+    rag_chain = build_rag_chain(llm)
 
     agent = initialize_agent(
         tools=[forecast_tool],
         llm=llm,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True
+        verbose=True,
     )
 
-    async def run_agent_test():
-        print("test agent")
-        prompt = 'Use the MCP forecast tool to determine if cell 22 is busy at noon on August 4, 2025. The input is a list with this format [{"Cell ID": "100", "Datetime_ts": "2025-08-04T12:00:00"}]'
-        response = await agent.arun(prompt)
-        print(response)
+    async def main():
+        await run_agent_test(agent)
+        #await run_anomaly_detection(rag_chain, prompt)
 
-    asyncio.run(run_agent_test())
+    asyncio.run(main())
 
-    print("Execute sample anomaly detection")
-    print("===============================================")
-    response = qa_chain.invoke(prompt)
-    print(response['result'])
-    if 'ANOMALY_DETECT' in response['result']:
-        print("Anamoly detected save event to the DB")
-        # extract text between the START_EVENT and END_EVENT markers
-        match = re.search(r'\*\*\*\* START_EVENT \*\*\*\*(.*?)\*\*\*\* END_EVENT \*\*\*\*', response['result'], re.DOTALL)
-
-        if match:
-            extracted_event = match.group(1).strip().replace('ANOMALY_DETECTED', '')
-            print("Extracted event: %s" % extracted_event)
-            insert_event(extracted_event, sample_data)
-        else:
-            print("No event block found.")
-    print("===============================================")
-
-    app.run(host='0.0.0.0', debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 

@@ -1,0 +1,988 @@
+# PIPELINE DEFINITION
+# Name: ran-multi-prediction-pipeline-with-genai-aap-int
+# Description: RAN pipeline with stream RAN metrics to S3, train traffic precition model and GenAI anomaly detection
+# Inputs:
+#    aws_access_key: str [Default: 'mo0x4vOo5DxiiiX2fqnP']
+#    aws_secret_key: str [Default: 'odP78ooBR0pAPaQTp6B2t+03+U0q/JPUPUqU/oZ6']
+#    bootstrap_servers: str [Default: 'my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092']
+#    db_host: str [Default: 'mysql-service']
+#    db_name: str [Default: 'ran_events']
+#    db_pwd: str [Default: 'rangenai']
+#    db_user: str [Default: 'root']
+#    llm_api_key: str [Default: '0db3b3d7009a1a31af4ccc35e4a902ca']
+#    llm_api_url: str [Default: 'https://llama-4-scout-17b-16e-w4a16-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1']
+#    s3_bucket: str [Default: 'ai-cloud-ran-genai-bucket-5f0934a3-ebae-45cc-a327-e1f60d7ae15a']
+#    s3_endpoint: str [Default: 'http://s3.openshift-storage.svc:80']
+#    s3_key_prefix: str [Default: 'ran-pipeline']
+components:
+  comp-genai-anomaly-detection:
+    executorLabel: exec-genai-anomaly-detection
+    inputDefinitions:
+      artifacts:
+        ran_metrics_path:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+      parameters:
+        aws_access_key:
+          parameterType: STRING
+        aws_secret_key:
+          parameterType: STRING
+        db_host:
+          parameterType: STRING
+        db_name:
+          parameterType: STRING
+        db_pwd:
+          parameterType: STRING
+        db_user:
+          parameterType: STRING
+        model_api_key:
+          parameterType: STRING
+        model_api_name:
+          parameterType: STRING
+        model_api_url:
+          parameterType: STRING
+        s3_bucket:
+          parameterType: STRING
+        s3_endpoint:
+          parameterType: STRING
+        s3_key_prefix:
+          parameterType: STRING
+  comp-stream-ran-metrics-to-s3-component:
+    executorLabel: exec-stream-ran-metrics-to-s3-component
+    inputDefinitions:
+      parameters:
+        aws_access_key:
+          parameterType: STRING
+        aws_secret_key:
+          parameterType: STRING
+        bootstrap_servers:
+          parameterType: STRING
+        max_records:
+          defaultValue: 30.0
+          isOptional: true
+          parameterType: NUMBER_INTEGER
+        s3_bucket:
+          parameterType: STRING
+        s3_endpoint:
+          parameterType: STRING
+        s3_key_prefix:
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        ran_metrics:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+  comp-train-traffic-predictor:
+    executorLabel: exec-train-traffic-predictor
+    inputDefinitions:
+      parameters:
+        aws_access_key:
+          parameterType: STRING
+        aws_secret_key:
+          parameterType: STRING
+        s3_bucket:
+          parameterType: STRING
+        s3_endpoint:
+          parameterType: STRING
+        s3_key_prefix:
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        output_traffic_classifier_model:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        output_traffic_regressor_model:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-genai-anomaly-detection:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - genai_anomaly_detection
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'openai' 'langchain'\
+          \ 'sqlalchemy' 'langchain-community' 'sentence-transformers' 'faiss-cpu'\
+          \ 'pymysql' 'boto3' 'pandas' 'requests' 'click>=8.0.0,<9' 'docstring-parser>=0.7.3,<1'\
+          \ 'google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0dev,>=1.31.5' 'google-auth>=1.6.1,<3'\
+          \ 'google-cloud-storage>=2.2.1,<4' 'kubernetes>=8.0.0,<31' 'protobuf>=4.21.1,<5'\
+          \ 'tabulate>=0.8.6,<1' 'pyarrow' 'fastparquet' 'kafka-python'  &&  python3\
+          \ -m pip install --quiet --no-warn-script-location 'kfp==2.15.2' '--no-deps'\
+          \ 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"$0\" \"$@\"\
+          \n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef genai_anomaly_detection(\n    s3_bucket: str,\n    s3_key_prefix:\
+          \ str,\n    s3_endpoint: str,\n    aws_access_key: str,\n    aws_secret_key:\
+          \ str,\n    model_api_key: str,\n    model_api_url: str,\n    model_api_name:\
+          \ str,\n    db_host: str,\n    db_user: str,\n    db_pwd: str,\n    db_name:\
+          \ str,\n    ran_metrics_path: Input[Dataset]\n):\n    import requests\n\
+          \    import logging\n    import pandas as pd\n    import boto3\n    import\
+          \ os\n    import re\n    import json\n    import kafka\n    from kafka import\
+          \ KafkaProducer\n    from botocore.config import Config\n    from langchain_community.llms\
+          \ import VLLMOpenAI\n    from langchain.text_splitter import RecursiveCharacterTextSplitter\n\
+          \    from langchain_community.embeddings import HuggingFaceEmbeddings\n\
+          \    from langchain_community.vectorstores import FAISS\n    from langchain.chains\
+          \ import RetrievalQA\n    from langchain.tools import Tool\n    from sqlalchemy\
+          \ import create_engine, MetaData, Table, Column, Integer, String, Text,\
+          \ DateTime\n    from sqlalchemy.sql import select, desc\n    from datetime\
+          \ import datetime, timedelta\n    from io import StringIO\n    import csv\n\
+          \n    # Logging setup\n    logging.basicConfig(level=logging.INFO, format='[%(asctime)s]\
+          \ [%(levelname)s] - %(message)s')\n    log = logging.getLogger()\n\n   \
+          \ timestamp_str = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    log.info(\"\
+          GenAI anomaly detection started\")\n\n    # Setup AWS\n    os.environ.update({\n\
+          \        'AWS_ACCESS_KEY_ID': aws_access_key,\n        'AWS_SECRET_ACCESS_KEY':\
+          \ aws_secret_key\n    })\n    s3 = boto3.client('s3', endpoint_url=s3_endpoint)\n\
+          \    log.info(\"AWS credentials and environment variables configured.\"\
+          )\n\n    # Read CSV contents as string from ran_metrics_path artifact (this\
+          \ is the current batch)\n    with open(ran_metrics_path.path, \"r\") as\
+          \ f:\n        current_batch_csv_data = f.read()\n\n    log.info('Connect\
+          \ to database')\n    engine = create_engine('mysql+pymysql://%s:%s@%s/%s'\
+          \ % (db_user, db_pwd, db_host, db_name), echo=True)\n    metadata = MetaData()\n\
+          \    events = Table(\n        'events', metadata,\n        Column('id',\
+          \ Integer, primary_key=True, autoincrement=True),\n        Column('cell_id',\
+          \ Integer, nullable=True),\n        Column('creation_date', DateTime, nullable=False),\n\
+          \        Column('event', Text, nullable=False),\n        Column('data',\
+          \ Text, nullable=True)\n    )\n\n    # insert event in th DB\n    def insert_event_db(event_text,\
+          \ event_data, raw_csv_data):\n        with engine.begin() as conn:\n   \
+          \         conn.execute(events.insert().values(\n                creation_date=datetime.utcnow(),\n\
+          \                event=event_text,\n                data=raw_csv_data\n\
+          \            ))\n\n    # insert event in th DB\n    def insert_event_db_2(cell_id_ran,\
+          \ event_text, event_data, raw_csv_data):\n        with engine.begin() as\
+          \ conn:\n            conn.execute(events.insert().values(\n            \
+          \    creation_date=datetime.utcnow(),\n                cell_id=cell_id_ran,\n\
+          \                event=event_data,\n                data=raw_csv_data\n\
+          \            ))\n\n\n\n    # --- START OF HELPER FUNCTIONS ---\n\n    def\
+          \ get_historical_data(s3_client_obj, bucket_name, key_prefix, cell_id, band,\
+          \ current_record_datetime, num_rows=3):\n        historical_records = []\n\
+          \        common_search_prefix = f\"{key_prefix}/ran-combined-metrics/\"\n\
+          \n        try:\n            response = s3_client_obj.list_objects_v2(Bucket=bucket_name,\
+          \ Prefix=common_search_prefix)\n            if 'Contents' not in response:\n\
+          \                log.info(f\"No objects found under {common_search_prefix}\
+          \ for historical data.\")\n                return pd.DataFrame()\n\n   \
+          \         sorted_objects = sorted(\n                [obj for obj in response['Contents']\
+          \ if obj['Key'].endswith('.csv')],\n                key=lambda x: x['LastModified'],\n\
+          \                reverse=True\n            )\n\n            history_column_names\
+          \ = [\n                \"Cell ID\", \"Datetime\", \"Band\", \"Frequency\"\
+          , \"UEs Usage\", \"Area Type\", \"Lat\", \"Lon\", \"City\", \"Adjacent Cells\"\
+          ,\n                \"RSRP\", \"RSRQ\", \"SINR\", \"Throughput (Mbps)\",\
+          \ \"Latency (ms)\", \"Max Capacity\"\n            ]\n\n            found_count\
+          \ = 0\n            for obj in sorted_objects:\n                if found_count\
+          \ >= num_rows:\n                    break\n\n                obj_key = obj['Key']\n\
+          \                log.debug(f\"Checking historical file: {obj_key}\")\n\n\
+          \                csv_obj_response = s3_client_obj.get_object(Bucket=bucket_name,\
+          \ Key=obj_key)\n                body = csv_obj_response['Body'].read().decode('utf-8')\n\
+          \n                temp_df = pd.read_csv(StringIO(body), names=history_column_names,\
+          \ header=0)\n\n                temp_df['Datetime'] = pd.to_datetime(temp_df['Datetime'])\n\
+          \n                filtered_history = temp_df[\n                    (temp_df['Cell\
+          \ ID'] == cell_id) &\n                    (temp_df['Band'] == band) &\n\
+          \                    (temp_df['Datetime'] < current_record_datetime)\n \
+          \               ].sort_values(by='Datetime', ascending=False)\n\n      \
+          \          for _, row in filtered_history.iterrows():\n                \
+          \    if found_count < num_rows:\n                        historical_records.append(row.to_dict())\n\
+          \                        found_count += 1\n                    else:\n \
+          \                       break\n\n            if historical_records:\n  \
+          \              final_history_df = pd.DataFrame(historical_records, columns=history_column_names)\n\
+          \                final_history_df['Datetime'] = pd.to_datetime(final_history_df['Datetime'])\n\
+          \                return final_history_df.sort_values(by='Datetime', ascending=True)\n\
+          \            else:\n                return pd.DataFrame(columns=history_column_names)\n\
+          \n        except Exception as e:\n            log.error(f\"Error retrieving\
+          \ historical data for Cell ID {cell_id}, Band {band}: {e}\", exc_info=True)\n\
+          \            return pd.DataFrame(columns=history_column_names)\n\n    def\
+          \ download_index_from_s3(bucket, prefix, local_dir):\n        os.makedirs(local_dir,\
+          \ exist_ok=True)\n        response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)\n\
+          \        for obj in response.get('Contents', []):\n            s3_key =\
+          \ obj['Key']\n            local_path = os.path.join(local_dir, os.path.relpath(s3_key,\
+          \ prefix))\n            os.makedirs(os.path.dirname(local_path), exist_ok=True)\n\
+          \            s3.download_file(bucket, s3_key, local_path)\n\n    def get_chain():\n\
+          \        log.info(\"VLLM inference load model %s\" % model_api_name)\n \
+          \       llm = VLLMOpenAI(\n            openai_api_key=model_api_key,\n \
+          \           openai_api_base=model_api_url,\n            model_name=model_api_name,\n\
+          \            max_tokens=250, # Reduced max_tokens to save context window.\n\
+          \            temperature=0.1, # Keep temperature low for deterministic output\n\
+          \            # --- ADD STOP SEQUENCE HERE ---\n            stop=[\"\\nExplanation:\"\
+          , \"\\nNote:\", \"\\nBest regards,\"] # Add common unwanted phrases\n  \
+          \      )\n        embedding = HuggingFaceEmbeddings(model_name=\"sentence-transformers/all-MiniLM-L6-v2\"\
+          )\n\n        log.info(\"Loading FAISS index from S3\")\n        download_index_from_s3(s3_bucket,\
+          \ \"faiss_index\", \"/tmp/faiss_index\")\n        vectordb = FAISS.load_local(\"\
+          /tmp/faiss_index\", embeddings=embedding, allow_dangerous_deserialization=True)\n\
+          \n        retriever = vectordb.as_retriever()\n        qa_chain = RetrievalQA.from_chain_type(llm=llm,\
+          \ chain_type=\"stuff\", retriever=retriever, return_source_documents=True)\n\
+          \        log.info(\"Chain created\")\n        return qa_chain\n\n    # ---\
+          \ PYTHON NOW HANDLES ALL ANOMALY DETECTION LOGIC ---\n    # This ensures\
+          \ \"zero tolerance\" on calculation and comparison errors.\n    def check_anomalies_in_python(record_data,\
+          \ historical_data_df):\n        anomalies_found = []\n\n        def safe_float(value,\
+          \ metric_name):\n            try:\n                return float(value)\n\
+          \            except (ValueError, TypeError):\n                log.warning(f\"\
+          Invalid value for {metric_name}: '{value}'. Skipping check.\")\n       \
+          \         return None\n\n        # Extract values (using safe_float)\n \
+          \       ues_usage = safe_float(record_data.get(\"UEs Usage\"), \"UEs Usage\"\
+          )\n        max_capacity = safe_float(record_data.get(\"Max Capacity\"),\
+          \ \"Max Capacity\")\n        rsrp = safe_float(record_data.get(\"RSRP\"\
+          ), \"RSRP\")\n        sinr = safe_float(record_data.get(\"SINR\"), \"SINR\"\
+          )\n        throughput = safe_float(record_data.get(\"Throughput (Mbps)\"\
+          ), \"Throughput (Mbps)\")\n        rsrq = safe_float(record_data.get(\"\
+          RSRQ\"), \"RSRQ\")\n\n        # --- Rule 1: High PRB Utilization ---\n \
+          \       if ues_usage is not None and max_capacity is not None:\n       \
+          \     if max_capacity > 0:\n                prb_utilization = (ues_usage\
+          \ / max_capacity) * 100\n                if prb_utilization > 95.0: # STRICTLY\
+          \ GREATER THAN 95.0%\n                    anomalies_found.append(f\"High\
+          \ PRB Utilization: {prb_utilization:.2f}% > 95.0%\")\n            elif ues_usage\
+          \ > 0: # Max Capacity is 0 and UEs Usage > 0\n                 anomalies_found.append(f\"\
+          PRB Utilization Error: UEs Usage ({ues_usage}) with Zero Max Capacity (0).\"\
+          )\n\n        # --- Rule 2: Low RSRP ---\n        if rsrp is not None and\
+          \ rsrp < -110: # RSRP < -110 dBm\n            anomalies_found.append(f\"\
+          Low RSRP: {rsrp} dBm < -110 dBm\")\n\n        # --- Rule 3: Low SINR ---\n\
+          \        if sinr is not None and sinr < 0: # SINR < 0 dB\n            anomalies_found.append(f\"\
+          Low SINR: {sinr} dB < 0 dB\")\n\n        # --- Rule 4: Throughput Drop (Requires\
+          \ Historical Data) ---\n        if len(historical_data_df) >= 3 and throughput\
+          \ is not None:\n            try:\n                prior_throughputs = historical_data_df['Throughput\
+          \ (Mbps)'].astype(float)\n                avg_prior_throughput = prior_throughputs.mean()\n\
+          \                if avg_prior_throughput > 0 and throughput < 0.5 * avg_prior_throughput:\
+          \ # current < 0.5 * avg_prior\n                    anomalies_found.append(f\"\
+          Throughput Drop: {throughput:.2f} Mbps (Current) vs. {avg_prior_throughput:.2f}\
+          \ Mbps (Avg Prior 3) - drop > 50%\")\n            except (ValueError, TypeError,\
+          \ ZeroDivisionError) as e:\n                log.warning(f\"Error checking\
+          \ Throughput Drop for Cell ID {record_data['Cell ID']}: {e}\")\n       \
+          \ elif len(historical_data_df) < 3:\n            log.debug(f\"Throughput\
+          \ Drop rule skipped for Cell ID {record_data['Cell ID']}: Insufficient history.\"\
+          )\n\n        # --- 5. UEs Spike/Drop (Requires Historical Data) ---\n  \
+          \      if len(historical_data_df) >= 3 and ues_usage is not None:\n    \
+          \        try:\n                prior_ues = historical_data_df['UEs Usage'].astype(float)\n\
+          \                avg_prior_ues = prior_ues.mean()\n                if avg_prior_ues\
+          \ > 0 and (abs(ues_usage - avg_prior_ues) / avg_prior_ues) > 0.5: # abs(change)/avg_prior\
+          \ > 0.5\n                    anomalies_found.append(f\"UEs Spike/Drop: {ues_usage}\
+          \ UEs (Current) vs. {avg_prior_ues:.2f} UEs (Avg Prior 3) - change > 50%\"\
+          )\n            except (ValueError, TypeError, ZeroDivisionError) as e:\n\
+          \                log.warning(f\"Error checking UEs Spike/Drop for Cell ID\
+          \ {record_data['Cell ID']}: {e}\")\n        elif len(historical_data_df)\
+          \ < 3:\n            log.debug(f\"UEs Spike/Drop rule skipped for Cell ID\
+          \ {record_data['Cell ID']}: Insufficient history.\")\n\n        # --- Rule\
+          \ 6: Cell Outage ---\n        if (ues_usage is not None and ues_usage ==\
+          \ 0 and\n            throughput is not None and throughput == 0 and\n  \
+          \          sinr is not None and sinr <= -10 and\n            rsrp is not\
+          \ None and rsrp <= -120 and\n            rsrq is not None and rsrq <= -20):\n\
+          \            anomalies_found.append(f\"Cell Outage: UEs=0, Tput=0, SINR<=-10\
+          \ ({sinr}), RSRP<=-120 ({rsrp}), RSRQ<=-20 ({rsrq})\")\n\n        return\
+          \ anomalies_found # Return list of anomaly strings\n\n\n    # Kafka producer\
+          \ for AAP integration\n    KAFKA_TOPIC = \"ai-ran-logs\"\n    try:\n   \
+          \     producer = KafkaProducer(\n            bootstrap_servers=['service1.pchzg.sandbox2169.opentlc.com:9092'],\n\
+          \            value_serializer=lambda v: json.dumps(v).encode('utf-8'),\n\
+          \            retries=5,\n            linger_ms=10\n        )\n    except\
+          \ Exception as e:\n        log.info(\"Failed to connect to Kafka for AAP\
+          \ integration, continue pipeline\")\n\n\n    # --- verify_anomaly_block\
+          \ is now obsolete/removed ---\n    # Its logic has been moved and is fully\
+          \ integrated into `check_anomalies_in_python`.\n    df_current_batch = pd.read_csv(StringIO(current_batch_csv_data))\n\
+          \n    log.info(f\"Unique bands before filtering: {df_current_batch['Band'].unique().tolist()}\"\
+          )\n    log.info(f\"Row count before filtering: {df_current_batch.shape[0]}\"\
+          )\n\n    VALID_BANDS = ['Band 29', 'Band 26', 'Band 71', 'Band 66']\n  \
+          \  df_current_batch = df_current_batch[df_current_batch['Band'].isin(VALID_BANDS)]\n\
+          \n    log.info(f\"Unique bands after filtering: {df_current_batch['Band'].unique().tolist()}\"\
+          )\n    log.info(f\"Row count after filtering: {df_current_batch.shape[0]}\"\
+          )\n\n    band_map_str = df_current_batch[['Cell ID', 'Band']].drop_duplicates().head(100).to_csv(index=False)\
+          \ # Not explicitly used in this prompt version\n\n    # --- SIMPLIFIED PROMPT\
+          \ TEMPLATE ---\n    # LLM's role is now primarily formatting the output\
+          \ based on anomalies provided by Python,\n    # and using its RAG capability\
+          \ for suggested fixes.\n    prompt_template = \"\"\"\n    You are a professional\
+          \ Radio Access Network (RAN) anomaly reporting assistant. Your task is to\
+          \ accurately summarize detected anomalies and provide a standard recommended\
+          \ fix from Baicells documentation.\n\n    **Current Cell Context:**\n  \
+          \  - Cell ID: {current_cell_id}\n    - Band: {current_band}\n    - Data:\
+          \ {current_chunk}\n\n    **Detected Anomalies (from automated system analysis\
+          \ - THESE ARE VERIFIED):**\n    {anomalies_list_from_python}\n\n    ---\n\
+          \n    **Instructions:**\n    1. If \"Detected Anomalies\" contains **\"\
+          NO_ANOMALIES_DETECTED\"**, respond **EXACTLY** with:\n       `NO_ANOMALY`\n\
+          \    2. If \"Detected Anomalies\" lists **any specific anomalies**, respond\
+          \ **EXACTLY** in the following format (including tags and line breaks):\n\
+          \n    **** START_EVENT **** ANOMALY_DETECTED  \n    1. Cell ID {current_cell_id},\
+          \ {current_band}  \n    - <A concise, bulleted list of ALL metrics that\
+          \ violated thresholds, exactly as provided in \"Detected Anomalies\">\n\
+          \    - Explanation: <Provide a single, precise, and crisp explanation for\
+          \ the detected anomaly(ies). Use your knowledge base to explain the common\
+          \ implications or root causes of these specific anomalies. Do not include\
+          \ introductory phrases like \"The anomaly is...\". Just the explanation.>\
+          \  \n    - Recommended fix: <Use your knowledge base (Baicells documentation)\
+          \ to suggest a specific section for the most relevant anomaly listed. If\
+          \ multiple, pick the primary one. If no specific section, use \"Refer to\
+          \ Baicells documentation (Section X.X, Page Y)\">  \n    **** END_EVENT\
+          \ ****\n\n    ---\n\n    **Important Rules:**\n    - DO NOT add any anomalies\
+          \ not explicitly provided in \"Detected Anomalies\".\n    - DO NOT remove\
+          \ any anomalies explicitly provided in \"Detected Anomalies\".\n    - DO\
+          \ NOT include explanations, calculations, or additional text outside the\
+          \ specified output format.\n    - DO NOT include any introductory or concluding\
+          \ remarks.\n    - Be concise in the bulleted list.\n\n    \"\"\"\n\n   \
+          \ qa_chain = get_chain()\n    log.info(\"Execute anomaly detection\")\n\n\
+          \    anomaly_results_df = pd.DataFrame(columns=[\n        \"Cell ID\", \"\
+          Band\", \"Datetime\", \"LLM_Raw_Response\", \"Is_Anomaly_Final\", \"Final_Anomaly_Reason\"\
+          \n    ])\n\n    api_fix_prompt = \"\"\"\n    You are an automation workflow\
+          \ assistant. Your task is to take the following anomaly information, interpret\
+          \ it, and generate **actionable steps** for the NOC engineer or automation\
+          \ system.\n\n    ---\n\n    ### ORIGINAL LLM RESPONSE\n    {llm_response}\n\
+          \n    ### ORIGINAL ANOMALY REPORT\n    {anomaly_block}\n\n    ---\n\n  \
+          \  ### YOUR TASK\n\n    Using the anomaly information above:\n\n    1. **Extract\
+          \ key anomaly details**\n       - Cell ID\n       - The anomaly type (e.g.,\
+          \ \"Low RSRP\")  \n       - The measured value  \n       - The expected\
+          \ threshold  \n       - Any other relevant metric values in the message\n\
+          \n    2. **Interpret the recommended fix**  \n       - Determine WHICH parameters\
+          \ need to be modified (e.g., azimuth, downtilt, transmit power, etc.)  \n\
+          \       - If ambiguous, choose default engineering-safe values (e.g., azimuth\
+          \ +5\xB0, downtilt +3\xB0).\n       - There can be only a maximum of 4 parameters\
+          \ in the JSON request, if you have to remove anomaly_type or anomaly_value\
+          \ you can do it.\n\n    3. **Generate an actionable API call**  \n     \
+          \  You must output:\n       - A short, human-readable explanation of WHAT\
+          \ needs to be done\n       - The JSON payload needed for the automation\
+          \ service, maximum of 4 parameters\n       - The exact REST API request\
+          \ to execute, always use as endpoint https://ranchat-ai-cloud-ran-genai.apps.acmhub.dinesh154.dfw.ocp.run/api/ran\n\
+          \n    4. **Format your response EXACTLY as follows:**\n\n    ---\n\n   \
+          \ ### ACTION REQUIRED  \n    (Add some details about the anomaly)\n    (One\
+          \ clear sentence summarizing what needs to happen.)\n\n    ### API CALL\
+          \ DETAILS  \n    **Endpoint:**  \n    POST https://ranchat-ai-cloud-ran-genai.apps.acmhub.dinesh154.dfw.ocp.run/api/ran\n\
+          \n    **JSON Payload example:**  \n    ```json\n    {{\n      \"cell_id\"\
+          : \"<always include the affected cell ID>\"\n      \"anomaly_type\": \"\
+          <extracted anomaly type>\",\n      \"anomaly_value\": \"<numeric value +\
+          \ units>\",\n      \"threshold_value\": \"<extracted threshold>\",\n   \
+          \   \"action\": \"<short description of the remediation>\",\n      \"azimuth_change\"\
+          : \"<if applicable, integer or null>\",\n      \"downtilt_change\": \"<if\
+          \ applicable, integer or null>\"\n    }}\n    ```\n    \"\"\"\n\n    df_current_batch_for_records\
+          \ = df_current_batch.to_dict(orient='records')\n    validated_anomaly_blocks_for_db\
+          \ = []\n\n    for record_dict in df_current_batch_for_records:\n       \
+          \ current_cell_id = record_dict[\"Cell ID\"]\n        current_band = record_dict[\"\
+          Band\"]\n        current_datetime = datetime.strptime(record_dict[\"Datetime\"\
+          ], \"%Y-%m-%d %H:%M:%S\")\n\n        # --- STEP 1: Detect Anomalies using\
+          \ Python Code (THE SOURCE OF TRUTH) ---\n        history_df_for_detection\
+          \ = get_historical_data(s3, s3_bucket, s3_key_prefix, current_cell_id, current_band,\
+          \ current_datetime, num_rows=3)\n        detected_anomalies_by_python =\
+          \ check_anomalies_in_python(record_dict, history_df_for_detection)\n\n \
+          \       # Prepare anomalies list for LLM prompt\n        anomalies_for_prompt\
+          \ = \"\"\n        if detected_anomalies_by_python:\n            anomalies_for_prompt\
+          \ = \"\\n\".join([f\"- {a}\" for a in detected_anomalies_by_python])\n \
+          \           log.info(f\"Python detected anomalies for Cell ID {current_cell_id},\
+          \ {current_band}: {anomalies_for_prompt}\")\n        else:\n           \
+          \ anomalies_for_prompt = \"NO_ANOMALIES_DETECTED\"\n            log.info(f\"\
+          Python detected no anomalies for Cell ID {current_cell_id}, {current_band}.\"\
+          )\n\n        # --- STEP 2: Use LLM for Formatting and Reporting (and RAG\
+          \ for fix) ---\n        # Format the current record as a single-row CSV\
+          \ for the LLM\n        current_chunk_io = StringIO()\n        pd.DataFrame([record_dict]).to_csv(current_chunk_io,\
+          \ index=False, header=False, quoting=csv.QUOTE_ALL)\n        current_chunk_str\
+          \ = current_chunk_io.getvalue().strip()\n\n        # Prepare the query for\
+          \ documentation retrieval within the prompt\n        doc_query = \"\"\n\
+          \        if detected_anomalies_by_python:\n            # Ask LLM to get\
+          \ a fix for the *first* detected anomaly as an example\n            doc_query\
+          \ = f\"Recommended fix for: {detected_anomalies_by_python[0]}\"\n      \
+          \  else:\n            doc_query = \"General Baicells documentation\" # Placeholder\
+          \ for no anomaly\n\n        # The qa_chain.invoke normally takes a dictionary\
+          \ with 'query' key for RAG.\n        # Here we are passing the full prompt\
+          \ directly to the LLM.\n        # To make LLM use RAG for fix, we need to\
+          \ adapt this part.\n        # Option A: Ask LLM to generate the fix based\
+          \ on its knowledge/RAG implicitly (less controlled).\n        # Option B:\
+          \ Use qa_chain.invoke for the RAG part separately.\n\n        # Let's use\
+          \ Option A by including the instruction in the prompt.\n        # The prompt\
+          \ already has \"Use your knowledge base (Baicells documentation) to suggest\
+          \ a specific section...\"\n        # This implies the RAG part of qa_chain\
+          \ is providing context to the LLM to answer the prompt.\n\n        prompt_with_rag_context\
+          \ = prompt_template.format(\n            current_cell_id=current_cell_id,\n\
+          \            current_band=current_band,\n            current_chunk=current_chunk_str,\n\
+          \            anomalies_list_from_python=anomalies_for_prompt,\n        \
+          \    # We don't need a separate placeholder for doc_query, it's implicit\
+          \ in instruction\n        )\n\n        log.info(f\"Running LLM for Cell\
+          \ ID: {current_cell_id}, Band: {current_band} (for formatting and fix)\"\
+          )\n        log.debug(f\"Full Prompt for {current_cell_id}, {current_band}:\\\
+          n{prompt_with_rag_context}\")\n\n        llm_raw_response = \"LLM_CALL_FAILED\"\
+          \n        try:\n            # We are calling qa_chain.invoke(prompt) directly,\
+          \ which implies prompt has everything.\n            # The 'retriever' part\
+          \ of qa_chain should add relevant documents to the context based on prompt.\n\
+          \            # The prompt text itself is the 'query' for the retriever here.\n\
+          \            response = qa_chain.invoke(prompt_with_rag_context) \n    \
+          \        llm_raw_response = response['result']\n        except Exception\
+          \ as llm_e:\n            log.error(f\"LLM API call failed for Cell ID {current_cell_id},\
+          \ Band {current_band}: {llm_e}\", exc_info=True)\n\n        log.info(f\"\
+          LLM Raw Response for Cell ID {current_cell_id}, Band {current_band}:\\n{llm_raw_response}\\\
+          n\")\n\n        # --- STEP 3: Finalize Results Based on Python's Truth ---\n\
+          \        # This parsing now primarily checks if LLM adhered to formatting.\n\
+          \        # The Is_Anomaly_Final is based on Python's decision.\n       \
+          \ final_is_anomaly = False\n        final_reason = \"N/A\"\n\n        match\
+          \ = re.search(r\"\\*\\*\\*\\* START_EVENT \\*\\*\\*\\*(.*?)\\*\\*\\*\\*\
+          \ END_EVENT \\*\\*\\*\\*\", llm_raw_response, re.DOTALL)\n\n        if detected_anomalies_by_python:\
+          \ # If Python found anomalies, we expect LLM to format it.\n           \
+          \ final_is_anomaly = True\n            if match and \"ANOMALY_DETECTED\"\
+          \ in match.group(1):\n                final_reason = match.group(1).strip()\
+          \ # Use LLM's formatted output as reason\n                log.info(f\"LLM\
+          \ successfully formatted anomaly for Cell ID {current_cell_id}, Band {current_band}.\"\
+          )\n                # Add to DB list (contains LLM's formatted text, which\
+          \ summarizes Python's findings)\n                validated_anomaly_blocks_for_db.append(f\"\
+          Cell ID {current_cell_id}, Band {current_band}:\\n{final_reason}\")\n\n\
+          \                # Send anomaly to Kafka for AAP integration for automatic\
+          \ remediation\n                # Get API parameters from LLM\n         \
+          \       log.info(\"Extracting API parameters for remediation\")\n      \
+          \          aap_prompt = api_fix_prompt.format(anomaly_block=final_reason,\
+          \ llm_response=llm_raw_response)\n                response = qa_chain.invoke(aap_prompt)\n\
+          \                result_raw = response[\"result\"]\n\n                try:\n\
+          \                    producer.send(KAFKA_TOPIC, result_raw)\n          \
+          \          producer.flush()\n                    log.info(f\"Published to\
+          \ Kafka topic '{KAFKA_TOPIC}': {result_raw}\")\n                except Exception\
+          \ as e:\n                    log.info(f\"Failed to publish kafka message:\
+          \ {e}\", exc_info=True)\n\n\n            else:\n                final_reason\
+          \ = f\"LLM_FORMAT_ERROR: Python detected anomalies: {'; '.join(detected_anomalies_by_python)}.\
+          \ LLM failed to format: {llm_raw_response}\"\n                log.error(final_reason)\n\
+          \                # Still add to DB list if formatting error is acceptable,\
+          \ or skip if strict.\n                # For \"zero tolerance\" on detection,\
+          \ Python is the source. If LLM messes up format, we record error.\n    \
+          \            validated_anomaly_blocks_for_db.append(f\"Cell ID {current_cell_id},\
+          \ Band {current_band} (FORMAT ERROR):\\n{final_reason}\")\n\n        else:\
+          \ # If Python found NO anomalies, we expect LLM to say NO_ANOMALY.\n   \
+          \         final_is_anomaly = False\n            if llm_raw_response.strip()\
+          \ == \"NO_ANOMALY\":\n                final_reason = \"NO_ANOMALY\"\n  \
+          \              log.info(f\"LLM correctly reported NO_ANOMALY for Cell ID\
+          \ {current_cell_id}, Band {current_band}.\")\n            else:\n      \
+          \          final_reason = f\"LLM_FORMAT_ERROR: Python found no anomalies,\
+          \ but LLM responded: {llm_raw_response}\"\n                log.warning(final_reason)\n\
+          \n        # Append result to DataFrame\n        new_row_df = pd.DataFrame([{\n\
+          \            \"Cell ID\": current_cell_id,\n            \"Band\": current_band,\n\
+          \            \"Datetime\": record_dict[\"Datetime\"],\n            \"LLM_Raw_Response\"\
+          : llm_raw_response, # Store the full raw response from LLM\n           \
+          \ \"Is_Anomaly_Final\": final_is_anomaly, # Based on Python's decision\n\
+          \            \"Final_Anomaly_Reason\": final_reason # LLM's formatted reason\
+          \ or error message\n        }])\n        anomaly_results_df = pd.concat([anomaly_results_df,\
+          \ new_row_df], ignore_index=True)\n\n        log.info(f\"============= Insert\
+          \ EVENT for {current_cell_id} in DB =================\")\n        insert_event_db_2(current_cell_id,\
+          \ \"auto_detected_anomaly\", llm_raw_response, df_current_batch.to_csv(index=False))\n\
+          \n\n    # --- FINAL DATABASE INSERTION ---\n    if validated_anomaly_blocks_for_db:\n\
+          \        combined_anomalies_for_db = \"\\n\\n\".join(validated_anomaly_blocks_for_db)\n\
+          \        log.info(\"Total validated anomalies to insert into DB:\\n%s\"\
+          , combined_anomalies_for_db)\n\n        full_current_batch_csv = df_current_batch.to_csv(index=False)\n\
+          \n        #insert_event_db(combined_anomalies_for_db, \"auto_detected_anomaly\"\
+          , full_current_batch_csv)\n    else:\n        log.info(\"No validated anomalies\
+          \ detected in any chunk for this run. Not inserting into DB.\")\n\n    #\
+          \ Final output of the component: Save the anomaly detection results DataFrame\
+          \ to S3\n    anomaly_output_key = f\"anomaly_results/{timestamp_str}_anomalies.csv\"\
+          \n    anomaly_output_uri = f\"s3://{s3_bucket}/{anomaly_output_key}\"\n\n\
+          \    anomaly_output_buffer = StringIO()\n    anomaly_results_df.to_csv(anomaly_output_buffer,\
+          \ index=False, quoting=csv.QUOTE_ALL)\n    s3.put_object(Bucket=s3_bucket,\
+          \ Key=anomaly_output_key, Body=anomaly_output_buffer.getvalue())\n\n   \
+          \ # close kafka producer\n    try:\n        producer.close()\n    except\
+          \ Exception as e:\n        log.info(\"Kafka not initialized can't close\
+          \ producer, continue\")\n\n    log.info(f\"\\nLLM anomaly analysis results\
+          \ saved to {anomaly_output_uri}\")\n\n    log.info(\"Anomaly detection component\
+          \ finished.\")\n\n"
+        image: python:3.9
+    exec-stream-ran-metrics-to-s3-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - stream_ran_metrics_to_s3_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'boto3' 'kafka-python'\
+          \ 'pandas' 'tabulate'  &&  python3 -m pip install --quiet --no-warn-script-location\
+          \ 'kfp==2.15.2' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"\
+          3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef stream_ran_metrics_to_s3_component(\n    bootstrap_servers: str,\n\
+          \    s3_bucket: str,\n    s3_key_prefix: str,\n    s3_endpoint: str,\n \
+          \   aws_access_key: str,\n    aws_secret_key: str,\n    ran_metrics: Output[Dataset],\n\
+          \    #max_records: int = 500\n    max_records: int = 30\n):\n    import\
+          \ os\n    import csv\n    import boto3\n    import pandas as pd\n    from\
+          \ kafka import KafkaConsumer\n    from kafka import TopicPartition\n   \
+          \ from datetime import datetime\n    from io import StringIO\n    from tabulate\
+          \ import tabulate\n    import html\n    import time\n\n    os.environ['AWS_ACCESS_KEY_ID']\
+          \ = aws_access_key\n    os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_key\n\
+          \n    s3_client = boto3.client('s3', endpoint_url=s3_endpoint)\n    topic_name\
+          \ = \"ran-combined-metrics\"\n\n    # --- Configuration for specific partition\
+          \ consumption ---\n    target_partition = 0 # The partition where your producer\
+          \ is sending all data\n    consumer_group_id = 'kfp-ran-metrics-s3-consumer-group-p0-only'\
+          \ # Use a new, distinct group_id for this strategy\n\n    column_names =\
+          \ [\n        \"Cell ID\", \"Datetime\", \"Band\", \"Frequency\", \"UEs Usage\"\
+          , \"Area Type\", \"Lat\", \"Lon\", \"City\", \"Adjacent Cells\", \n    \
+          \    \"RSRP\", \"RSRQ\", \"SINR\", \"Throughput (Mbps)\", \"Latency (ms)\"\
+          , \"Max Capacity\"\n    ]\n\n    #consumer_group_id = 'kfp-ran-metrics-s3-consumer-group-001'\n\
+          \    print(f\"Connecting to Kafka topic '{topic_name}' with group ID '{consumer_group_id}'...\"\
+          )\n    consumer = None # Initialize consumer to None\n\n    try:\n     \
+          \   #print(f\"Connecting to Kafka topic '{topic_name}'...\")\n        consumer\
+          \ = KafkaConsumer(\n            #topic_name,\n            bootstrap_servers=bootstrap_servers,\n\
+          \            group_id=consumer_group_id, # THIS IS WHAT group.py IS CHECKING\
+          \ FOR\n            auto_offset_reset='earliest',\n            #auto_offset_reset='latest',\n\
+          \            #enable_auto_commit=True,\n            enable_auto_commit=False,\n\
+          \            value_deserializer=lambda m: m.decode('utf-8', errors='ignore')\
+          \ if m else None,\n            # Fetch just one Kafka message (as it contains\
+          \ all your 2000+ records)\n            # We need to limit the number of\
+          \ *Kafka messages* to 1 if one Kafka message = 2000 lines\n            #max_poll_records=1,\
+          \ # <<< Set this to 1 because each Kafka message is one large CSV block\n\
+          \            max_poll_records=30, # <<< Consumer will fetch 30 individual\
+          \ kafka messages \n            client_id=f\"kfp-comp-{os.getpid()}-{int(time.time())}-p{target_partition}\"\
+          \n        )\n\n        # --- CRITICAL CHANGE: Use subscribe() ---\n    \
+          \    consumer.subscribe([topic_name])\n        print(f\"Subscribed to topic\
+          \ '{topic_name}'. Waiting for partition assignment...\")\n\n        assigned_partitions\
+          \ = []\n        timeout_start = time.time()\n        timeout_duration =\
+          \ 60 # seconds to wait for assignment\n        while not assigned_partitions\
+          \ and (time.time() - timeout_start < timeout_duration):\n            consumer.poll(timeout_ms=500)\
+          \ \n            assigned_partitions = consumer.assignment()\n          \
+          \  if not assigned_partitions:\n                print(f\"Waiting for partition\
+          \ assignment... ({int(time.time() - timeout_start)}s elapsed)\")\n     \
+          \           time.sleep(1) \n\n        if not assigned_partitions:\n    \
+          \        raise RuntimeError(f\"Consumer failed to get partition assignment\
+          \ within {timeout_duration} seconds. Exiting.\")\n\n        print(f\"Successfully\
+          \ assigned partitions: {assigned_partitions}\")\n\n        tp = TopicPartition(topic_name,\
+          \ target_partition) \n        assigned_tp_obj = None\n        for p in assigned_partitions:\n\
+          \            if p.topic == topic_name and p.partition == target_partition:\n\
+          \                assigned_tp_obj = p\n                break\n\n        if\
+          \ assigned_tp_obj: \n            committed_offset = consumer.committed(assigned_tp_obj)\n\
+          \            if committed_offset is not None:\n                consumer.seek(assigned_tp_obj,\
+          \ committed_offset)\n                print(f\"Found committed offset {committed_offset}\
+          \ for {assigned_tp_obj}. Seeking to it.\")\n            else:\n        \
+          \        consumer.seek_to_beginning(assigned_tp_obj) \n                print(f\"\
+          No committed offset found for {assigned_tp_obj}. Seeking to beginning.\"\
+          )\n\n            current_position = consumer.position(assigned_tp_obj)\n\
+          \            print(f\"Current position for {assigned_tp_obj}: {current_position}\"\
+          )\n        else:\n            print(f\"WARNING: Target partition {target_partition}\
+          \ not assigned to this consumer. This run may not process data.\")\n   \
+          \         return \n\n        collected_lines = []\n        total_parsed_records_in_run\
+          \ = 0\n\n        print(f\"\\n Streaming Kafka Records (targeting up to {max_records}\
+          \ CSV records per run):\\n\")\n\n        while total_parsed_records_in_run\
+          \ < max_records:\n            messages_from_kafka_poll = consumer.poll(timeout_ms=5000)\
+          \ \n\n            if not messages_from_kafka_poll:\n                print(\"\
+          No more Kafka messages in this poll after timeout. Breaking processing loop.\"\
+          )\n                break \n\n            for current_tp_key, msgs_list in\
+          \ messages_from_kafka_poll.items():\n                if current_tp_key.topic\
+          \ == topic_name and current_tp_key.partition == target_partition: \n   \
+          \                 for message in msgs_list:\n                        if\
+          \ not message.value:\n                            print(\"Skipping empty\
+          \ Kafka message...\")\n                            continue\n\n        \
+          \                individual_csv_lines = message.value.strip().splitlines()\n\
+          \n                        for line in individual_csv_lines:\n          \
+          \                  if not line:\n                                continue\n\
+          \n                            if total_parsed_records_in_run >= max_records:\n\
+          \                                print(f\"Reached {max_records} logical\
+          \ CSV records. Stopping processing for this run.\")\n                  \
+          \              break \n\n                            collected_lines.append(line)\n\
+          \                            total_parsed_records_in_run += 1\n\n      \
+          \                      try:\n                                # Explicitly\
+          \ set delimiter and quotechar for robustness\n                         \
+          \       csv_reader_obj = csv.reader([line], delimiter=',', quotechar='\"\
+          ')\n                                values_for_print = next(csv.reader([line]))\n\
+          \                                if len(values_for_print) == len(column_names):\n\
+          \                                    if total_parsed_records_in_run == 1:\n\
+          \                                        print(\"\\n\" + \", \".join(column_names))\n\
+          \                                    print(\", \".join(str(v) for v in values_for_print))\n\
+          \                                else:\n                               \
+          \     # THIS IS CRITICAL: Print the actual number of parsed values\n   \
+          \                                 print(f\"Record {total_parsed_records_in_run}:\
+          \ [Invalid format for print] Expected {len(column_names)} columns ({column_names}),\
+          \ got {len(values_for_print)}: {values_for_print} | Original Line: {line}\"\
+          )\n                            except Exception as e:\n                \
+          \                print(f\"Record {total_parsed_records_in_run}: [Error parsing\
+          \ for print] {e} | Content: {line}\")\n\n                        # NO COMMIT\
+          \ HERE. We will commit at the end of the run.\n\n                      \
+          \  if total_parsed_records_in_run >= max_records:\n                    \
+          \        break\n\n                if total_parsed_records_in_run >= max_records:\n\
+          \                    break\n\n            if not messages_from_kafka_poll\
+          \ and total_parsed_records_in_run < max_records:\n                print(\"\
+          No more messages found in topic after initial fetch. Exiting polling loop.\"\
+          )\n                break\n\n        print(f\"Successfully processed {total_parsed_records_in_run}\
+          \ logical CSV records in this run.\")\n\n        if not collected_lines:\n\
+          \            print(\"No valid records collected. Exiting without upload.\"\
+          )\n            return\n\n        records = []\n        for line in collected_lines:\n\
+          \            try:\n                parsed = next(csv.reader([line]))\n \
+          \               if len(parsed) == len(column_names):\n                 \
+          \   records.append(parsed)\n                else:\n                    print(f\"\
+          Skipping malformed record due to column mismatch: Expected {len(column_names)},\
+          \ got {len(parsed)} - Raw: '{line}' - Parsed: {parsed}\")\n            except\
+          \ Exception as e:\n                print(f\"CSV parsing failed: {e} | Content:\
+          \ '{line}'\")\n\n        df = pd.DataFrame(records, columns=column_names)\n\
+          \n        timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n     \
+          \   s3_object_key = f\"{s3_key_prefix}/ran-combined-metrics/{topic_name}_{timestamp}.csv\"\
+          \n\n        if 'Adjacent Cells' in df.columns:\n            df['Adjacent\
+          \ Cells'] = df['Adjacent Cells'].apply(\n                lambda x: ','.join(\n\
+          \                    map(lambda c: str(c).replace('\"', '\"\"'), x)\n  \
+          \              ) if isinstance(x, list) else str(x).replace('\"', '\"\"\
+          ')\n            )\n\n        csv_buffer = StringIO()\n        df.to_csv(csv_buffer,\
+          \ index=False, quoting=csv.QUOTE_ALL)\n\n        csv_string = csv_buffer.getvalue()\n\
+          \        print(csv_string) \n\n        s3_client.put_object(Bucket=s3_bucket,\
+          \ Key=s3_object_key, Body=csv_buffer.getvalue())\n        s3_uri = f\"s3://{s3_bucket}/{s3_object_key}\"\
+          \n        print(f\"\\nData successfully uploaded to {s3_uri}\")\n\n    \
+          \    with open(ran_metrics.path, 'w') as f:\n            df.to_csv(f, index=False,\
+          \ header=True)\n\n    except Exception as outer_e:\n        print(f\"An\
+          \ unexpected error occurred during component execution: {outer_e}\")\n \
+          \       raise\n    finally:\n        # --- FINAL COMMIT & CLOSE ---\n  \
+          \      # Perform a final commit for the entire batch after all processing\
+          \ and S3 upload\n        # This is the most reliable place to commit for\
+          \ short-lived components.\n        if consumer and total_parsed_records_in_run\
+          \ > 0: # Only commit if consumer exists and processed data\n           \
+          \ try:\n                consumer.commit() # Commit the latest polled offset\
+          \ for assigned partitions\n                print(f\"FINAL COMMIT: Successfully\
+          \ committed offsets for the entire batch.\")\n            except Exception\
+          \ as e:\n                print(f\"FINAL COMMIT ERROR: Failed to commit offsets:\
+          \ {e}. Data might be reprocessed.\")\n                # You might want to\
+          \ log this but not necessarily re-raise if you prefer the component to succeed.\n\
+          \n        if consumer: \n            consumer.close()\n            print(\"\
+          Consumer closed.\")\n\n"
+        image: python:3.9
+    exec-train-traffic-predictor:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_traffic_predictor
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'pandas' 'scikit-learn'\
+          \ 'boto3' 'joblib' 'numpy'  &&  python3 -m pip install --quiet --no-warn-script-location\
+          \ 'kfp==2.15.2' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"\
+          3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_traffic_predictor(\n    s3_bucket: str,\n    s3_key_prefix:\
+          \ str,\n    s3_endpoint: str,\n    aws_access_key: str,\n    aws_secret_key:\
+          \ str,\n    output_traffic_regressor_model: Output[Dataset],\n    output_traffic_classifier_model:\
+          \ Output[Dataset]\n):\n    import pandas as pd\n    import boto3\n    import\
+          \ joblib\n    import io\n    import os\n    import logging\n    from datetime\
+          \ import datetime\n    import numpy as np\n    import csv\n    from sklearn.ensemble\
+          \ import RandomForestClassifier, RandomForestRegressor\n    from sklearn.model_selection\
+          \ import train_test_split\n    from sklearn.metrics import classification_report,\
+          \ mean_absolute_error\n\n    # Logging setup\n    logging.basicConfig(level=logging.INFO,\
+          \ format='[%(asctime)s] [%(levelname)s] - %(message)s')\n    log = logging.getLogger()\n\
+          \n    timestamp_str = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    log.info(\"\
+          Traffic predictor training started.\")\n\n    # Setup AWS\n    os.environ.update({\n\
+          \        'AWS_ACCESS_KEY_ID': aws_access_key,\n        'AWS_SECRET_ACCESS_KEY':\
+          \ aws_secret_key,\n    })\n    s3 = boto3.client('s3', endpoint_url=s3_endpoint)\n\
+          \    log.info(\"AWS credentials and environment variables configured.\"\
+          )\n\n    def load_all_ran_files_from_s3(s3, s3_bucket, s3_key_prefix):\n\
+          \        \"\"\"\n        Load and concatenate all RAN CSV metric files from\
+          \ S3 that match the prefix.\n        Assumes all files follow the same structure\
+          \ and headers.\n        \"\"\"\n        # List and sort files\n        files\
+          \ = sorted([\n            o['Key'] for o in s3.list_objects_v2(Bucket=s3_bucket,\
+          \ Prefix=s3_key_prefix).get('Contents', [])\n            if \"ran-combined-metrics\"\
+          \ in o['Key']\n        ])\n\n        if not files:\n            raise FileNotFoundError(\"\
+          No RAN metrics files found.\")\n\n        log.info(f\"Found {len(files)}\
+          \ RAN files for continuous training.\")\n\n        dfs = []\n\n        for\
+          \ key in files:\n            log.info(f\"Reading file: {key}\")\n      \
+          \      csv_bytes = s3.get_object(Bucket=s3_bucket, Key=key)['Body'].read()\n\
+          \            df = pd.read_csv(\n                io.BytesIO(csv_bytes),\n\
+          \                quotechar='\"',\n                delimiter=',',\n     \
+          \           skipinitialspace=True,\n                engine='python'\n  \
+          \          )\n\n            # If first row is repeated header, drop it\n\
+          \            if list(df.iloc[0]) == list(df.columns):\n                df\
+          \ = df.iloc[1:]\n\n            # Standardize column names\n            df.columns\
+          \ = [\n                \"Cell ID\", \"Datetime\", \"Band\", \"Frequency\"\
+          , \"UEs Usage\", \"Area Type\", \"Lat\", \"Lon\", \"City\", \"Adjacent Cells\"\
+          , \n                \"RSRP\", \"RSRQ\", \"SINR\", \"Throughput (Mbps)\"\
+          , \"Latency (ms)\", \"Max Capacity\"\n            ]\n\n            dfs.append(df)\n\
+          \n        # Concatenate all cleaned files\n        combined_df = pd.concat(dfs,\
+          \ ignore_index=True)\n        log.info(f\"Total combined shape: {combined_df.shape}\"\
+          )\n        log.info(f\"Sample combined data:\\n{combined_df.head(3).to_string(index=False)}\"\
+          )\n\n        return combined_df\n\n    # Load all RAN files from S3 for\
+          \ continuous training\n    df = load_all_ran_files_from_s3(s3, s3_bucket,\
+          \ s3_key_prefix)\n\n    df.columns = df.columns.str.strip().str.replace('\"\
+          ', '')\n    # Clean 'Adjacent Cells' column\n    if 'Adjacent Cells' in\
+          \ df.columns:\n        df['Adjacent Cells'] = df['Adjacent Cells'].astype(str).str.strip('\"\
+          ').str.strip()\n    # (Optional: Print sample row for debug)\n    print(df.head())\n\
+          \n    # Drop invalid Cell IDs\n    df = df[pd.to_numeric(df['Cell ID'],\
+          \ errors='coerce').notnull()]\n    df['Cell ID'] = df['Cell ID'].astype(int)\n\
+          \    df['Max Capacity'] = pd.to_numeric(df['Max Capacity'], errors='coerce').round().astype('Int64')\n\
+          \    df['UEs Usage'] = pd.to_numeric(df['UEs Usage'], errors='coerce').fillna(0)\n\
+          \    df['Datetime'] = pd.to_datetime(df['Datetime'], errors='coerce')\n\
+          \    df.dropna(subset=['Datetime'], inplace=True)\n    log.info(f\"Data\
+          \ after basic cleaning: {df.shape}\")\n    log.info(f\"Sample cleaned data:\\\
+          n{df[['Cell ID', 'Datetime', 'Frequency', 'UEs Usage']].head(3).to_string(index=False)}\"\
+          )\n\n    # Fill missing values\n    df['Band'] = df['Band'].fillna(\"Unknown\
+          \ Band\").astype(str)\n    df['Area Type'] = df['Area Type'].fillna(\"Unknown\
+          \ Area\").astype(str)\n\n    # Derive extra temporal features first\n  \
+          \  #df['Datetime'] = pd.to_datetime(df['Datetime'])\n    # Normalize datetime\
+          \ precision to seconds (or minutes if preferred)\n    df['Datetime'] = pd.to_datetime(df['Datetime']).dt.floor('S')\n\
+          \n    df['Hour'] = df['Datetime'].dt.hour\n    df['Day'] = df['Datetime'].dt.day\n\
+          \    df['Month'] = df['Datetime'].dt.month\n    df['Weekday'] = df['Datetime'].dt.weekday\n\
+          \    df['DayOfWeek'] = df['Datetime'].dt.day_name()\n    df['Weekend'] =\
+          \ df['Weekday'].isin([5, 6])  # Saturday/Sunday\n    df['Date'] = df['Datetime'].dt.date\
+          \  # Needed for grouping\n    # Create full Timestamp for grouping\n   \
+          \ #df['Timestamp'] = pd.to_datetime(df['Date'].astype(str)) + pd.to_timedelta(df['Hour'],\
+          \ unit='h')\n    log.info(f\"Sample after feature derivation:\\n{df[['Cell\
+          \ ID', 'Datetime', 'Date', 'Hour', 'Day', 'Month', 'Weekday',  'DayOfWeek',\
+          \ 'Weekend']].head(3).to_string(index=False)}\")\n\n    # Group by Cell\
+          \ ID + Frequency + Hour + Date\n    log.info(\"Grouping by ['Cell ID', 'Datetime',\
+          \ 'Frequency']\")\n    grouped = df.groupby(['Cell ID', 'Datetime', 'Frequency']).agg({\n\
+          \        'UEs Usage': 'sum',\n        'DayOfWeek': 'first',\n        'Weekend':\
+          \ 'first'\n    }).reset_index()\n\n    log.info(f\"Grouped data shape: {grouped.shape}\"\
+          )\n    log.info(f\"Sample grouped data:\\n{grouped.head(3).to_string(index=False)}\"\
+          )\n\n    grouped['Date'] = grouped['Datetime'].dt.strftime('%m-%d-%Y')\n\
+          \    grouped['Hour'] = grouped['Datetime'].dt.hour\n    grouped['Day'] =\
+          \ grouped['Datetime'].dt.day\n    grouped['Month'] = grouped['Datetime'].dt.month\n\
+          \    grouped['Weekday'] = grouped['Datetime'].dt.weekday\n\n    # Traffic\
+          \ class label\n    grouped['Traffic Class'] = (grouped['UEs Usage'] >= 40).astype(int)\n\
+          \n    # One-hot encode DayOfWeek (as boolean flags)\n    grouped = pd.get_dummies(grouped,\
+          \ columns=['DayOfWeek'], prefix='DayOfWeek')\n\n    # --- One-hot encode\
+          \ top-N adjacent cells ---\n    N = 10  # Number of top adjacent cells to\
+          \ encode\n    if 'Adjacent Cells' in df.columns:\n        # Flatten all\
+          \ adjacent cells into a list\n        all_adjacent = df['Adjacent Cells'].dropna().str.split(',').explode().str.strip()\n\
+          \        top_adjacent = all_adjacent.value_counts().nlargest(N).index.tolist()\n\
+          \        log.info(f\"Top-{N} most frequent adjacent cells: {top_adjacent}\"\
+          )\n\n        # Create binary flags for top-N adjacent cells\n        for\
+          \ adj in top_adjacent:\n            col_name = f'adj_cell_{adj}'\n     \
+          \       df[col_name] = df['Adjacent Cells'].apply(lambda x: int(adj in x.split(','))\
+          \ if pd.notnull(x) else 0)\n\n    # Ensure both 'Datetime' columns are in\
+          \ datetime64[ns] and aligned to second resolution BEFORE merging\n    df['Datetime']\
+          \ = pd.to_datetime(df['Datetime']).dt.floor('S')\n    grouped['Datetime']\
+          \ = pd.to_datetime(grouped['Datetime']).dt.floor('S')\n\n    # Prepare the\
+          \ one-hot encoded adjacent cell flags\n    adj_cols = [f'adj_cell_{adj}'\
+          \ for adj in top_adjacent]\n    adj_encoded_df = df.groupby(['Cell ID',\
+          \ 'Datetime', 'Frequency'])[adj_cols].max().reset_index()\n\n    # --- DEBUG:\
+          \ Check datatypes before merge ---\n    log.info(f\"[Before merge] adj_encoded_df['Datetime']\
+          \ dtype: {adj_encoded_df['Datetime'].dtype}\")\n    log.info(f\"[Before\
+          \ merge] grouped['Datetime'] dtype: {grouped['Datetime'].dtype}\")\n\n \
+          \   # Ensure consistency in 'Datetime' type for adj_encoded_df as well\n\
+          \    adj_encoded_df['Datetime'] = pd.to_datetime(adj_encoded_df['Datetime']).dt.floor('S')\n\
+          \n    # Now safely merge\n    grouped = grouped.merge(adj_encoded_df, on=['Cell\
+          \ ID', 'Datetime', 'Frequency'], how='left')\n    log.info(f\"Shape after\
+          \ merging top-N adjacent cell features: {grouped.shape}\")\n\n    # ---\
+          \ FIX: Ensure 'Datetime' is proper before processing ---\n    # Print sample\
+          \ raw 'Datetime' values\n    log.info(f\"Raw 'Datetime' values before coercion:\\\
+          n{grouped['Datetime'].head()}\")\n    log.info(f\"'Datetime' dtype before\
+          \ coercion: {grouped['Datetime'].dtype}\")\n\n    # Only convert if not\
+          \ already datetime64\n    if not pd.api.types.is_datetime64_any_dtype(grouped['Datetime']):\n\
+          \        grouped['Datetime'] = pd.to_datetime(grouped['Datetime'], errors='coerce')\n\
+          \n    # Optional: Drop rows where coercion failed\n    if grouped['Datetime'].isna().any():\n\
+          \        log.warning(\"Some 'Datetime' values could not be converted and\
+          \ are NaT. Dropping those rows.\")\n        grouped = grouped.dropna(subset=['Datetime'])\n\
+          \n    # Floor to seconds precision\n    grouped['Datetime'] = grouped['Datetime'].dt.floor('S')\n\
+          \n    # Derive Unix timestamp safely\n    grouped['Datetime_ts'] = grouped['Datetime'].astype('int64')\
+          \ // 10**9\n\n    # Confirm correctness\n    log.info(f\"Sample 'Datetime'\
+          \ values:\\n{grouped['Datetime'].head().to_string(index=False)}\")\n   \
+          \ log.info(f\"'Datetime' dtype: {grouped['Datetime'].dtype}\")\n    log.info(f\"\
+          Sample 'Datetime_ts' values:\\n{grouped['Datetime_ts'].head().to_string(index=False)}\"\
+          )\n\n\n    # Define the one-hot column names\n    adj_cols = [col for col\
+          \ in grouped.columns if col.startswith(\"adj_cell_\")]\n    log.info(f\"\
+          Sample of one-hot adjacent cell columns BEFORE fillna:\\n{grouped[adj_cols].head().to_string(index=False)}\"\
+          )\n\n    # Fill missing values and convert to integers\n    grouped[adj_cols]\
+          \ = grouped[adj_cols].fillna(0).astype(int)\n    log.info(f\"Sample AFTER\
+          \ fillna:\\n{grouped[adj_cols].head().to_string(index=False)}\")\n\n   \
+          \ # Log and convert final 'Datetime' to timestamp\n    log.info(f\"'Datetime'\
+          \ dtype: {grouped['Datetime'].dtype}\")\n    log.info(f\"Sample 'Datetime'\
+          \ values:\\n{grouped['Datetime'].head().to_string(index=False)}\")\n\n\n\
+          \    # Final features\n    feature_cols = ['Cell ID', 'Datetime_ts', 'Datetime',\
+          \ 'Hour', 'Weekend', 'Day', 'Month', 'Weekday', 'UEs Usage'] + \\\n    \
+          \            [col for col in grouped.columns if col.startswith('DayOfWeek_')]\n\
+          \    X = grouped[feature_cols]\n    #X = pd.get_dummies(X, columns=['Frequency'],\
+          \ prefix='Freq')\n    print(\"Current columns in grouped:\", grouped.columns.tolist())\n\
+          \n    # Drop only if columns exist to avoid KeyError\n    columns_to_drop\
+          \ = [col for col in [\"Datetime\"] if col in X.columns]\n    X = X.drop(columns=columns_to_drop)\n\
+          \    print(\"After dropping columns:\", X.columns.tolist())\n\n    y_class\
+          \ = grouped[\"Traffic Class\"]\n    y_usage = grouped[\"UEs Usage\"]\n\n\
+          \    log.info(f\"Feature columns: {feature_cols}\")\n    log.info(f\"Final\
+          \ training feature set shape: {X.shape}\")\n    log.info(f\"Training features\
+          \ sample:\\n{X.head(3).to_string(index=False)}\")\n    log.info(f\"Training\
+          \ target (UEs Usage) sample:\\n{y_usage.head(3).tolist()}\")\n    log.info(f\"\
+          Training target (Traffic Class) sample:\\n{y_class.head(3).tolist()}\")\n\
+          \n    # Train-test split\n    X_train, X_test, y_train_usage, y_test_usage,\
+          \ y_train_class, y_test_class = train_test_split(\n        X, y_usage, y_class,\
+          \ test_size=0.2, random_state=42\n    )\n\n    # Train models\n    regressor\
+          \ = RandomForestRegressor(n_estimators=100, random_state=42)\n    regressor.fit(X_train,\
+          \ y_train_usage)\n\n    classifier = RandomForestClassifier(n_estimators=100,\
+          \ random_state=42)\n    classifier.fit(X_train, y_train_class)\n\n    log.info(\"\
+          RandomForest models trained successfully.\")\n\n    # Save\n    os.makedirs(\"\
+          /tmp\", exist_ok=True)\n    regressor_model_path = \"/tmp/traffic_regressor_model.joblib\"\
+          \n    classifier_model_path = \"/tmp/traffic_classifier_model.joblib\"\n\
+          \    #regressor_model_path = \"/tmp/traffic_regressor_model_{timestamp_str}.joblib\"\
+          \n    #classifier_model_path = \"/tmp/traffic_classifier_model_{timestamp_str}.joblib\"\
+          \    \n    joblib.dump(regressor, regressor_model_path)\n    joblib.dump(classifier,\
+          \ classifier_model_path)\n\n    log.info(\"Uploading models to S3...\")\n\
+          \    with open(regressor_model_path, 'rb') as r_file:\n        s3.upload_fileobj(r_file,\
+          \ s3_bucket, f'{s3_key_prefix}/models/traffic_regressor_model.joblib')\n\
+          \    with open(classifier_model_path, 'rb') as c_file:\n        s3.upload_fileobj(c_file,\
+          \ s3_bucket, f'{s3_key_prefix}/models/traffic_classifier_model.joblib')\n\
+          \n    log.info(f\"Uploaded regressor model: {s3_key_prefix}/models/traffic_regressor_model.joblib\"\
+          )\n    log.info(f\"Uploaded classifier model: {s3_key_prefix}/models/traffic_classifier_model.joblib\"\
+          )\n\n    # Output regressor to pipeline output\n    with open(regressor_model_path,\
+          \ 'rb') as f:\n        with open(output_traffic_regressor_model.path, 'wb')\
+          \ as out_f:\n            out_f.write(f.read())\n\n    with open(classifier_model_path,\
+          \ 'rb') as f:\n        with open(output_traffic_classifier_model.path, 'wb')\
+          \ as out_f:\n            out_f.write(f.read())\n\n    log.info(\"Traffic\
+          \ predictor models saved and uploaded successfully.\")\n\n"
+        image: python:3.9
+pipelineInfo:
+  description: RAN pipeline with stream RAN metrics to S3, train traffic precition
+    model and GenAI anomaly detection
+  name: ran-multi-prediction-pipeline-with-genai-aap-int
+root:
+  dag:
+    tasks:
+      genai-anomaly-detection:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-genai-anomaly-detection
+        dependentTasks:
+        - stream-ran-metrics-to-s3-component
+        inputs:
+          artifacts:
+            ran_metrics_path:
+              taskOutputArtifact:
+                outputArtifactKey: ran_metrics
+                producerTask: stream-ran-metrics-to-s3-component
+          parameters:
+            aws_access_key:
+              componentInputParameter: aws_access_key
+            aws_secret_key:
+              componentInputParameter: aws_secret_key
+            db_host:
+              componentInputParameter: db_host
+            db_name:
+              componentInputParameter: db_name
+            db_pwd:
+              componentInputParameter: db_pwd
+            db_user:
+              componentInputParameter: db_user
+            model_api_key:
+              componentInputParameter: llm_api_key
+            model_api_name:
+              runtimeValue:
+                constant: llama-4-scout-17b-16e-w4a16
+            model_api_url:
+              componentInputParameter: llm_api_url
+            s3_bucket:
+              componentInputParameter: s3_bucket
+            s3_endpoint:
+              componentInputParameter: s3_endpoint
+            s3_key_prefix:
+              componentInputParameter: s3_key_prefix
+        taskInfo:
+          name: genai-anomaly-detection
+      stream-ran-metrics-to-s3-component:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-stream-ran-metrics-to-s3-component
+        inputs:
+          parameters:
+            aws_access_key:
+              componentInputParameter: aws_access_key
+            aws_secret_key:
+              componentInputParameter: aws_secret_key
+            bootstrap_servers:
+              componentInputParameter: bootstrap_servers
+            s3_bucket:
+              componentInputParameter: s3_bucket
+            s3_endpoint:
+              componentInputParameter: s3_endpoint
+            s3_key_prefix:
+              componentInputParameter: s3_key_prefix
+        taskInfo:
+          name: stream-ran-metrics-to-s3-component
+      train-traffic-predictor:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-traffic-predictor
+        dependentTasks:
+        - stream-ran-metrics-to-s3-component
+        inputs:
+          parameters:
+            aws_access_key:
+              componentInputParameter: aws_access_key
+            aws_secret_key:
+              componentInputParameter: aws_secret_key
+            s3_bucket:
+              componentInputParameter: s3_bucket
+            s3_endpoint:
+              componentInputParameter: s3_endpoint
+            s3_key_prefix:
+              componentInputParameter: s3_key_prefix
+        taskInfo:
+          name: train-traffic-predictor
+  inputDefinitions:
+    parameters:
+      aws_access_key:
+        defaultValue: mo0x4vOo5DxiiiX2fqnP
+        isOptional: true
+        parameterType: STRING
+      aws_secret_key:
+        defaultValue: odP78ooBR0pAPaQTp6B2t+03+U0q/JPUPUqU/oZ6
+        isOptional: true
+        parameterType: STRING
+      bootstrap_servers:
+        defaultValue: my-cluster-kafka-bootstrap.amq-streams-kafka.svc:9092
+        isOptional: true
+        parameterType: STRING
+      db_host:
+        defaultValue: mysql-service
+        isOptional: true
+        parameterType: STRING
+      db_name:
+        defaultValue: ran_events
+        isOptional: true
+        parameterType: STRING
+      db_pwd:
+        defaultValue: rangenai
+        isOptional: true
+        parameterType: STRING
+      db_user:
+        defaultValue: root
+        isOptional: true
+        parameterType: STRING
+      llm_api_key:
+        defaultValue: 0db3b3d7009a1a31af4ccc35e4a902ca
+        isOptional: true
+        parameterType: STRING
+      llm_api_url:
+        defaultValue: https://llama-4-scout-17b-16e-w4a16-maas-apicast-production.apps.prod.rhoai.rh-aiservices-bu.com:443/v1
+        isOptional: true
+        parameterType: STRING
+      s3_bucket:
+        defaultValue: ai-cloud-ran-genai-bucket-5f0934a3-ebae-45cc-a327-e1f60d7ae15a
+        isOptional: true
+        parameterType: STRING
+      s3_endpoint:
+        defaultValue: http://s3.openshift-storage.svc:80
+        isOptional: true
+        parameterType: STRING
+      s3_key_prefix:
+        defaultValue: ran-pipeline
+        isOptional: true
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.15.2
