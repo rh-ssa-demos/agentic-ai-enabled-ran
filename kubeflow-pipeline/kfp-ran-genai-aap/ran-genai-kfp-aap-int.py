@@ -1,62 +1,78 @@
-# ====================================================================================================
-# Project: RAN Anomaly Detection and Traffic Prediction using Kubeflow Pipelines and Generative AI
-# Author: Dinesh Lakshmanan
-# Date: June 30, 2025
-# Description:
-# This Kubeflow Pipeline automates an end-to-end MLOps workflow for Radio Access Network (RAN)
-# performance metrics. It encompasses real-time data ingestion, persistent storage,
-# machine learning model training for traffic prediction, and a robust anomaly detection
-# system powered by Generative AI (GenAI) with Retrieval-Augmented Generation (RAG).
-#
-# The pipeline is designed to process streaming RAN data, identify key performance indicator (KPI)
-# anomalies, provide intelligent explanations, and offer actionable recommendations.
-#
-# Pipeline Flow:
-# 1.  Data Ingestion: Streams RAN metrics from Kafka and archives them to S3.
-# 2.  ML Model Training: Trains RandomForest models for traffic prediction using historical data from S3.
-# 3.  GenAI Anomaly Detection: Analyzes the latest RAN data for anomalies entirely using an intelligent LLM.
-# 3.  GenAI Anomaly Detection: Analyzes the latest RAN data for anomalies using a multi-layered approach:
-#     a.  Python-based rule engine for deterministic anomaly detection (e.g., PRB, RSRP, SINR, Throughput, UEs, Cell Outage)
-#         to ensure "zero tolerance" on logical/numerical hallucinations.
-#     b.  A Large Language Model (LLM) for formatting the detected anomalies into a human-readable report
-#         and leveraging RAG for generating context-aware recommended fixes from documentation.
-#
-# Components:
-# ----------------------------------------------------------------------------------------------------
-# 1.  stream_ran_metrics_to_s3_component:
-#     - Purpose: Ingests real-time RAN KPI data from Kafka and stores it in S3.
-#     - Functionality: Connects to Kafka, consumes a batch of records, parses CSV data, handles malformed
-#       records, and uploads the processed batch as a timestamped CSV file to S3.
-#     - Output: An S3 URI pointing to the latest batch of raw RAN metrics.
-#
-# 2.  train_traffic_predictor:
-#     - Purpose: Trains Machine Learning models to predict network traffic patterns.
-#     - Functionality: Loads all historical RAN metric CSVs from S3, performs extensive data
-#       preprocessing, feature engineering (e.g., temporal features, one-hot encoding for categorical
-#       and adjacent cells), and trains a RandomForest Regressor (for UEs usage prediction)
-#       and a RandomForest Classifier (for traffic class prediction).
-#       Models are then saved to S3 and as pipeline artifacts.
-#     - Dependencies: Runs after `stream_ran_metrics_to_s3_component` to ensure data availability.
-#
-# 3.  genai_anomaly_detection:
-#     - Purpose: Identifies and reports anomalies in RAN KPIs using a hybrid Python-LLM approach.
-#     - Functionality:
-#       - **Python Logic:** Acts as the primary anomaly detection engine. It evaluates incoming RAN metrics
-#         against predefined, strict numerical and logical thresholds for all specified KPIs
-#         (PRB Utilization, RSRP, SINR, Throughput Drop, UEs Spike/Drop, Cell Outage).
-#         It also retrieves historical data from S3 for comparative analysis rules.
-#       - **LLM Logic:** Serves as the intelligent formatting and reporting layer. It receives the
-#         (already verified) detected anomalies from Python and formats them into a standardized,
-#         human-readable report. It uses Retrieval-Augmented Generation (RAG) with a FAISS vector
-#         database to suggest specific documentation sections for recommended fixes.
-#       - **Strictness Control:** Employs aggressive prompt engineering techniques (e.g., dual-path
-#         prompting for 'NO_ANOMALY', explicit instructions, custom stop tokens) to minimize LLM
-#         hallucinations and ensure strict adherence to output formats and brevity.
-#       - **Persistence:** Logs detected anomalies to a MySQL database and saves all anomaly
-#         detection results to S3.
-#     - Dependencies: Runs after `stream_ran_metrics_to_s3_component` to process the latest data batch.
-#
-# ====================================================================================================
+"""
+==============================================================================================================
+ Project: RAN Anomaly Detection, Traffic Prediction and Remediationusing Kubeflow Pipelines and Generative AI
+ Author: Dinesh Lakshmanan & Federico Rossi
+ Date: February 11, 2026
+==============================================================================================================
+This Kubeflow pipeline orchestrates the ingestion, processing, machine learning, anomaly 
+detection, and GenAI-powered remediation for RAN (Radio Access Network) metrics streaming 
+in real time. The workflow below describes the principal components and their logic.
+
+------------------------------------------------------------------------------------------
+Workflow Overview
+------------------------------------------------------------------------------------------
+
+1. **Data Ingestion: stream_ran_metrics_to_s3_component**
+   - Streams RAN KPI metrics from a Kafka topic.
+   - Consumes, parses, and validates each Kafka message as CSV-formatted network data.
+   - Handles malformed messages with robust error-checking and diagnostic output.
+   - Uploads a timestamped batch of freshly ingested data to S3.
+   - Outputs a local artifact for subsequent pipeline steps.
+
+2. **Traffic Prediction Model Training: train_traffic_predictor**
+   - Aggregates and loads all historical RAN metrics archived in S3.
+   - Performs preprocessing, feature engineering (time, categorical, spatial context).
+   - Trains two models:
+        * RandomForestRegressor: Predicts "UEs Usage" (i.e., number of connected users).
+        * RandomForestClassifier: Classifies traffic classes.
+   - Artifacts (trained models, output datasets) are stored to S3 and made available downstream.
+   - Runs **after successful data ingestion**.
+
+3. **GenAI Anomaly Detection & AAP Remediation: genai_anomaly_detection**
+   - Loads the latest batch of RAN metrics for evaluation.
+   - **Layer 1: Python Rule Engine**
+        * Strict, deterministic logic to check all metrics against threshold/consistency rules
+          (e.g., min/max RSRP/RSPR, SINR, UEs usage, throughput drops, cell outage, etc).
+        * Historical S3 data is used for comparative anomaly checks (trend or spike detection).
+        * No LLM hallucinations permitted in data validation—Python logic is the source of truth.
+   - **Layer 2: GenAI/LLM Reasoning (with Retrieval-Augmented Generation)**
+        * Receives the detected anomaly context (not raw metrics) from Python.
+        * Formats a human- and operator-friendly anomaly summary.
+        * Retrieves RAN documentation via a vector DB for context-aware recommended fixes.
+        * Strict prompt engineering and output format control used to minimize LLM deviations.
+        * Outputs a standardized explanation, recommended parameters for remediation, and
+          a ready-to-use REST API call (remediation via AAP/automation service).
+   - Pushes formatted anomaly events to a Kafka topic for AAP integration.
+   - Results are saved to S3 and logged to MySQL for persistent event-tracking.
+
+4. **Pipeline Output and Compilation**
+   - The resulting pipeline is compiled to YAML for Kubeflow execution.
+   - The entire pipeline may be triggered either on schedule or as needed to provide both
+     data-driven forecasting and closed-loop observability & remediation.
+
+------------------------------------------------------------------------------------------
+Usage
+------------------------------------------------------------------------------------------
+- Adjust pipeline parameters in the main pipeline definition section, as appropriate for:
+    * Kafka bootstrap server address
+    * S3 credentials, buckets, and region endpoints
+    * LLM API key and endpoint URL
+    * Database connection info
+- Run directly as a Python script to produce the pipeline YAML artifact for Kubeflow.
+- Deploy and run the pipeline using Kubeflow Pipelines as per the produced YAML.
+
+------------------------------------------------------------------------------------------
+Key Design Features
+------------------------------------------------------------------------------------------
+- **Strict separation of concerns:** Rule-based anomaly logic vs LLM human reasoning/explanation.
+- **No trust for LLM numeric output:** Only trusted for explanation and recommendation.
+- **Immediate artifact and log storage:** Raw metrics, model outputs, and anomaly reports are
+  archived for auditing and downstream use.
+- **Operator readiness:** Outputs can directly trigger remediation via AAP APIs through
+  pre-formatted API call JSON.
+- **Highly extensible:** Easily add more KPIs, extend rule engine, or swap LLM providers.
+==========================================================================================
+"""
 
 
 from kfp import dsl
