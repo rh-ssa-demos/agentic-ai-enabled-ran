@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: ranchat
-        image: quay.io/ferossi/ranchat:0.2
+        image: quay.io/dlakshma/ranchat:2.6
         imagePullPolicy: IfNotPresent
         env:
         - name: API_URL
@@ -39,9 +39,9 @@ spec:
               name: ranchat-secrets
               key: S3_SECRET_ACCESS_KEY
         - name: S3_HOST
-          value: '[S3_HOST]'
+          value: '[INSERT_HERE_S3_HOST]'
         - name: S3_BUCKET
-          value: '[S3_BUCKET]'
+          value: '[INSERT_HERE_S3_BUCKET]'
         - name: USE_MYSQL
           value: True
         - name: DB_HOST
