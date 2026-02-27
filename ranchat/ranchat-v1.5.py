@@ -103,68 +103,10 @@ async def call_forecast(cell_data: list) -> str:
         result = await client.call_tool("forecast", {"cell_data": cell_data})
         return str(result)
 
-def safe_forecast_call(data):
-    """Robustly parses tool input, handling potential Python-style strings from LLM."""
-    try:
-        # 1. Clean up common LLM artifacts and handle single quotes
-        clean_data = data.strip().replace("'", '"') 
-        
-        # 2. Use regex to find the FIRST occurrence of a list [ ... ]
-        match = re.search(r'\[.*\]', clean_data, re.DOTALL)
-        if match:
-            clean_data = match.group(0)
-            # Use json.loads for stricter JSON compliance
-            parsed_data = json.loads(clean_data)
-            
-            # 3. CRITICAL FIX: Limit cells to first 5 to prevent response truncation/loops
-            if len(parsed_data) > 5:
-                parsed_data = parsed_data[:5]
-                
-            return asyncio.run(call_forecast(parsed_data))
-        else:
-            return "Error: Action Input must be a JSON list like [{'Cell ID': '1', 'Datetime_ts': '2026-02-26T12:00:00'}]."
-            
-    except Exception as e:
-        err_msg = str(e)
-        # 4. DATE FIX: Catch Feb 29th or invalid date hallucinations
-        if "day is out of range" in err_msg:
-            return "Error: Invalid date provided (e.g., Feb 29 in a non-leap year). Please use March 1st (2026-03-01) instead."
-            
-        return f"Error parsing tool input: Please provide a VALID JSON list. (Details: {err_msg})"
-
-def get_active_cell_ids(query=None):
-    """Fetch unique active cell IDs from the database to avoid hardcoding."""
-    try:
-        with engine.begin() as conn:
-            stmt = select(events.c.cell_id).where(events.c.active == 1).distinct()
-            rows = conn.execute(stmt).fetchall()
-            return [r[0] for r in rows]
-    except Exception as e:
-        return f"Database error fetching cells: {str(e)}"
-
-def ask_documents(query: str) -> str:
-    """Consult the technical documentation and topology configurations."""
-    res = rag_chain.invoke({"input": query})
-    return res["answer"]
-
-# Updated Tool Definitions
 forecast_tool = Tool(
     name="forecast",
-    func=safe_forecast_call,
-    # We use a plain description without JSON braces to avoid template errors
-    description="Forecast traffic for specific cell IDs and timestamps. Input must be a JSON list of dictionaries."
-)
-
-search_cells_tool = Tool(
-    name="get_active_cells",
-    func=get_active_cell_ids,
-    description="Get a list of all active Cell IDs currently in the network database."
-)
-
-rag_tool = Tool(
-    name="technical_docs",
-    func=ask_documents,
-    description="Look up cell site topology, city locations, or bands from documentation."
+    func=lambda data: asyncio.run(call_forecast(literal_eval(data))),
+    description="Call MCP forecast agent. Input: list of dicts."
 )
 
 # =========================
@@ -195,15 +137,13 @@ def upload_to_s3(bucket, prefix, local_dir):
 # =========================
 # DB HELPERS
 # =========================
-def insert_event(cell_id, event_text, data):
+def insert_event(event_text, data):
     with engine.begin() as conn:
         conn.execute(
             events.insert().values(
-                cell_id=cell_id, # Ensure cell_id is passed here
                 creation_date=datetime.utcnow(),
                 event=event_text,
                 data=data,
-                active=1
             )
         )
 
@@ -215,10 +155,11 @@ def fetch_all_events():
 
 RAG_PROMPT = ChatPromptTemplate.from_messages([
     ("system",
-     "You are a RAN engineer. Use the provided context to answer. "
-     "If the context contains technical data or JSON, summarize it in a clear, natural English sentence. "
-     "Do not return raw JSON blocks unless specifically asked."),
-    ("human", "Context:\n{context}\n\nQuestion:\n{input}")
+     "You are a Radio Access Network (RAN) engineer and telecom operations expert. "
+     "Use ONLY the provided documentation to answer the question. "
+     "If the answer cannot be found in the documents, say you do not know."),
+    ("human",
+     "Context:\n{context}\n\nQuestion:\n{input}")
 ])
 
 # =========================
@@ -238,27 +179,26 @@ def load_llm():
 # =========================
 def get_rag_docs():
     docs = []
-    # Ensure local directory exists
     download_from_s3(S3_BUCKET, "docs/", "/tmp/docs")
 
     for file in os.listdir("/tmp/docs"):
-        path = os.path.join("/tmp/docs", file)
+        path = f"/tmp/docs/{file}"
+
         if file.lower().endswith(".pdf"):
-            # Ensure PDF loader is used
             docs.extend(PyPDFLoader(path).load())
+        elif file.lower().endswith(".docx"):
+            docs.extend(Docx2txtLoader(path).load())
         elif file.lower().endswith(".json"):
             with open(path) as f:
-                docs.append(Document(
-                    page_content=json.dumps(json.load(f), indent=2), 
-                    metadata={"source": path}
-                ))
-    
-    # Split ONLY PDFs; keep JSON docs whole
-    pdf_docs = [d for d in docs if not d.metadata.get("source", "").endswith(".json")]
-    json_docs = [d for d in docs if d.metadata.get("source", "").endswith(".json")]
-    
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=100)
-    return splitter.split_documents(pdf_docs) + json_docs
+                docs.append(
+                    Document(
+                        page_content=json.dumps(json.load(f), indent=2),
+                        metadata={"source": path, "type": "json"},
+                    )
+                )
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=50)
+    return splitter.split_documents(docs)
 
 # =========================
 # RAG CHAIN (MODERN)
@@ -299,31 +239,31 @@ def build_rag_chain(llm):
 # ORIGINAL PROMPTS
 # =========================
 CLASSIFIER_PROMPT = """
-You are a strict classifier. Categorize the user question into exactly one:
-PREDICTION – Question is about traffic forecasts or future status.
-UPGRADE – Question asks for a 'ClusterGroupUpgrade' or a 'YAML example'.
-GENERAL – Questions about site counts, locations, bands, hardware, or manuals.
+You are a strict classifier. Classify the following user question into only one of the following categories:
+
+PREDICTION – The question is about predictions or forecasts.
+UPGRADE – The question contains the term "ClusterGroupUpgrade".
+GENERAL – The question does not fall into the above categories.
+
 Respond with exactly one word only.
+
 User question: {question}
 """
 
 PREDICTION_PROMPT = """
-You are a RAN Analytics Assistant. 
-Today is Thursday, Feb 26, 2026. (Note: Feb 2026 has only 28 days).
+Extract the Cell ID and the date or day from the user input, and internally convert it into this JSON format:
+[{{"Cell ID": "100", "Datetime_ts": "2025-08-04T12:00:00"}}]
 
-STRICT OPERATIONAL LIMITS:
-1. If 'get_active_cells' returns many IDs, YOU MUST PICK ONLY THE FIRST 3 IDs. 
-2. Do not attempt to forecast more than 3 cells. This is a technical limit.
-3. For these 3 IDs, use the 'forecast' tool for the date: 2026-03-01T12:00:00.
-4. Your Action Input MUST be a valid JSON list of dicts. 
-   Example: [{"Cell ID": "1", "Datetime_ts": "2026-03-01T12:00:00"}]
-5. Summarize the traffic results for these sample cells as a final answer.
+Use this JSON to call the forecast agent.
 
-User Request: {input}
+Return a plain English sentence only.
+
+User input: {input}
 """
 
 UPGRADE_PROMPT = """
 Return the following YAML populated with the correct clusters:
+
 ```yaml
 apiVersion: ran.openshift.io/v1alpha1
 kind: ClusterGroupUpgrade
@@ -350,47 +290,31 @@ app = Flask(__name__)
 
 @app.route("/api/query", methods=["POST"])
 async def query_model():
-    data = request.get_json(force=True, silent=True)
-    if not data or "query" not in data:
-        return jsonify({"response": "Invalid request."}), 400
-    
-    user_query = data["query"]
+    user_query = request.json["query"]
 
-    try:
-        # Use .replace() instead of .format() to avoid key errors
-        class_input = CLASSIFIER_PROMPT.replace("{question}", user_query)
-        class_result = rag_chain.invoke({"input": class_input})
-        classification = class_result["answer"].upper().strip()
+    classification = rag_chain.invoke({
+        "input": CLASSIFIER_PROMPT.format(question=user_query)
+    })["answer"]
 
-        if "PREDICTION" in classification:
-            today = datetime.now().strftime("%Y-%m-%d")
-            # Manually replace the keys to keep LangChain's validator away from the braces
-            manual_prompt = PREDICTION_PROMPT.replace("{input}", user_query).replace("{current_date}", today)
-            
-            # Pass the fully-formatted string as the 'input' key
-            result = await agent.ainvoke({"input": manual_prompt})
-            return jsonify({"response": result.get("output", "")})
+    if "PREDICTION" in classification:
+        result = await agent.arun(
+            PREDICTION_PROMPT.format(input=user_query)
+        )
+        return jsonify({"response": result})
 
-        elif "UPGRADE" in classification or "YAML" in user_query.upper():
-            manual_upgrade = UPGRADE_PROMPT.replace("{input}", user_query)
-            result = rag_chain.invoke({"input": manual_upgrade})
-            return jsonify({"response": result["answer"]})
+    if "UPGRADE" in classification:
+        result = rag_chain.invoke({
+            "input": UPGRADE_PROMPT.format(input=user_query)
+        })
+        return jsonify({"response": result["answer"]})
 
-        else:
-            result = rag_chain.invoke({"input": user_query})
-            return jsonify({"response": result["answer"]})
-
-    except Exception as e:
-        # This will now catch and show the error without crashing the pod
-        print(f"Error in query_model: {str(e)}")
-        return jsonify({"response": f"System error: {str(e)}"}), 200
-
+    result = rag_chain.invoke({"input": user_query})
+    return jsonify({"response": result["answer"]})
 
 @app.route("/api/events", methods=["GET"])
 def get_events():
     try:
         with engine.begin() as conn:
-            # The UI needs 'active == 1' to show red dots
             stmt = select(events).where(events.c.active == 1).order_by(desc(events.c.creation_date))
             rows = conn.execute(stmt).fetchall()
 
@@ -404,7 +328,7 @@ def get_events():
             } for r in rows
         ])
     except Exception as e:
-        print(f"Error on the API: {e}")
+        print("Error on the API: " % str(e))
         return jsonify({"error": str(e)}), 500
 
     #rows = fetch_all_events()
@@ -444,9 +368,12 @@ def get_ran_cmd():
 
 async def run_agent_test(agent):
     print("test agent")
-    # If the agent uses a PromptTemplate, it will try to find keys inside { }
-    # Better to keep the test input simple
-    prompt = "Predict traffic for cell 100 for August 5, 2025."
+
+    prompt = (
+        "Use the MCP forecast tool to determine if cell 22 is busy at noon on "
+        "August 4, 2025. The input is a list with this format "
+        '[{"Cell ID": "100", "Datetime_ts": "2025-08-04T12:00:00"}]'
+    )
 
     response = await agent.ainvoke({"input": prompt})
     print(response["output"])
@@ -527,27 +454,6 @@ A table of network performance data, including Cell ID, Timestamp, Band, RSRP, R
 %s
 """ % sample_data
 
-'''
-@app.route('/api/clear_anomalies', methods=['POST', 'GET'])
-def clear_all_anomalies():
-    """Temporary route to reset all red dots on the map to green."""
-    try:
-        with engine.begin() as conn:
-            # Sets 'active' to 0 for every single record in the events table
-            stmt = (
-                update(events)
-                .values(active=0)
-            )
-            result = conn.execute(stmt)
-            message = f"Success: Reset {result.rowcount} anomalies. Dashboard should now be green."
-            print(message)
-            
-        return jsonify({"message": message}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-'''
-
-
 # ==============
 # MAIN
 # ==============
@@ -555,21 +461,18 @@ if __name__ == "__main__":
     llm = load_llm()
     rag_chain = build_rag_chain(llm)
 
-    # Change this in your __main__ block
     agent = initialize_agent(
-        tools=[forecast_tool, search_cells_tool, rag_tool], # Add search_cells_tool here
+        tools=[forecast_tool],
         llm=llm,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         verbose=True,
-        handle_parsing_errors=True # Crucial for stability  
     )
-    '''
+
     async def main():
         await run_agent_test(agent)
         #await run_anomaly_detection(rag_chain, prompt)
 
     asyncio.run(main())
-    '''
 
     app.run(host="0.0.0.0", port=5000, debug=True)
 
